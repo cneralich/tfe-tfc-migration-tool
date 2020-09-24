@@ -22,7 +22,7 @@ api_new.set_org(TFE_ORG_NEW)
 
 ### 2. Select Desired Functions
 
-Choose which components you want to migrate and comment out any others in `migration.py`.
+Choose which components you want to migrate and comment out any others in [`migration.py`](migration.py).
 
 ### 3. Run the Migration Script
 ```
