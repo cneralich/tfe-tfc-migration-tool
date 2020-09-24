@@ -681,7 +681,6 @@ def migrate_registry_modules(api_original, api_new, tfe_org_original, tfe_oauth_
 
 # TO DO
 # Agent Pools
-# Notification Configurations
 # Users?
 # Admin Organizations?
 # Admin Settings
