@@ -22,7 +22,7 @@ api_new.set_org(TFE_ORG_NEW)
 
 ### 2. Select Desired Functions
 
-Choose which components you want to migrate and comment out any others in [`migration.py`](migration.py).
+Choose which components you want to migrate and comment out any others in [`migration.py`](migration.py).  For example, you may choose whether you want to `migrate_all_state` for your Workspaces or `migrate_current_state`, but you should not select both.
 
 ### 3. Run the Migration Script
 ```
