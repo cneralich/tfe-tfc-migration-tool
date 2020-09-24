@@ -25,7 +25,7 @@ api_new = TFC(TFE_TOKEN_NEW, url=TFE_URL_NEW)
 api_new.set_org(TFE_ORG_NEW)
 
 
-def migrate_orgs():
+if __name__ == "__main__":
     team_map = migrate_teams(api_original, api_new)
     print('teams migrated')
 
