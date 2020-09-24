@@ -30,4 +30,4 @@ python migration.py
 ```
 
 ### NOTES
-This migration utility leverages the [Terraform Cloud/Enterprise API](https://www.terraform.io/docs/cloud/api/index.html) and the [terrasnek](https://github.com/dahlke/terrasnek) Python Client for interacting with it.  For security reasons, there are certain sensitive values that cannot be extracted (ex. Sensitive Variables and SSH Keys), so those will need to be readded after the migration is complete (the Keys will, however, be migrated).
+This migration utility leverages the [Terraform Cloud/Enterprise API](https://www.terraform.io/docs/cloud/api/index.html) and the [terrasnek](https://github.com/dahlke/terrasnek) Python Client for interacting with it.  For security reasons, there are certain sensitive values that cannot be extracted (ex. Sensitive Variables and SSH Keys), so those will need to be re-added after the migration is complete (the Keys will, however, be migrated).
