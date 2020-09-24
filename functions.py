@@ -55,7 +55,28 @@ def migrate_ssh_keys(api_original, api_new):
     return ssh_keys_map
 
 
-def migrate_workspaces(api_original, api_new, tfe_oauth_new):
+def migrate_agent_pools(api_original, api_new, tfe_org_original, tfe_org_new):
+    agent_pools = api_original.agents.list_pools(tfe_org_original)['data']
+    if agent_pools:
+        new_agent_pool_payload = {
+            "data": {
+                "type": "agent-pools"
+            }
+        }
+
+        new_org_agent_pools = api_new.agents.list_pools(tfe_org_new)['data']
+        if new_org_agent_pools:
+            agent_pool_id = api_new.agents.list_pools(tfe_org_new)[
+                'data'][0]['id']
+        else:
+            agent_pool_id = api_new.agents.create_pool(tfe_org_new)[
+                'data']['id']
+        return agent_pool_id
+    else:
+        return None
+
+
+def migrate_workspaces(api_original, api_new, tfe_oauth_new, agent_pool_id):
     workspaces = api_original.workspaces.list()['data']
 
     workspaces_map = {}
@@ -67,80 +88,163 @@ def migrate_workspaces(api_original, api_new, tfe_oauth_new):
         default_branch = True if branch == "" else False
 
         if workspace['attributes']['vcs-repo'] is not None:
-            # Build the new workspace payload
-            new_workspace_payload = {
-                "data": {
-                    "attributes": {
-                        "name": workspace['attributes']['name'],
-                        "terraform_version": workspace['attributes']['terraform-version'],
-                        "working-directory": workspace['attributes']['working-directory'],
-                        "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
-                        "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
-                        "auto-apply": workspace['attributes']['auto-apply'],
-                        "execution-mode": workspace['attributes']['execution-mode'],
-                        "description": workspace['attributes']['description'],
-                        "source-name": workspace['attributes']['source-name'],
-                        "source-url": workspace['attributes']['source-url'],
-                        "queue-all-runs": workspace['attributes']['queue-all-runs'],
-                        "speculative-enabled": workspace['attributes']['speculative-enabled'],
-                        "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
-                        "vcs-repo": {
-                            "identifier": workspace['attributes']['vcs-repo-identifier'],
-                            "oauth-token-id": tfe_oauth_new,
-                            "branch": branch,
-                            "default-branch": default_branch,
-                            "ingress-submodules": ingress_submodules
-                        }
-                    },
-                    "type": "workspaces"
+            if workspace['attributes']['execution-mode'] == 'agent':
+                # Build the new workspace payload
+                new_workspace_payload = {
+                    "data": {
+                        "attributes": {
+                            "name": workspace['attributes']['name'],
+                            "terraform_version": workspace['attributes']['terraform-version'],
+                            "working-directory": workspace['attributes']['working-directory'],
+                            "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+                            "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+                            "auto-apply": workspace['attributes']['auto-apply'],
+                            "execution-mode": workspace['attributes']['execution-mode'],
+                            "agent-pool-id": agent_pool_id,
+                            "description": workspace['attributes']['description'],
+                            "source-name": workspace['attributes']['source-name'],
+                            "source-url": workspace['attributes']['source-url'],
+                            "queue-all-runs": workspace['attributes']['queue-all-runs'],
+                            "speculative-enabled": workspace['attributes']['speculative-enabled'],
+                            "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
+                            "vcs-repo": {
+                                "identifier": workspace['attributes']['vcs-repo-identifier'],
+                                "oauth-token-id": tfe_oauth_new,
+                                "branch": branch,
+                                "default-branch": default_branch,
+                                "ingress-submodules": ingress_submodules
+                            }
+                        },
+                        "type": "workspaces"
+                    }
                 }
-            }
 
-            # Build the new Workspace
-            new_workspace = api_new.workspaces.create(new_workspace_payload)
-            new_workspace_id = new_workspace["data"]["id"]
+                # Build the new Workspace
+                new_workspace = api_new.workspaces.create(
+                    new_workspace_payload)
+                new_workspace_id = new_workspace["data"]["id"]
 
-            workspaces_map[workspace['id']] = new_workspace_id
+                workspaces_map[workspace['id']] = new_workspace_id
 
-            try:
-                ssh_key = workspace['relationships']['ssh-key']['data']['id']
-                workspace_to_ssh_key_map[workspace['id']] = ssh_key
-            except:
-                continue
+                try:
+                    ssh_key = workspace['relationships']['ssh-key']['data']['id']
+                    workspace_to_ssh_key_map[workspace['id']] = ssh_key
+                except:
+                    continue
+            else:
+                # Build the new workspace payload
+                new_workspace_payload = {
+                    "data": {
+                        "attributes": {
+                            "name": workspace['attributes']['name'],
+                            "terraform_version": workspace['attributes']['terraform-version'],
+                            "working-directory": workspace['attributes']['working-directory'],
+                            "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+                            "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+                            "auto-apply": workspace['attributes']['auto-apply'],
+                            "execution-mode": workspace['attributes']['execution-mode'],
+                            "description": workspace['attributes']['description'],
+                            "source-name": workspace['attributes']['source-name'],
+                            "source-url": workspace['attributes']['source-url'],
+                            "queue-all-runs": workspace['attributes']['queue-all-runs'],
+                            "speculative-enabled": workspace['attributes']['speculative-enabled'],
+                            "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
+                            "vcs-repo": {
+                                "identifier": workspace['attributes']['vcs-repo-identifier'],
+                                "oauth-token-id": tfe_oauth_new,
+                                "branch": branch,
+                                "default-branch": default_branch,
+                                "ingress-submodules": ingress_submodules
+                            }
+                        },
+                        "type": "workspaces"
+                    }
+                }
+
+                # Build the new Workspace
+                new_workspace = api_new.workspaces.create(
+                    new_workspace_payload)
+                new_workspace_id = new_workspace["data"]["id"]
+
+                workspaces_map[workspace['id']] = new_workspace_id
+
+                try:
+                    ssh_key = workspace['relationships']['ssh-key']['data']['id']
+                    workspace_to_ssh_key_map[workspace['id']] = ssh_key
+                except:
+                    continue
         else:
-            # Build the new workspace payload
-            new_workspace_payload = {
-                "data": {
-                    "attributes": {
-                        "name": workspace['attributes']['name'],
-                        "terraform_version": workspace['attributes']['terraform-version'],
-                        "working-directory": workspace['attributes']['working-directory'],
-                        "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
-                        "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
-                        "auto-apply": workspace['attributes']['auto-apply'],
-                        "execution-mode": workspace['attributes']['execution-mode'],
-                        "description": workspace['attributes']['description'],
-                        "source-name": workspace['attributes']['source-name'],
-                        "source-url": workspace['attributes']['source-url'],
-                        "queue-all-runs": workspace['attributes']['queue-all-runs'],
-                        "speculative-enabled": workspace['attributes']['speculative-enabled'],
-                        "trigger-prefixes": workspace['attributes']['trigger-prefixes']
-                    },
-                    "type": "workspaces"
+            if workspace['attributes']['execution-mode'] == 'agent':
+                # Build the new workspace payload
+                new_workspace_payload = {
+                    "data": {
+                        "attributes": {
+                            "name": workspace['attributes']['name'],
+                            "terraform_version": workspace['attributes']['terraform-version'],
+                            "working-directory": workspace['attributes']['working-directory'],
+                            "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+                            "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+                            "auto-apply": workspace['attributes']['auto-apply'],
+                            "execution-mode": workspace['attributes']['execution-mode'],
+                            "agent-pool-id": agent_pool_id,
+                            "description": workspace['attributes']['description'],
+                            "source-name": workspace['attributes']['source-name'],
+                            "source-url": workspace['attributes']['source-url'],
+                            "queue-all-runs": workspace['attributes']['queue-all-runs'],
+                            "speculative-enabled": workspace['attributes']['speculative-enabled'],
+                            "trigger-prefixes": workspace['attributes']['trigger-prefixes']
+                        },
+                        "type": "workspaces"
+                    }
                 }
-            }
 
-            # Build the new Workspace
-            new_workspace = api_new.workspaces.create(new_workspace_payload)
-            new_workspace_id = new_workspace['data']['id']
+                # Build the new Workspace
+                new_workspace = api_new.workspaces.create(
+                    new_workspace_payload)
+                new_workspace_id = new_workspace['data']['id']
 
-            workspaces_map[workspace['id']] = new_workspace_id
+                workspaces_map[workspace['id']] = new_workspace_id
 
-            try:
-                ssh_key = workspace['relationships']['ssh-key']['data']['id']
-                workspace_to_ssh_key_map[workspace['id']] = ssh_key
-            except:
-                continue
+                try:
+                    ssh_key = workspace['relationships']['ssh-key']['data']['id']
+                    workspace_to_ssh_key_map[workspace['id']] = ssh_key
+                except:
+                    continue
+            else:
+                # Build the new workspace payload
+                new_workspace_payload = {
+                    "data": {
+                        "attributes": {
+                            "name": workspace['attributes']['name'],
+                            "terraform_version": workspace['attributes']['terraform-version'],
+                            "working-directory": workspace['attributes']['working-directory'],
+                            "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+                            "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+                            "auto-apply": workspace['attributes']['auto-apply'],
+                            "execution-mode": workspace['attributes']['execution-mode'],
+                            "description": workspace['attributes']['description'],
+                            "source-name": workspace['attributes']['source-name'],
+                            "source-url": workspace['attributes']['source-url'],
+                            "queue-all-runs": workspace['attributes']['queue-all-runs'],
+                            "speculative-enabled": workspace['attributes']['speculative-enabled'],
+                            "trigger-prefixes": workspace['attributes']['trigger-prefixes']
+                        },
+                        "type": "workspaces"
+                    }
+                }
+
+                # Build the new Workspace
+                new_workspace = api_new.workspaces.create(
+                    new_workspace_payload)
+                new_workspace_id = new_workspace['data']['id']
+
+                workspaces_map[workspace['id']] = new_workspace_id
+
+                try:
+                    ssh_key = workspace['relationships']['ssh-key']['data']['id']
+                    workspace_to_ssh_key_map[workspace['id']] = ssh_key
+                except:
+                    continue
     return workspaces_map, workspace_to_ssh_key_map
 
 
@@ -679,42 +783,7 @@ def migrate_registry_modules(api_original, api_new, tfe_org_original, tfe_oauth_
         api_new.registry_modules.publish_from_vcs(new_module_payload)
     return
 
-# TO DO
-# Agent Pools
+###### TO DO: ######
 # Users?
 # Admin Organizations?
 # Admin Settings
-
-
-def delete_new_org(api_new):
-    workspaces = api_new.workspaces.list()['data']
-    if workspaces:
-        for workspace in workspaces:
-            api_new.workspaces.destroy(workspace['id'])
-
-    ssh_keys = api_new.ssh_keys.list()["data"]
-    if ssh_keys:
-        for ssh_key in ssh_keys:
-            api_new.ssh_keys.destroy(ssh_key['id'])
-
-    teams = api_new.teams.list()['data']
-    if teams:
-        for team in teams:
-            if team['attributes']['name'] != "owners":
-                api_new.teams.destroy(team['id'])
-
-    policies = api_new.policies.list()['data']
-    if policies:
-        for policy in policies:
-            api_new.policies.destroy(policy['id'])
-
-    policy_sets = api_new.policy_sets.list(
-        page_size=50, include="policies,workspaces")["data"]
-    if policy_sets:
-        for policy_set in policy_sets:
-            api_new.policy_sets.destroy(policy_set['id'])
-
-    modules = api_new.registry_modules.list()['modules']
-    if modules:
-        for module in modules:
-            api_new.registry_modules.destroy(module['name'])
