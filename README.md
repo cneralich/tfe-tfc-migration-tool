@@ -1,4 +1,21 @@
-# TFC/E Migration Utility
+# TFC/E Migration Tool
+This tool is designed to help automate the migration from one TFE/C Organization to another, whether that’s TFE to TFC, or vice versa.  The following migration operations are currently supported:
+
+* Migrate Teams
+* Migrate SSH Keys
+* Migrate Agent Pools
+* Migrate Workspaces
+* Migrate State (Either All Versions or Current Version)
+* Migrate Workspace Variables
+* Migrate Workspace SSH Keys
+* Migrate Workspace Run Triggers
+* Migrate Workspace Notifications
+* Migrate Workspace Team Access
+* Migrate Policies
+* Migrate Policy Sets
+* Migrate Policy Set Parameters
+* Migrate Registry Modules (VCS-backed only)
+
 
 ## STEPS:
 ### 1. Set Required Environment Variables for both the Source Org and the New Org
