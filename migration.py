@@ -71,3 +71,17 @@ if __name__ == "__main__":
     migrate_registry_modules(api_original, api_new,
         TFE_ORG_ORIGINAL, TFE_OAUTH_NEW)
     print('registry modules migrated')
+
+    print( '\n')
+    print('MIGRATION MAPS:')
+    print('team_map:', team_map)
+    print( '\n')
+    print('ssh_keys_map:', ssh_keys_map)
+    print( '\n')
+    print('workspaces_map:', workspaces_map)
+    print( '\n')
+    print('workspace_to_ssh_key_map:', workspace_to_ssh_key_map)
+    print( '\n')
+    print('policies_map:', policies_map)
+    print( '\n')
+    print('policy_sets_map:', policy_sets_map)
