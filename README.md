@@ -3,10 +3,12 @@ This tool is designed to help automate the migration from one TFE/C Organization
 
 * Migrate Teams
 * Migrate SSH Keys
+    * Note: This transfers all Key names, but not Values (which are write only)
 * Migrate Agent Pools
 * Migrate Workspaces
 * Migrate State (Either All Versions or Current Version)
 * Migrate Workspace Variables
+    * Note: For any Variable marked as `Sensitive`, only Key names will be transferred (since Values are write only)
 * Migrate Workspace SSH Keys
 * Migrate Workspace Run Triggers
 * Migrate Workspace Notifications
@@ -14,14 +16,16 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Policies
 * Migrate Policy Sets
 * Migrate Policy Set Parameters
-* Migrate Registry Modules (VCS-backed only)
+    * Note: For any parameter marked as `Sensitive`, only Key names will be transferred (since Values are write only)
+* Migrate Registry Modules 
+    * Note: Only VCS-backed Module migration is supported currently
 
 
 ## STEPS:
 ### 1. Set Required Environment Variables for both the Source Org and the New Org
 ```
 # SOURCE ORG
-TFE_TOKEN_ORIGINAL = os.getenv("TFE_TOKEN_ORIGINAL", None)
+TFE_TOKEN_ORIGINAL = os.getenv("TFE_TOKEN_ORIGINAL", None)a
 TFE_URL_ORIGINAL = os.getenv("TFE_URL_ORIGINAL", None)
 TFE_ORG_ORIGINAL = os.getenv("TFE_ORG_ORIGINAL", None)
 
