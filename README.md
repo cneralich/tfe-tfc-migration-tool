@@ -4,6 +4,8 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Teams
 * Migrate SSH Keys
     * Note: This transfers all Key names, but not Values (which are write only)
+* Migrate SSH Key Files
+   * Note: Prior to using this method, the `workspace_to_file_path_map` map must be manually generated using the following format: `{'ssh_key_name':'path/to/file'}`
 * Migrate Agent Pools
 * Migrate Workspaces
 * Migrate State (Either All Versions or Current Version)
@@ -15,7 +17,7 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Workspace Team Access
 * Migrate Configuration Versions
 * Migrate Configuration Files
-   * Note: Prior to using this method, a map must be manually generated using the following format: `[{'workspace_name':'path/to/file'}]`
+   * Note: Prior to using this method, the `workspace_to_file_path_map` map must be manually generated using the following format: `{'workspace_name':'path/to/file'}`
 * Migrate Policies
 * Migrate Policy Sets
 * Migrate Policy Set Parameters
