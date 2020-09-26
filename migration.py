@@ -27,7 +27,8 @@ if __name__ == "__main__":
     ssh_keys_map = migrate_ssh_keys(api_original, api_new)
     print('ssh keys migrated')
 
-    agent_pool_id = migrate_agent_pools(api_original, api_new, TFE_ORG_ORIGINAL, TFE_ORG_NEW)
+    agent_pool_id = migrate_agent_pools(
+        api_original, api_new, TFE_ORG_ORIGINAL, TFE_ORG_NEW)
     print('agent pools migrated')
 
     workspaces_map, workspace_to_ssh_key_map = migrate_workspaces(
@@ -36,7 +37,7 @@ if __name__ == "__main__":
 
     #migrate_all_state(api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
     migrate_current_state(api_original, api_new,
-        TFE_ORG_ORIGINAL, workspaces_map)
+                          TFE_ORG_ORIGINAL, workspaces_map)
     print('state migrated')
 
     migrate_workspace_variables(
@@ -57,6 +58,13 @@ if __name__ == "__main__":
         api_original, api_new, workspaces_map, team_map)
     print('workspace team access migrated')
 
+    workspace_to_configuration_version_map = migrate_configuration_versions(
+        api_original, api_new, workspaces_map)
+    print('workspace configuration versions migrated')
+
+    #migrate_configuration_files(api_new, workspace_to_configuration_version_map, workspace_to_file_path_map)
+    # print('workspace configuration files uploades)
+
     policies_map = migrate_policies(
         api_original, api_new, TFE_TOKEN_ORIGINAL, TFE_URL_ORIGINAL)
     print('policies migrated')
@@ -69,19 +77,22 @@ if __name__ == "__main__":
     print('policy set parameters migrated')
 
     migrate_registry_modules(api_original, api_new,
-        TFE_ORG_ORIGINAL, TFE_OAUTH_NEW)
+                             TFE_ORG_ORIGINAL, TFE_OAUTH_NEW)
     print('registry modules migrated')
 
-    print( '\n')
+    print('\n')
     print('MIGRATION MAPS:')
     print('team_map:', team_map)
-    print( '\n')
+    print('\n')
     print('ssh_keys_map:', ssh_keys_map)
-    print( '\n')
+    print('\n')
     print('workspaces_map:', workspaces_map)
-    print( '\n')
+    print('\n')
     print('workspace_to_ssh_key_map:', workspace_to_ssh_key_map)
-    print( '\n')
+    print('\n')
+    print('workspace_to_configuration_version_map:',
+          workspace_to_configuration_version_map)
+    print('\n')
     print('policies_map:', policies_map)
-    print( '\n')
+    print('\n')
     print('policy_sets_map:', policy_sets_map)
