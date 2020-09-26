@@ -24,8 +24,11 @@ if __name__ == "__main__":
     team_map = migrate_teams(api_original, api_new)
     print('teams migrated')
 
-    ssh_keys_map = migrate_ssh_keys(api_original, api_new)
+    ssh_keys_map, ssh_key_name_map = migrate_ssh_keys(api_original, api_new)
     print('ssh keys migrated')
+
+    # migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map)
+    # print('ssh key files migrated')
 
     agent_pool_id = migrate_agent_pools(
         api_original, api_new, TFE_ORG_ORIGINAL, TFE_ORG_NEW)
@@ -62,7 +65,7 @@ if __name__ == "__main__":
         api_original, api_new, workspaces_map)
     print('workspace configuration versions migrated')
 
-    #migrate_configuration_files(api_new, workspace_to_configuration_version_map, workspace_to_file_path_map)
+    # migrate_configuration_files(api_new, workspace_to_configuration_version_map, workspace_to_file_path_map)
     # print('workspace configuration files uploades)
 
     policies_map = migrate_policies(
@@ -85,6 +88,8 @@ if __name__ == "__main__":
     print('team_map:', team_map)
     print('\n')
     print('ssh_keys_map:', ssh_keys_map)
+    print('\n')
+    print('ssh_keys_map:', ssh_key_name_map)
     print('\n')
     print('workspaces_map:', workspaces_map)
     print('\n')
