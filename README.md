@@ -13,6 +13,9 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Workspace Run Triggers
 * Migrate Workspace Notifications
 * Migrate Workspace Team Access
+* Migrate Configuration Versions
+* Migrate Configuration Files
+   * Note: Prior to using this method, a map must be manually generated using the format `[{'workspace_name':'path/to/file'}]`
 * Migrate Policies
 * Migrate Policy Sets
 * Migrate Policy Set Parameters
@@ -25,7 +28,7 @@ This tool is designed to help automate the migration from one TFE/C Organization
 ### 1. Set Required Environment Variables for both the Source Org and the New Org
 ```
 # SOURCE ORG
-TFE_TOKEN_ORIGINAL = os.getenv("TFE_TOKEN_ORIGINAL", None)a
+TFE_TOKEN_ORIGINAL = os.getenv("TFE_TOKEN_ORIGINAL", None) 
 TFE_URL_ORIGINAL = os.getenv("TFE_URL_ORIGINAL", None)
 TFE_ORG_ORIGINAL = os.getenv("TFE_ORG_ORIGINAL", None)
 
@@ -41,6 +44,10 @@ TFE_OAUTH_NEW = os.getenv("TFE_OAUTH_NEW", None)
 api_new = TFC(TFE_TOKEN_NEW, url=TFE_URL_NEW)
 api_new.set_org(TFE_ORG_NEW)
 ```
+Note:
+* The Token(s) used above must be either a Team or User Token and have the appropriate level of permissions
+* The URL(s) used abvoe must follow a format of `https://app.terraform.io`
+
 
 ### 2. Select Desired Functions
 
