@@ -579,6 +579,44 @@ def migrate_workspace_team_access(api_original, api_new, workspaces_map, team_ma
     return
 
 
+def migrate_configuration_versions(api_original, api_new, workspaces_map):
+    workspace_to_configuration_version_map = {}
+
+    for workspace_id in workspaces_map:
+        workspace_name = api_original.workspaces.show(workspace_id=workspace_id)[
+            'data']['attributes']['name']
+        # Fetch Configuration Versions for the Existing Workspace
+        configuration_versions = api_original.config_versions.list(workspace_id)[
+            'data']
+        if configuration_versions:
+            latest_configuration_version = configuration_versions[0]
+            if latest_configuration_version['attributes']['source'] == 'tfe-api':
+                # Build the new configuration version payload
+                new_configuration_version_payload = {
+                    "data": {
+                        "type": "configuration-versions",
+                        "attributes": {
+                            "auto-queue-runs": latest_configuration_version['attributes']['auto-queue-runs']
+                        }
+                    }
+                }
+
+                # Create a configuration version in the New Organization
+                new_configuration_version = api_new.config_versions.create(
+                    workspaces_map[workspace_id], new_configuration_version_payload)['data']
+                workspace_to_configuration_version_map[workspace_name] = new_configuration_version['id']
+    return workspace_to_configuration_version_map
+
+
+def migrate_configuration_files(api_new, workspace_to_configuration_version_map, workspace_to_file_path_map):
+    for workspace_name in workspace_to_configuration_version_map:
+        # Upload the Configuration File to the New Workspace
+        # Note: The workspace_to_file_path_map must be created ahead of time with a format of {'workspace_name':'path/to/file'}
+        api_new.config_versions.upload(
+            workspace_to_file_path_map[workspace_name], workspace_to_configuration_version_map[workspace_name])
+    return
+
+
 def migrate_policies(api_original, api_new, tfe_token_original, tfe_url_original):
     # Pull Policies from the Old Organization
     policies = api_original.policies.list()['data']
@@ -824,9 +862,3 @@ def migrate_registry_modules(api_original, api_new, tfe_org_original, tfe_oauth_
         # Create the Module in the New Organization
         api_new.registry_modules.publish_from_vcs(new_module_payload)
     return
-
-
-###### TO DO: ######
-# Users?
-# Admin Organizations?
-# Admin Settings
