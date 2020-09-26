@@ -15,7 +15,7 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Workspace Team Access
 * Migrate Configuration Versions
 * Migrate Configuration Files
-   * Note: Prior to using this method, a map must be manually generated using the format `[{'workspace_name':'path/to/file'}]`
+   * Note: Prior to using this method, a map must be manually generated using the following format: `[{'workspace_name':'path/to/file'}]`
 * Migrate Policies
 * Migrate Policy Sets
 * Migrate Policy Set Parameters
