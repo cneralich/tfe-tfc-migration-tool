@@ -40,6 +40,7 @@ def migrate_ssh_keys(api_original, api_new):
     ssh_keys = api_original.ssh_keys.list()["data"]
 
     ssh_keys_map = {}
+    ssh_key_name_map = {}
     if ssh_keys:
         for ssh_key in reversed(ssh_keys):
             # Build the new Agent Pool Payload
@@ -55,9 +56,32 @@ def migrate_ssh_keys(api_original, api_new):
 
             # Create SSH Key in New Org
             # Note: The actual Keys themselves must be added separately afterward
-            new_ssh_key = api_new.ssh_keys.create(new_ssh_key_payload)
-            ssh_keys_map[ssh_key['id']] = new_ssh_key['data']['id']
-    return ssh_keys_map
+            new_ssh_key = api_new.ssh_keys.create(new_ssh_key_payload)['data']
+            ssh_keys_map[ssh_key['id']] = new_ssh_key['id']
+            ssh_key_name_map[new_ssh_key['attributes']['name']] = new_ssh_key['id']
+    return ssh_keys_map, ssh_key_name_map
+
+
+def migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map):
+    for ssh_key in ssh_key_file_path_map:
+        # Pull SSH Key Data
+        get_ssh_key = open(ssh_key_file_path_map[ssh_key], 'r')
+        ssh_key_data = get_ssh_key.read()
+        
+        # Build the new ssh key file payload
+        new_ssh_key_file_payload = {
+            "data": {
+                "type": "ssh-keys",
+                "attributes": {
+                    "value": ssh_key_data
+                }
+            }
+        }
+
+        # Upload the SSH Key File to the New Organization
+        # Note: The ssh_key_file_path_map must be created ahead of time with a format of {'ssh_key_name':'path/to/file'}
+        api_new.ssh_keys.update(ssh_key_name_map[ssh_key], new_ssh_key_file_payload)
+    return
 
 
 def migrate_agent_pools(api_original, api_new, tfe_org_original, tfe_org_new):
@@ -609,9 +633,9 @@ def migrate_configuration_versions(api_original, api_new, workspaces_map):
 
 
 def migrate_configuration_files(api_new, workspace_to_configuration_version_map, workspace_to_file_path_map):
-    for workspace_name in workspace_to_configuration_version_map:
+    for workspace_name in workspace_to_file_path_map:
         # Upload the Configuration File to the New Workspace
-        # Note: The workspace_to_file_path_map must be created ahead of time with a format of [{'workspace_name':'path/to/file'}]
+        # Note: The workspace_to_file_path_map must be created ahead of time with a format of {'workspace_name':'path/to/file'}
         api_new.config_versions.upload(
             workspace_to_file_path_map[workspace_name], workspace_to_configuration_version_map[workspace_name])
     return
