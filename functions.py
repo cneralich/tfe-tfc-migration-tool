@@ -58,7 +58,8 @@ def migrate_ssh_keys(api_original, api_new):
             # Note: The actual Keys themselves must be added separately afterward
             new_ssh_key = api_new.ssh_keys.create(new_ssh_key_payload)['data']
             ssh_keys_map[ssh_key['id']] = new_ssh_key['id']
-            ssh_key_name_map[new_ssh_key['attributes']['name']] = new_ssh_key['id']
+            ssh_key_name_map[new_ssh_key['attributes']
+                             ['name']] = new_ssh_key['id']
     return ssh_keys_map, ssh_key_name_map
 
 
@@ -67,7 +68,7 @@ def migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map):
         # Pull SSH Key Data
         get_ssh_key = open(ssh_key_file_path_map[ssh_key], 'r')
         ssh_key_data = get_ssh_key.read()
-        
+
         # Build the new ssh key file payload
         new_ssh_key_file_payload = {
             "data": {
@@ -80,7 +81,8 @@ def migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map):
 
         # Upload the SSH Key File to the New Organization
         # Note: The ssh_key_file_path_map must be created ahead of time with a format of {'ssh_key_name':'path/to/file'}
-        api_new.ssh_keys.update(ssh_key_name_map[ssh_key], new_ssh_key_file_payload)
+        api_new.ssh_keys.update(
+            ssh_key_name_map[ssh_key], new_ssh_key_file_payload)
     return
 
 
@@ -390,31 +392,85 @@ def migrate_current_state(api_original, api_new, tfe_org_original, workspaces_ma
     return
 
 
-def migrate_workspace_variables(api_original, api_new, tfe_org_original, workspaces_map):
+def migrate_workspace_variables(api_original, api_new, tfe_org_original, workspaces_map, return_sensitive_variable_data=False):
+    sensitive_variable_data = []
     for workspace_id in workspaces_map:
         # Pull Variables from the Old Workspace
         workspace_variables = api_original.workspace_vars.list(workspace_id)[
             'data']
 
         for variable in reversed(workspace_variables):
+            variable_key = variable['attributes']['key']
+            variable_value = variable['attributes']['value']
+            variable_category = variable['attributes']['category']
+            variable_hcl = variable['attributes']['hcl']
+            variable_description = variable['attributes']['description']
+            variable_sensitive = variable['attributes']['sensitive']
+
             # Build the new variable payload
             new_variable_payload = {
                 "data": {
                     "type": "vars",
                     "attributes": {
-                        "key": variable['attributes']['key'],
-                        "value": variable['attributes']['value'],
-                        "description": variable['attributes']['description'],
-                        "category": variable['attributes']['category'],
-                        "hcl": variable['attributes']['hcl'],
-                        "sensitive": variable['attributes']['sensitive']
+                        "key": variable_key,
+                        "value": variable_value,
+                        "description": variable_description,
+                        "category": variable_category,
+                        "hcl": variable_hcl,
+                        "sensitive": variable_sensitive
                     }
                 }
             }
 
             # Migrate variables to the new Workspace
-            api_new.workspace_vars.create(
-                workspaces_map[workspace_id], new_variable_payload)
+            new_variable = api_new.workspace_vars.create(
+                workspaces_map[workspace_id], new_variable_payload)['data']
+            new_variable_id = new_variable['id']
+
+            if variable_sensitive and return_sensitive_variable_data:
+                workspace_name = api_new.workspaces.show(workspace_id=workspace_id)[
+                    'data']['attributes']['name']
+
+                # Build the sensitive variable map
+                variable_data = {
+                    'workspace_name': workspace_name,
+                    'workspace_id': workspace_id,
+                    'variable_id': new_variable_id,
+                    'variable_key': variable_key,
+                    'variable_value': variable_value,
+                    'variable_description': variable_description,
+                    'category': variable_category,
+                    'hcl': variable_hcl
+                }
+
+                sensitive_variable_data.append(variable_data)
+    return sensitive_variable_data
+
+
+def migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map):
+    for sensitive_variable in sensitive_variable_data_map:
+        # Build the new variable payload
+        update_variable_payload = {
+            "data": {
+                "id": sensitive_variable['variable_id'],
+                "attributes": {
+                    "key": sensitive_variable['variable_key'],
+                    "value": sensitive_variable['variable_value'],
+                    "description": sensitive_variable['variable_description'],
+                    "category": sensitive_variable['category'],
+                    "hcl": sensitive_variable['hcl'],
+                    "sensitive": 'true'
+                },
+                "type": "vars"
+            }
+        }
+
+        # Update the Sensitive Variable value in the New Workspace
+        # Note: The sensitive_variable_data_map must be created ahead of time. The easiest way to do this is to update the
+        #       value for each variable in the list returned by the migrate_workspace_variables method
+
+        api_new.workspace_vars.update(
+            sensitive_variable['workspace_id'], sensitive_variable['variable_id'], update_variable_payload)
     return
 
 
