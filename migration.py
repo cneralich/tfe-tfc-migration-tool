@@ -22,66 +22,71 @@ api_new.set_org(TFE_ORG_NEW)
 
 if __name__ == "__main__":
     team_map = migrate_teams(api_original, api_new)
-    print('teams migrated')
+    print('teams successfully migrated')
 
     ssh_keys_map, ssh_key_name_map = migrate_ssh_keys(api_original, api_new)
-    print('ssh keys migrated')
+    print('ssh keys successfully migrated')
 
     # migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map)
-    # print('ssh key files migrated')
+    # print('ssh key files successfully migrated')
 
     agent_pool_id = migrate_agent_pools(
         api_original, api_new, TFE_ORG_ORIGINAL, TFE_ORG_NEW)
-    print('agent pools migrated')
+    print('agent pools successfully migrated')
 
     workspaces_map, workspace_to_ssh_key_map = migrate_workspaces(
         api_original, api_new, TFE_OAUTH_NEW, agent_pool_id)
-    print('workspaces migrated')
+    print('workspaces successfully migrated')
 
-    #migrate_all_state(api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
+    # migrate_all_state(api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
     migrate_current_state(api_original, api_new,
                           TFE_ORG_ORIGINAL, workspaces_map)
-    print('state migrated')
-
-    migrate_workspace_variables(
+    print('state successfully migrated')
+    
+    # Note: if you wish to generate a map of Sensitive variables that can be used to update 
+    # those values via the migrate_workspace_sensitive_variables method, pass True as the final argument (defaults to False)
+    sensitive_variable_data = migrate_workspace_variables(
         api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
-    print('workspace variables migrated')
+    print('workspace variables successfully migrated')
+
+    # migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map)
+    # print('workspace sensitive variables successfully migrated')
 
     migrate_ssh_keys_to_workspaces(
         api_original, api_new, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
-    print('workspace ssh keys migrated')
+    print('workspace ssh keys successfully migrated')
 
     migrate_workspace_run_triggers(api_original, api_new, workspaces_map)
-    print('workspace run triggers migrated')
+    print('workspace run triggers successfully migrated')
 
     migrate_workspace_notifications(api_original, api_new, workspaces_map)
-    print('workspace notifications migrated')
+    print('workspace notifications successfully migrated')
 
     migrate_workspace_team_access(
         api_original, api_new, workspaces_map, team_map)
-    print('workspace team access migrated')
+    print('workspace team access successfully migrated')
 
     workspace_to_configuration_version_map = migrate_configuration_versions(
         api_original, api_new, workspaces_map)
-    print('workspace configuration versions migrated')
+    print('workspace configuration versions successfully migrated')
 
     # migrate_configuration_files(api_new, workspace_to_configuration_version_map, workspace_to_file_path_map)
-    # print('workspace configuration files uploades)
+    # print('workspace configuration files successfully migrated)
 
     policies_map = migrate_policies(
         api_original, api_new, TFE_TOKEN_ORIGINAL, TFE_URL_ORIGINAL)
-    print('policies migrated')
+    print('policies successfully migrated')
 
     policy_sets_map = migrate_policy_sets(
         api_original, api_new, TFE_OAUTH_NEW, workspaces_map, policies_map)
-    print('policy sets migrated')
+    print('policy sets successfully migrated')
 
     migrate_policy_set_parameters(api_original, api_new, policy_sets_map)
-    print('policy set parameters migrated')
+    print('policy set parameters successfully migrated')
 
     migrate_registry_modules(api_original, api_new,
                              TFE_ORG_ORIGINAL, TFE_OAUTH_NEW)
-    print('registry modules migrated')
+    print('registry modules successfully migrated')
 
     print('\n')
     print('MIGRATION MAPS:')
@@ -101,3 +106,5 @@ if __name__ == "__main__":
     print('policies_map:', policies_map)
     print('\n')
     print('policy_sets_map:', policy_sets_map)
+    print('\n')
+    print('sensitive_variable_data:', sensitive_variable_data)
