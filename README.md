@@ -11,6 +11,8 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate State (Either All Versions or Current Version)
 * Migrate Workspace Variables
     * Note: For any Variable marked as `Sensitive`, only Key names will be transferred (since Values are write only)
+* Migrate Workspace Sensitive Variable Values
+   * Note: Prior to using this method, The `sensitive_variable_data_map` must be manually generated ahead of time. The easiest way to do this is to update the value for each variable in the list returned by the `migrate_workspace_variables` method (Important: If you intend on doing this, be sure to pass True as the final argument to `migrate_workspace_variables`)
 * Migrate Workspace SSH Keys
 * Migrate Workspace Run Triggers
 * Migrate Workspace Notifications
@@ -61,6 +63,8 @@ python migration.py
 ```
 
 ### NOTES
-This migration utility leverages the [Terraform Cloud/Enterprise API](https://www.terraform.io/docs/cloud/api/index.html) and the [terrasnek](https://github.com/dahlke/terrasnek) Python Client for interacting with it.  For security reasons, there are certain sensitive values that cannot be extracted (ex. Sensitive Variables and SSH Keys), so those will need to be re-added after the migration is complete (the Keys will, however, be migrated).
+This migration utility leverages the [Terraform Cloud/Enterprise API](https://www.terraform.io/docs/cloud/api/index.html) and the [terrasnek](https://github.com/dahlke/terrasnek) Python Client for interacting with it.  For security reasons, there are certain Sensitive values that cannot be extracted (ex. Sensitive Variables and SSH Keys), so those will need to be re-added after the migration is complete (the Keys will, however, be migrated).  For convenience, additional methods have been included to enable Sensitive value migration (both Variables and SSH Keys).
+
+**IMPORTANT:** These scripts expect that the destination Organization (i.e TFE_ORG_NEW) is a blank slate and has not had any changes made ahead of time through other means.  If changes have been made to the new Organization prior to using this tool, errors are likely to occur.
 
 If needed (ex. for testing purposes), a set of helper delete functions have been included as well in [`delete_functions.py`](delete_functions.py).
