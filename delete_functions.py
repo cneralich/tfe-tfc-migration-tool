@@ -80,21 +80,21 @@ def delete_modules(api_new):
 
 def delete_all(api_new):
     delete_workspaces(api_new)
-    print('workspaces deleted')
+    print('workspaces successfully deleted')
 
     delete_ssh_keys(api_new)
-    print('ssh keys deleted')
+    print('ssh keys successfully deleted')
 
     delete_teams(api_new)
-    print('teams deleted')
+    print('teams successfully deleted')
 
     delete_policies(api_new)
-    print('policies deleted')
+    print('policies successfully deleted')
 
     delete_policy_sets(api_new)
-    print('policy sets deleted')
+    print('policy sets successfully deleted')
 
     delete_modules(api_new)
-    print('modules deleted')
+    print('modules successfully deleted')
 
     return
