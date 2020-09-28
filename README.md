@@ -12,7 +12,7 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Workspace Variables
     * Note: For any Variable marked as `Sensitive`, only Key names will be transferred (since Values are write only)
 * Migrate Workspace Sensitive Variable Values
-   * Note: Prior to using this method, The `sensitive_variable_data_map` map must be manually generated ahead of time. The easiest way to do this is to update the value for each variable in the list returned by the `migrate_workspace_variables` method (**Important:** If you intend on doing this, be sure to pass `True` as the final argument to `migrate_workspace_variables`)
+   * Note: Prior to using this method, the `sensitive_variable_data_map` map must be manually generated ahead of time. The easiest way to do this is to update the value for each variable in the list returned by the `migrate_workspace_variables` method (**Important:** If you intend on doing this, be sure to pass `True` as the final argument to `migrate_workspace_variables`)
 * Migrate Workspace SSH Keys
 * Migrate Workspace Run Triggers
 * Migrate Workspace Notifications
