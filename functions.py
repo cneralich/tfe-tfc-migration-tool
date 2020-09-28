@@ -389,6 +389,7 @@ def migrate_current_state(api_original, api_new, tfe_org_original, workspaces_ma
 def migrate_workspace_variables(api_original, api_new, tfe_org_original, workspaces_map, return_sensitive_variable_data=False):
     sensitive_variable_data = []
     for workspace_id in workspaces_map:
+        new_workspace_id = workspaces_map[workspace_id]
         # Pull Variables from the Old Workspace
         workspace_variables = api_original.workspace_vars.list(workspace_id)[
             'data']
@@ -418,7 +419,7 @@ def migrate_workspace_variables(api_original, api_new, tfe_org_original, workspa
 
             # Migrate variables to the new Workspace
             new_variable = api_new.workspace_vars.create(
-                workspaces_map[workspace_id], new_variable_payload)['data']
+                new_workspace_id, new_variable_payload)['data']
             new_variable_id = new_variable['id']
 
             if variable_sensitive and return_sensitive_variable_data:
@@ -427,20 +428,22 @@ def migrate_workspace_variables(api_original, api_new, tfe_org_original, workspa
 
                 # Build the sensitive variable map
                 variable_data = {
-                    'workspace_name': workspace_name,
-                    'workspace_id': workspace_id,
-                    'variable_id': new_variable_id,
-                    'variable_key': variable_key,
-                    'variable_value': variable_value,
-                    'variable_description': variable_description,
-                    'category': variable_category,
-                    'hcl': variable_hcl
+                    "workspace_name": workspace_name,
+                    "workspace_id": new_workspace_id,
+                    "variable_id": new_variable_id,
+                    "variable_key": variable_key,
+                    "variable_value": variable_value,
+                    "variable_description": variable_description,
+                    "variable_category": variable_category,
+                    "variable_hcl": variable_hcl
                 }
 
                 sensitive_variable_data.append(variable_data)
     return sensitive_variable_data
 
 
+# Note: The sensitive_variable_data_map map must be created ahead of time. The easiest way to do this is to
+# update the value for each variable in the list returned by the migrate_workspace_variables method
 def migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map):
     for sensitive_variable in sensitive_variable_data_map:
         # Build the new variable payload
@@ -451,8 +454,8 @@ def migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map):
                     "key": sensitive_variable['variable_key'],
                     "value": sensitive_variable['variable_value'],
                     "description": sensitive_variable['variable_description'],
-                    "category": sensitive_variable['category'],
-                    "hcl": sensitive_variable['hcl'],
+                    "category": sensitive_variable['variable_category'],
+                    "hcl": sensitive_variable['variable_hcl'],
                     "sensitive": 'true'
                 },
                 "type": "vars"
@@ -460,9 +463,6 @@ def migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map):
         }
 
         # Update the Sensitive Variable value in the New Workspace
-        # Note: The sensitive_variable_data_map must be created ahead of time. The easiest way to do this is to update the
-        #       value for each variable in the list returned by the migrate_workspace_variables method
-
         api_new.workspace_vars.update(
             sensitive_variable['workspace_id'], sensitive_variable['variable_id'], update_variable_payload)
     return
@@ -881,29 +881,79 @@ def migrate_policy_sets(api_original, api_new, tfe_oauth_new, workspaces_map, po
     return policy_sets_map
 
 
-def migrate_policy_set_parameters(api_original, api_new, policy_sets_map):
+def migrate_policy_set_parameters(api_original, api_new, policy_sets_map, return_sensitive_variable_data=False):
+    sensitive_policy_set_parameter_data = []
     for policy_set_id in policy_sets_map:
+        new_policy_set_id = policy_sets_map[policy_set_id]
+
         # Pull Policy Sets from the Old Organization
         policy_set_parameters = api_original.policy_set_params.list(
-            policy_set_id)
-        if policy_set_parameters['data']:
-            for policy_set_parameter in reversed(policy_set_parameters['data']):
+            policy_set_id)['data']
+
+        if policy_set_parameters:
+            for policy_set_parameter in reversed(policy_set_parameters):
+                policy_set_parameter_key = policy_set_parameter['attributes']['key']
+                policy_set_parameter_value = policy_set_parameter['attributes']['value']
+                policy_set_parameter_category = policy_set_parameter['attributes']['category']
+                policy_set_parameter_sensitive = policy_set_parameter['attributes']['sensitive']
+
                 # Build the new policy set parameter payload
                 new_policy_parameter_payload = {
                     "data": {
                         "type": "vars",
                         "attributes": {
-                            "key": policy_set_parameter['attributes']['key'],
-                            "value": policy_set_parameter['attributes']['value'],
-                            "category": policy_set_parameter['attributes']['category'],
-                            "sensitive": policy_set_parameter['attributes']['sensitive']
+                            "key": policy_set_parameter_key,
+                            "value": policy_set_parameter_value,
+                            "category": policy_set_parameter_category,
+                            "sensitive": policy_set_parameter_sensitive
                         }
                     }
                 }
 
                 # Create the policy set parameter in the New Organization
-                api_new.policy_set_params.create(
-                    policy_sets_map[policy_set_id], new_policy_parameter_payload)
+                new_parameter = api_new.policy_set_params.create(
+                    new_policy_set_id, new_policy_parameter_payload)['data']
+                new_parameter_id = new_parameter['id']
+
+                if policy_set_parameter_sensitive and policy_set_parameter_sensitive:
+                    policy_set_name = api_new.policy_sets.show(
+                        policy_set_id)['data']['attributes']['name']
+
+                    # Build the sensitive policy set parameter map
+                    parameter_data = {
+                        "policy_set_name": policy_set_name,
+                        "policy_set_id": new_policy_set_id,
+                        "parameter_id": new_parameter_id,
+                        "parameter_key": policy_set_parameter_key,
+                        "parameter_value": policy_set_parameter_value,
+                        "parameter_category": policy_set_parameter_category
+                    }
+
+                    sensitive_policy_set_parameter_data.append(parameter_data)
+    return sensitive_policy_set_parameter_data
+
+
+# Note: The sensitive_policy_set_parameter_data_map map must be created ahead of time. The easiest way to do this is to
+# update the value for each variable in the list returned by the migrate_policy_set_parameters method
+def migrate_policy_set_sensitive_parameters(api_new, sensitive_policy_set_parameter_data_map):
+    for sensitive_policy_set_parameter in sensitive_policy_set_parameter_data_map:
+        # Build the new parameter payload
+        update_policy_set_parameter_payload = {
+            "data": {
+                "id": sensitive_policy_set_parameter['parameter_id'],
+                "attributes": {
+                    "key": sensitive_policy_set_parameter['parameter_key'],
+                    "value": sensitive_policy_set_parameter['parameter_value'],
+                    "category": "policy-set",
+                    "sensitive": 'true'
+                },
+                "type": "vars"
+            }
+        }
+
+        # Update the Sensitive parameter value in the Policy Set
+        api_new.policy_set_params.update(
+            sensitive_policy_set_parameter['policy_set_id'], sensitive_policy_set_parameter['parameter_id'], update_policy_set_parameter_payload)
     return
 
 
