@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # Note: if you wish to generate a map of Sensitive variables that can be used to update
     # those values via the migrate_workspace_sensitive_variables method, pass True as the final argument (defaults to False)
     sensitive_variable_data = migrate_workspace_variables(
-        api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map, True)
+        api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
     print('workspace variables successfully migrated')
 
     # migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map)
