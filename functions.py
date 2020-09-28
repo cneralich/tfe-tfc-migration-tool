@@ -35,8 +35,8 @@ def migrate_teams(api_original, api_new):
     return teams_map
 
 
-def migrate_organization_members(api_original, api_new, teams_map):
-    # Set proper member filters
+def migrate_organization_memberships(api_original, api_new, teams_map):
+    # Set proper membership filters
     member_filters = [
         {
             "keys": ["status"],
