@@ -25,7 +25,7 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Policy Set Parameters
    * Note: For any parameter marked as `Sensitive`, only Key names will be transferred (since Values are write only)
 * Migrate Policy Set Sensitive Parameter Values
-   * Note: Prior to using this method, The `sensitive_policy_set_parameter_data_map` map must be manually generated ahead of time. The easiest way to do this is to update the value for each variable in the list returned by the `migrate_policy_set_parameters` method (**Important:** If you intend on doing this, be sure to pass `True` as the final argument to `migrate_policy_set_parameters`)
+   * Note: Prior to using this method, the `sensitive_policy_set_parameter_data_map` map must be manually generated ahead of time. The easiest way to do this is to update the value for each variable in the list returned by the `migrate_policy_set_parameters` method (**Important:** If you intend on doing this, be sure to pass `True` as the final argument to `migrate_policy_set_parameters`)
 * Migrate Registry Modules 
     * Note: Only VCS-backed Module migration is supported currently
 
