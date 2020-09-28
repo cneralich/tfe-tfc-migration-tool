@@ -528,7 +528,7 @@ def migrate_ssh_keys_to_workspaces(api_original, api_new, workspaces_map, worksp
 
 
 def migrate_workspace_run_triggers(api_original, api_new, workspaces_map):
-    for workspace in workspaces_map:
+    for workspace_id in workspaces_map:
         workspace_filters = [
             {
                 "keys": ["run-trigger", "type"],
@@ -538,7 +538,7 @@ def migrate_workspace_run_triggers(api_original, api_new, workspaces_map):
 
         # Pull Run Triggers from the Old Workspace
         run_triggers = api_original.run_triggers.list(
-            workspace, filters=workspace_filters,  page_size=100)['data']
+            workspace_id, filters=workspace_filters,  page_size=100)['data']
 
         if run_triggers:
             for run_trigger in run_triggers:
@@ -560,14 +560,14 @@ def migrate_workspace_run_triggers(api_original, api_new, workspaces_map):
 
                 # Add Run Triggers to the new Workspace
                 api_new.run_triggers.create(
-                    workspaces_map[workspace], new_run_trigger_payload)
+                    workspaces_map[workspace_id], new_run_trigger_payload)
     return
 
 
 def migrate_workspace_notifications(api_original, api_new, workspaces_map):
-    for workspace in workspaces_map:
+    for workspace_id in workspaces_map:
         # Pull Notifications from the Old Workspace
-        notifications = api_original.notification_configs.list(workspace)[
+        notifications = api_original.notification_configs.list(workspace_id)[
             'data']
 
         if notifications:
@@ -593,7 +593,7 @@ def migrate_workspace_notifications(api_original, api_new, workspaces_map):
 
                     # Add Notifications to the new Workspace
                     api_new.notification_configs.create(
-                        workspaces_map[workspace], new_notification_payload)
+                        workspaces_map[workspace_id], new_notification_payload)
                 else:
                     # Build the new notification payload
                     new_notification_payload = {
@@ -612,7 +612,7 @@ def migrate_workspace_notifications(api_original, api_new, workspaces_map):
 
                     # Add Notifications to the new Workspace
                     api_new.notification_configs.create(
-                        workspaces_map[workspace], new_notification_payload)
+                        workspaces_map[workspace_id], new_notification_payload)
     return
 
 
