@@ -2,6 +2,8 @@
 This tool is designed to help automate the migration from one TFE/C Organization to another, whether that’s TFE to TFC, or vice versa.  The following migration operations are currently supported:
 
 * Migrate Teams
+* Migrate Organization Membership
+   * Note: This sends out an invite to any 'active' members of the source Organization (which must be accepted by the User before they're added to the destination Organization)
 * Migrate SSH Keys
     * Note: This transfers all Key names, but not Values (which are write only)
 * Migrate SSH Key Files
