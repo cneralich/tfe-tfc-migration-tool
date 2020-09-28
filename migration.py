@@ -42,11 +42,11 @@ if __name__ == "__main__":
     migrate_current_state(api_original, api_new,
                           TFE_ORG_ORIGINAL, workspaces_map)
     print('state successfully migrated')
-    
-    # Note: if you wish to generate a map of Sensitive variables that can be used to update 
+
+    # Note: if you wish to generate a map of Sensitive variables that can be used to update
     # those values via the migrate_workspace_sensitive_variables method, pass True as the final argument (defaults to False)
     sensitive_variable_data = migrate_workspace_variables(
-        api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
+        api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map, True)
     print('workspace variables successfully migrated')
 
     # migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map)
@@ -81,8 +81,14 @@ if __name__ == "__main__":
         api_original, api_new, TFE_OAUTH_NEW, workspaces_map, policies_map)
     print('policy sets successfully migrated')
 
-    migrate_policy_set_parameters(api_original, api_new, policy_sets_map)
+    # Note: if you wish to generate a map of Sensitive policy set parameters that can be used to update
+    # those values via the migrate_policy_set_sensitive_variables method, pass True as the final argument (defaults to False)
+    sensitive_policy_set_parameter_data = migrate_policy_set_parameters(
+        api_original, api_new, policy_sets_map)
     print('policy set parameters successfully migrated')
+
+    # migrate_policy_set_sensitive_parameters(api_new, sensitive_policy_set_parameter_data_map)
+    # print('policy set sensitive parameters successfully migrated')
 
     migrate_registry_modules(api_original, api_new,
                              TFE_ORG_ORIGINAL, TFE_OAUTH_NEW)
@@ -106,5 +112,8 @@ if __name__ == "__main__":
     print('policies_map:', policies_map)
     print('\n')
     print('policy_sets_map:', policy_sets_map)
+    print('\n')
+    print('sensitive_policy_set_parameter_data:',
+          sensitive_policy_set_parameter_data)
     print('\n')
     print('sensitive_variable_data:', sensitive_variable_data)
