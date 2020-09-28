@@ -24,6 +24,9 @@ if __name__ == "__main__":
     teams_map = migrate_teams(api_original, api_new)
     print('teams successfully migrated')
 
+    # migrate_organization_memberships(api_original, api_new, teams_map)
+    # print('organization memberships successfully migrated')
+
     ssh_keys_map, ssh_key_name_map = migrate_ssh_keys(api_original, api_new)
     print('ssh keys successfully migrated')
 
