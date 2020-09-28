@@ -18,6 +18,7 @@ This tool is designed to help automate the migration from one TFE/C Organization
 * Migrate Workspace SSH Keys
 * Migrate Workspace Run Triggers
 * Migrate Workspace Notifications
+  * Note: Email Notifications will be migrated, but email address are added based on Username.  If the Usernames do not exist within the New Organization at the time the Notifications are migrated, the triggers will still get migrated, but they will need to be updated once the target Users have confirmed their new Accounts.
 * Migrate Workspace Team Access
 * Migrate Configuration Versions
 * Migrate Configuration Files
