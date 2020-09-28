@@ -29,8 +29,6 @@ def migrate_teams(api_original, api_new):
             new_team = api_new.teams.create(new_team_payload)
             # Build Team ID Map
             team_map[team['id']] = new_team["data"]["id"]
-        else:
-            continue
     return team_map
 
 
@@ -332,8 +330,6 @@ def migrate_all_state(api_original, api_new, tfe_org_original, workspaces_map):
                 api_new.state_versions.create(
                     workspaces_map[workspace_id], create_state_version_payload)
                 api_new.workspaces.unlock(workspaces_map[workspace_id])
-        else:
-            continue
     return
 
 
@@ -387,8 +383,6 @@ def migrate_current_state(api_original, api_new, tfe_org_original, workspaces_ma
             api_new.state_versions.create(
                 workspaces_map[workspace_id], create_state_version_payload)
             api_new.workspaces.unlock(workspaces_map[workspace_id])
-        else:
-            continue
     return
 
 
@@ -910,8 +904,6 @@ def migrate_policy_set_parameters(api_original, api_new, policy_sets_map):
                 # Create the policy set parameter in the New Organization
                 api_new.policy_set_params.create(
                     policy_sets_map[policy_set_id], new_policy_parameter_payload)
-        else:
-            continue
     return
 
 
