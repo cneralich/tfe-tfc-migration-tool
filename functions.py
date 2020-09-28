@@ -7,10 +7,13 @@ import json
 def migrate_teams(api_original, api_new):
     # Fetch Teams from Existing Org
     teams = api_original.teams.list()['data']
+    new_org_owners_team_id = api_new.teams.list()['data'][0]['id']
 
-    team_map = {}
+    teams_map = {}
     for team in teams:
-        if team['attributes']['name'] != "owners":
+        if team['attributes']['name'] == "owners":
+            teams_map[team['id']] = new_org_owners_team_id
+        else:
             # Build the new team payload
             new_team_payload = {
                 "data": {
@@ -28,8 +31,45 @@ def migrate_teams(api_original, api_new):
             # Create Team in New Org
             new_team = api_new.teams.create(new_team_payload)
             # Build Team ID Map
-            team_map[team['id']] = new_team["data"]["id"]
-    return team_map
+            teams_map[team['id']] = new_team["data"]["id"]
+    return teams_map
+
+
+def migrate_organization_members(api_original, api_new, teams_map):
+    # Set proper member filters
+    member_filters = [
+        {
+            "keys": ["status"],
+            "value": "active"
+        }
+    ]
+
+    org_members = api_original.org_memberships.list_for_org(
+        filters=member_filters, page=0, page_size=100)['data']
+    for org_member in org_members:
+        for team in org_member['relationships']['teams']['data']:
+            team['id'] = teams_map[team['id']]
+
+        # Build the new User invite payload
+        new_user_invite_payload = {
+            "data": {
+                "attributes": {
+                    "email": org_member['attributes']['email']
+                },
+                "relationships": {
+                    "teams": {
+                        "data": org_member['relationships']['teams']['data']
+                    },
+                },
+                "type": "organization-memberships"
+            }
+        }
+
+        try:
+            api_new.org_memberships.invite(new_user_invite_payload)
+        except:
+            continue
+    return
 
 
 def migrate_ssh_keys(api_original, api_new):
@@ -576,7 +616,7 @@ def migrate_workspace_notifications(api_original, api_new, workspaces_map):
     return
 
 
-def migrate_workspace_team_access(api_original, api_new, workspaces_map, team_map):
+def migrate_workspace_team_access(api_original, api_new, workspaces_map, teams_map):
     for workspace_id in workspaces_map:
         # Set proper workspace team filters to pull team access for each workspace
         workspace_team_filters = [
@@ -613,7 +653,7 @@ def migrate_workspace_team_access(api_original, api_new, workspaces_map, team_ma
                             "team": {
                                 "data": {
                                     "type": "teams",
-                                    "id": team_map[workspace_team['relationships']['team']['data']['id']]
+                                    "id": teams_map[workspace_team['relationships']['team']['data']['id']]
                                 }
                             }
                         },
@@ -640,7 +680,7 @@ def migrate_workspace_team_access(api_original, api_new, workspaces_map, team_ma
                             "team": {
                                 "data": {
                                     "type": "teams",
-                                    "id": team_map[workspace_team['relationships']['team']['data']['id']]
+                                    "id": teams_map[workspace_team['relationships']['team']['data']['id']]
                                 }
                             }
                         },
@@ -915,7 +955,7 @@ def migrate_policy_set_parameters(api_original, api_new, policy_sets_map, return
                     new_policy_set_id, new_policy_parameter_payload)['data']
                 new_parameter_id = new_parameter['id']
 
-                if policy_set_parameter_sensitive and policy_set_parameter_sensitive:
+                if policy_set_parameter_sensitive and return_sensitive_variable_data:
                     policy_set_name = api_new.policy_sets.show(
                         policy_set_id)['data']['attributes']['name']
 
