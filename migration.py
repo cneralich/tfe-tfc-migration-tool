@@ -21,7 +21,7 @@ api_new.set_org(TFE_ORG_NEW)
 
 
 if __name__ == "__main__":
-    team_map = migrate_teams(api_original, api_new)
+    teams_map = migrate_teams(api_original, api_new)
     print('teams successfully migrated')
 
     ssh_keys_map, ssh_key_name_map = migrate_ssh_keys(api_original, api_new)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     print('workspace notifications successfully migrated')
 
     migrate_workspace_team_access(
-        api_original, api_new, workspaces_map, team_map)
+        api_original, api_new, workspaces_map, teams_map)
     print('workspace team access successfully migrated')
 
     workspace_to_configuration_version_map = migrate_configuration_versions(
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     print('\n')
     print('MIGRATION MAPS:')
-    print('team_map:', team_map)
+    print('teams_map:', teams_map)
     print('\n')
     print('ssh_keys_map:', ssh_keys_map)
     print('\n')
