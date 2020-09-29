@@ -36,6 +36,7 @@ def migrate_teams(api_original, api_new):
 
 
 def migrate_organization_memberships(api_original, api_new, teams_map):
+    organization_membership_map = {}
     # Set proper membership filters
     member_filters = [
         {
@@ -66,10 +67,13 @@ def migrate_organization_memberships(api_original, api_new, teams_map):
         }
 
         try:
-            api_new.org_memberships.invite(new_user_invite_payload)
+            new_org_member = api_new.org_memberships.invite(new_user_invite_payload)['data']
         except:
+            organization_membership_map[org_member['relationships']['user']['data']['id']] = org_member['relationships']['user']['data']['id']
             continue
-    return
+        new_user_id = new_org_member['relationships']['user']['data']['id']
+        organization_membership_map[org_member['relationships']['user']['data']['id']] = new_user_id
+    return organization_membership_map
 
 
 def migrate_ssh_keys(api_original, api_new):
