@@ -21,10 +21,14 @@ api_new.set_org(TFE_ORG_NEW)
 
 
 if __name__ == "__main__":
+    # All migration outputs are written to a .txt file by default
+    # If you prefer to have these outputs in the terminal, set the write_to_file parameter to False
+    write_to_file = True
+
     teams_map = migrate_teams(api_original, api_new)
     print('teams successfully migrated')
 
-    # migrate_organization_memberships(api_original, api_new, teams_map)
+    # organization_membership_map = migrate_organization_memberships(api_original, api_new, teams_map)
     # print('organization memberships successfully migrated')
 
     ssh_keys_map, ssh_key_name_map = migrate_ssh_keys(api_original, api_new)
@@ -97,26 +101,44 @@ if __name__ == "__main__":
                              TFE_ORG_ORIGINAL, TFE_OAUTH_NEW)
     print('registry modules successfully migrated')
 
-    print('\n')
-    print('MIGRATION MAPS:')
-    print('teams_map:', teams_map)
-    print('\n')
-    print('ssh_keys_map:', ssh_keys_map)
-    print('\n')
-    print('ssh_keys_map:', ssh_key_name_map)
-    print('\n')
-    print('workspaces_map:', workspaces_map)
-    print('\n')
-    print('workspace_to_ssh_key_map:', workspace_to_ssh_key_map)
-    print('\n')
-    print('workspace_to_configuration_version_map:',
-          workspace_to_configuration_version_map)
-    print('\n')
-    print('policies_map:', policies_map)
-    print('\n')
-    print('policy_sets_map:', policy_sets_map)
-    print('\n')
-    print('sensitive_policy_set_parameter_data:',
-          sensitive_policy_set_parameter_data)
-    print('\n')
-    print('sensitive_variable_data:', sensitive_variable_data)
+    # MIGRATION OUTPUTS:
+    if write_to_file:
+        with open('outputs.txt', 'w') as f:
+            f.write('teams_map: %s\n\n' % teams_map)
+            # f.write('organization_membership_map: %s\n\n' % organization_membership_map)
+            f.write('ssh_keys_map: %s\n\n' % ssh_keys_map)
+            f.write('ssh_ke_name_map: %s\n\n' % ssh_key_name_map)
+            f.write('workspaces_map: %s\n\n' % workspaces_map)
+            f.write('workspace_to_ssh_key_map: %s\n\n' % workspace_to_ssh_key_map)
+            f.write('workspace_to_configuration_version_map: %s\n\n' % workspace_to_configuration_version_map)
+            f.write('policies_map: %s\n\n' % policies_map)
+            f.write('policy_sets_map: %s\n\n' % policy_sets_map)
+            f.write('policy_sets_map: %s\n\n' % policy_sets_map)
+            f.write('sensitive_policy_set_parameter_data: %s\n\n' % sensitive_policy_set_parameter_data)
+            f.write('sensitive_variable_data: %s\n\n' % sensitive_variable_data)
+    else:
+        print('\n')
+        print('MIGRATION MAPS:')
+        print('teams_map:', teams_map)
+        print('\n')
+        # print('organization_membership_map:', organization_membership_map)
+        # print('\n')
+        print('ssh_keys_map:', ssh_keys_map)
+        print('\n')
+        print('ssh_keys_name_map:', ssh_key_name_map)
+        print('\n')
+        print('workspaces_map:', workspaces_map)
+        print('\n')
+        print('workspace_to_ssh_key_map:', workspace_to_ssh_key_map)
+        print('\n')
+        print('workspace_to_configuration_version_map:',
+            workspace_to_configuration_version_map)
+        print('\n')
+        print('policies_map:', policies_map)
+        print('\n')
+        print('policy_sets_map:', policy_sets_map)
+        print('\n')
+        print('sensitive_policy_set_parameter_data:',
+            sensitive_policy_set_parameter_data)
+        print('\n')
+        print('sensitive_variable_data:', sensitive_variable_data)
