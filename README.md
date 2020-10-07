@@ -55,7 +55,7 @@ api_new.set_org(TFE_ORG_NEW)
 ```
 Note:
 * The Token(s) used above must be either a Team or User Token and have the appropriate level of permissions
-* The URL(s) used abvoe must follow a format of `https://app.terraform.io`
+* The URL(s) used above must follow a format of `https://app.terraform.io`
 
 
 ### 2. Select Desired Functions
