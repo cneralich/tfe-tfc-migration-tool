@@ -34,7 +34,12 @@ This tool is designed to help automate the migration from one TFE/C Organization
 
 
 ## STEPS:
-### 1. Set Required Environment Variables for both the Source Org and the New Org
+### 1. Install the Python Dependencies
+```
+pip3 install terrasnek
+```
+
+### 2. Set Required Environment Variables for both the Source Org and the New Org
 ```
 # SOURCE ORG
 TFE_TOKEN_ORIGINAL = os.getenv("TFE_TOKEN_ORIGINAL", None) 
@@ -58,11 +63,11 @@ Note:
 * The URL(s) used above must follow a format of `https://app.terraform.io`
 
 
-### 2. Select Desired Functions
+### 3. Select Desired Functions
 
 Choose which components you want to migrate and comment out any others in [`migration.py`](migration.py).  For example, you may choose whether you want to `migrate_all_state` for your Workspaces or `migrate_current_state`, but you should not select both.  For more insight into what each function does, please refer to the contents of[`functions.py`](functions.py).
 
-### 3. Run the Migration Script
+### 4. Run the Migration Script
 ```
 python migration.py
 ```
