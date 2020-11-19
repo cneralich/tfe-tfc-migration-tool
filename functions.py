@@ -430,7 +430,7 @@ def migrate_current_state(api_original, api_new, tfe_org_original, workspaces_ma
     return
 
 
-def migrate_workspace_variables(api_original, api_new, tfe_org_original, workspaces_map, return_sensitive_variable_data=False):
+def migrate_workspace_variables(api_original, api_new, tfe_org_original, workspaces_map, return_sensitive_variable_data=True):
     sensitive_variable_data = []
     for workspace_id in workspaces_map:
         new_workspace_id = workspaces_map[workspace_id]
@@ -925,7 +925,7 @@ def migrate_policy_sets(api_original, api_new, tfe_oauth_new, workspaces_map, po
     return policy_sets_map
 
 
-def migrate_policy_set_parameters(api_original, api_new, policy_sets_map, return_sensitive_variable_data=False):
+def migrate_policy_set_parameters(api_original, api_new, policy_sets_map, return_sensitive_variable_data=True):
     sensitive_policy_set_parameter_data = []
     for policy_set_id in policy_sets_map:
         new_policy_set_id = policy_sets_map[policy_set_id]
