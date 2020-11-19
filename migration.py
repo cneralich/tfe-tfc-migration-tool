@@ -107,7 +107,7 @@ if __name__ == "__main__":
             f.write('teams_map: %s\n\n' % teams_map)
             # f.write('organization_membership_map: %s\n\n' % organization_membership_map)
             f.write('ssh_keys_map: %s\n\n' % ssh_keys_map)
-            f.write('ssh_ke_name_map: %s\n\n' % ssh_key_name_map)
+            f.write('ssh_key_name_map: %s\n\n' % ssh_key_name_map)
             f.write('workspaces_map: %s\n\n' % workspaces_map)
             f.write('workspace_to_ssh_key_map: %s\n\n' % workspace_to_ssh_key_map)
             f.write('workspace_to_configuration_version_map: %s\n\n' % workspace_to_configuration_version_map)
