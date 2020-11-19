@@ -105,6 +105,7 @@ def migrate_ssh_keys(api_original, api_new):
     return ssh_keys_map, ssh_key_name_map
 
 
+# Note: The ssh_key_file_path_map must be created ahead of time with a format of {'ssh_key_name':'path/to/file'}
 def migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map):
     for ssh_key in ssh_key_file_path_map:
         # Pull SSH Key Data
@@ -122,7 +123,6 @@ def migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map):
         }
 
         # Upload the SSH Key File to the New Organization
-        # Note: The ssh_key_file_path_map must be created ahead of time with a format of {'ssh_key_name':'path/to/file'}
         api_new.ssh_keys.update(
             ssh_key_name_map[ssh_key], new_ssh_key_file_payload)
     return
