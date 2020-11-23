@@ -67,12 +67,15 @@ def migrate_organization_memberships(api_original, api_new, teams_map):
         }
 
         try:
-            new_org_member = api_new.org_memberships.invite(new_user_invite_payload)['data']
+            new_org_member = api_new.org_memberships.invite(
+                new_user_invite_payload)['data']
         except:
-            organization_membership_map[org_member['relationships']['user']['data']['id']] = org_member['relationships']['user']['data']['id']
+            organization_membership_map[org_member['relationships']['user']
+                                        ['data']['id']] = org_member['relationships']['user']['data']['id']
             continue
         new_user_id = new_org_member['relationships']['user']['data']['id']
-        organization_membership_map[org_member['relationships']['user']['data']['id']] = new_user_id
+        organization_membership_map[org_member['relationships']
+                                    ['user']['data']['id']] = new_user_id
     return organization_membership_map
 
 
@@ -105,7 +108,6 @@ def migrate_ssh_keys(api_original, api_new):
     return ssh_keys_map, ssh_key_name_map
 
 
-# Note: The ssh_key_file_path_map must be created ahead of time with a format of {'ssh_key_name':'path/to/file'}
 def migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map):
     for ssh_key in ssh_key_file_path_map:
         # Pull SSH Key Data
@@ -123,6 +125,7 @@ def migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map):
         }
 
         # Upload the SSH Key File to the New Organization
+        # Note: The ssh_key_file_path_map must be created ahead of time with a format of {'ssh_key_name':'path/to/file'}
         api_new.ssh_keys.update(
             ssh_key_name_map[ssh_key], new_ssh_key_file_payload)
     return
@@ -152,7 +155,7 @@ def migrate_agent_pools(api_original, api_new, tfe_org_original, tfe_org_new):
         return None
 
 
-def migrate_workspaces(api_original, api_new, tfe_oauth_new, agent_pool_id):
+def migrate_workspaces(api_original, api_new, tfe_vcs_connection_map, agent_pool_id):
     # Fetch Workspaces from Existing Org
     workspaces = api_original.workspaces.list()['data']
 
@@ -186,7 +189,7 @@ def migrate_workspaces(api_original, api_new, tfe_oauth_new, agent_pool_id):
                             "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
                             "vcs-repo": {
                                 "identifier": workspace['attributes']['vcs-repo-identifier'],
-                                "oauth-token-id": tfe_oauth_new,
+                                "oauth-token-id": tfe_vcs_connection_map[workspace['attributes']['vcs-repo']['oauth-token-id']],
                                 "branch": branch,
                                 "default-branch": default_branch,
                                 "ingress-submodules": ingress_submodules
@@ -228,7 +231,7 @@ def migrate_workspaces(api_original, api_new, tfe_oauth_new, agent_pool_id):
                             "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
                             "vcs-repo": {
                                 "identifier": workspace['attributes']['vcs-repo-identifier'],
-                                "oauth-token-id": tfe_oauth_new,
+                                "oauth-token-id": tfe_vcs_connection_map[workspace['attributes']['vcs-repo']['oauth-token-id']],
                                 "branch": branch,
                                 "default-branch": default_branch,
                                 "ingress-submodules": ingress_submodules
@@ -323,6 +326,242 @@ def migrate_workspaces(api_original, api_new, tfe_oauth_new, agent_pool_id):
                 except:
                     continue
     return workspaces_map, workspace_to_ssh_key_map
+
+
+# This is an example version of the migrate_workspaces function that includes support for Workspaces connected to GitHub Apps
+# Managing these connections is not currently supported via the API, but might be in a future version.
+# def migrate_workspaces(api_original, api_new, tfe_vcs_connection_map, agent_pool_id):
+#     # Fetch Workspaces from Existing Org
+#     workspaces = api_original.workspaces.list()['data']
+
+#     workspaces_map = {}
+#     workspace_to_ssh_key_map = {}
+#     for workspace in workspaces:
+#         branch = "" if workspace['attributes']['vcs-repo'] is None else workspace['attributes']['vcs-repo']['branch']
+#         ingress_submodules = False if workspace['attributes'][
+#             'vcs-repo'] is None else workspace['attributes']['vcs-repo']['ingress-submodules']
+#         default_branch = True if branch == "" else False
+
+#         if workspace['attributes']['vcs-repo'] is not None:
+#             is_oauth = 'oauth-token-id' in workspace['attributes']['vcs-repo']
+#             if workspace['attributes']['execution-mode'] == 'agent':
+#                 if is_oauth:
+#                     # Build the new workspace payload
+#                     new_workspace_payload = {
+#                         "data": {
+#                             "attributes": {
+#                                 "name": workspace['attributes']['name'],
+#                                 "terraform_version": workspace['attributes']['terraform-version'],
+#                                 "working-directory": workspace['attributes']['working-directory'],
+#                                 "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+#                                 "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+#                                 "auto-apply": workspace['attributes']['auto-apply'],
+#                                 "execution-mode": workspace['attributes']['execution-mode'],
+#                                 "agent-pool-id": agent_pool_id,
+#                                 "description": workspace['attributes']['description'],
+#                                 "source-name": workspace['attributes']['source-name'],
+#                                 "source-url": workspace['attributes']['source-url'],
+#                                 "queue-all-runs": workspace['attributes']['queue-all-runs'],
+#                                 "speculative-enabled": workspace['attributes']['speculative-enabled'],
+#                                 "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
+#                                 "vcs-repo": {
+#                                     "identifier": workspace['attributes']['vcs-repo-identifier'],
+#                                     "oauth-token-id": tfe_vcs_connection_map[workspace['attributes']['vcs-repo']['oauth-token-id']],
+#                                     "branch": branch,
+#                                     "default-branch": default_branch,
+#                                     "ingress-submodules": ingress_submodules
+#                                 }
+#                             },
+#                             "type": "workspaces"
+#                         }
+#                     }
+#                 else:
+#                     # Build the new workspace payload
+#                     new_workspace_payload = {
+#                         "data": {
+#                             "attributes": {
+#                                 "name": workspace['attributes']['name'],
+#                                 "terraform_version": workspace['attributes']['terraform-version'],
+#                                 "working-directory": workspace['attributes']['working-directory'],
+#                                 "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+#                                 "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+#                                 "auto-apply": workspace['attributes']['auto-apply'],
+#                                 "execution-mode": workspace['attributes']['execution-mode'],
+#                                 "agent-pool-id": agent_pool_id,
+#                                 "description": workspace['attributes']['description'],
+#                                 "source-name": workspace['attributes']['source-name'],
+#                                 "source-url": workspace['attributes']['source-url'],
+#                                 "queue-all-runs": workspace['attributes']['queue-all-runs'],
+#                                 "speculative-enabled": workspace['attributes']['speculative-enabled'],
+#                                 "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
+#                                 "vcs-repo": {
+#                                     "identifier": workspace['attributes']['vcs-repo-identifier'],
+#                                     "github-app-installation-id": tfe_vcs_connection_map[workspace['attributes']['vcs-repo']['github-app-installation-id']],
+#                                     "branch": branch,
+#                                     "default-branch": default_branch,
+#                                     "ingress-submodules": ingress_submodules
+#                                 }
+#                             },
+#                             "type": "workspaces"
+#                         }
+#                     }
+
+#                 # Build the new Workspace
+#                 new_workspace = api_new.workspaces.create(
+#                     new_workspace_payload)
+#                 new_workspace_id = new_workspace["data"]["id"]
+
+#                 workspaces_map[workspace['id']] = new_workspace_id
+
+#                 try:
+#                     ssh_key = workspace['relationships']['ssh-key']['data']['id']
+#                     workspace_to_ssh_key_map[workspace['id']] = ssh_key
+#                 except:
+#                     continue
+#             else:
+#                 if is_oauth:
+#                     # Build the new workspace payload
+#                     new_workspace_payload = {
+#                         "data": {
+#                             "attributes": {
+#                                 "name": workspace['attributes']['name'],
+#                                 "terraform_version": workspace['attributes']['terraform-version'],
+#                                 "working-directory": workspace['attributes']['working-directory'],
+#                                 "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+#                                 "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+#                                 "auto-apply": workspace['attributes']['auto-apply'],
+#                                 "execution-mode": workspace['attributes']['execution-mode'],
+#                                 "description": workspace['attributes']['description'],
+#                                 "source-name": workspace['attributes']['source-name'],
+#                                 "source-url": workspace['attributes']['source-url'],
+#                                 "queue-all-runs": workspace['attributes']['queue-all-runs'],
+#                                 "speculative-enabled": workspace['attributes']['speculative-enabled'],
+#                                 "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
+#                                 "vcs-repo": {
+#                                     "identifier": workspace['attributes']['vcs-repo-identifier'],
+#                                     "oauth-token-id": tfe_vcs_connection_map[workspace['attributes']['vcs-repo']['oauth-token-id']],
+#                                     "branch": branch,
+#                                     "default-branch": default_branch,
+#                                     "ingress-submodules": ingress_submodules
+#                                 }
+#                             },
+#                             "type": "workspaces"
+#                         }
+#                     }
+#                 else:
+#                     # Build the new workspace payload
+#                     new_workspace_payload = {
+#                         "data": {
+#                             "attributes": {
+#                                 "name": workspace['attributes']['name'],
+#                                 "terraform_version": workspace['attributes']['terraform-version'],
+#                                 "working-directory": workspace['attributes']['working-directory'],
+#                                 "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+#                                 "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+#                                 "auto-apply": workspace['attributes']['auto-apply'],
+#                                 "execution-mode": workspace['attributes']['execution-mode'],
+#                                 "description": workspace['attributes']['description'],
+#                                 "source-name": workspace['attributes']['source-name'],
+#                                 "source-url": workspace['attributes']['source-url'],
+#                                 "queue-all-runs": workspace['attributes']['queue-all-runs'],
+#                                 "speculative-enabled": workspace['attributes']['speculative-enabled'],
+#                                 "trigger-prefixes": workspace['attributes']['trigger-prefixes'],
+#                                 "vcs-repo": {
+#                                     "identifier": workspace['attributes']['vcs-repo-identifier'],
+#                                     "github-app-installation-id": tfe_vcs_connection_map[workspace['attributes']['vcs-repo']['github-app-installation-id']],
+#                                     "branch": branch,
+#                                     "default-branch": default_branch,
+#                                     "ingress-submodules": ingress_submodules
+#                                 }
+#                             },
+#                             "type": "workspaces"
+#                         }
+#                     }
+#                 # Build the new Workspace
+#                 new_workspace = api_new.workspaces.create(
+#                     new_workspace_payload)
+#                 new_workspace_id = new_workspace["data"]["id"]
+
+#                 workspaces_map[workspace['id']] = new_workspace_id
+
+#                 try:
+#                     ssh_key = workspace['relationships']['ssh-key']['data']['id']
+#                     workspace_to_ssh_key_map[workspace['id']] = ssh_key
+#                 except:
+#                     continue
+#         else:
+#             if workspace['attributes']['execution-mode'] == 'agent':
+#                 # Build the new workspace payload
+#                 new_workspace_payload = {
+#                     "data": {
+#                         "attributes": {
+#                             "name": workspace['attributes']['name'],
+#                             "terraform_version": workspace['attributes']['terraform-version'],
+#                             "working-directory": workspace['attributes']['working-directory'],
+#                             "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+#                             "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+#                             "auto-apply": workspace['attributes']['auto-apply'],
+#                             "execution-mode": workspace['attributes']['execution-mode'],
+#                             "agent-pool-id": agent_pool_id,
+#                             "description": workspace['attributes']['description'],
+#                             "source-name": workspace['attributes']['source-name'],
+#                             "source-url": workspace['attributes']['source-url'],
+#                             "queue-all-runs": workspace['attributes']['queue-all-runs'],
+#                             "speculative-enabled": workspace['attributes']['speculative-enabled'],
+#                             "trigger-prefixes": workspace['attributes']['trigger-prefixes']
+#                         },
+#                         "type": "workspaces"
+#                     }
+#                 }
+
+#                 # Build the new Workspace
+#                 new_workspace = api_new.workspaces.create(
+#                     new_workspace_payload)
+#                 new_workspace_id = new_workspace['data']['id']
+
+#                 workspaces_map[workspace['id']] = new_workspace_id
+
+#                 try:
+#                     ssh_key = workspace['relationships']['ssh-key']['data']['id']
+#                     workspace_to_ssh_key_map[workspace['id']] = ssh_key
+#                 except:
+#                     continue
+#             else:
+#                 # Build the new workspace payload
+#                 new_workspace_payload = {
+#                     "data": {
+#                         "attributes": {
+#                             "name": workspace['attributes']['name'],
+#                             "terraform_version": workspace['attributes']['terraform-version'],
+#                             "working-directory": workspace['attributes']['working-directory'],
+#                             "file-triggers-enabled": workspace['attributes']['file-triggers-enabled'],
+#                             "allow-destroy-plan": workspace['attributes']['allow-destroy-plan'],
+#                             "auto-apply": workspace['attributes']['auto-apply'],
+#                             "execution-mode": workspace['attributes']['execution-mode'],
+#                             "description": workspace['attributes']['description'],
+#                             "source-name": workspace['attributes']['source-name'],
+#                             "source-url": workspace['attributes']['source-url'],
+#                             "queue-all-runs": workspace['attributes']['queue-all-runs'],
+#                             "speculative-enabled": workspace['attributes']['speculative-enabled'],
+#                             "trigger-prefixes": workspace['attributes']['trigger-prefixes']
+#                         },
+#                         "type": "workspaces"
+#                     }
+#                 }
+
+#                 # Build the new Workspace
+#                 new_workspace = api_new.workspaces.create(
+#                     new_workspace_payload)
+#                 new_workspace_id = new_workspace['data']['id']
+
+#                 workspaces_map[workspace['id']] = new_workspace_id
+
+#                 try:
+#                     ssh_key = workspace['relationships']['ssh-key']['data']['id']
+#                     workspace_to_ssh_key_map[workspace['id']] = ssh_key
+#                 except:
+#                     continue
+#     return workspaces_map, workspace_to_ssh_key_map
 
 
 def migrate_all_state(api_original, api_new, tfe_org_original, workspaces_map):
@@ -787,7 +1026,7 @@ def migrate_policies(api_original, api_new, tfe_token_original, tfe_url_original
         return
 
 
-def migrate_policy_sets(api_original, api_new, tfe_oauth_new, workspaces_map, policies_map):
+def migrate_policy_sets(api_original, api_new, tfe_vcs_connection_map, workspaces_map, policies_map):
     # Pull Policy Sets from the Old Organization
     policy_sets = api_original.policy_sets.list(
         page_size=50, include='policies,workspaces')['data']
@@ -809,7 +1048,7 @@ def migrate_policy_sets(api_original, api_new, tfe_oauth_new, workspaces_map, po
                                 "branch": policy_set['attributes']['vcs-repo']['branch'],
                                 "identifier": policy_set['attributes']['vcs-repo']['identifier'],
                                 "ingress-submodules": policy_set['attributes']['vcs-repo']['ingress-submodules'],
-                                "oauth-token-id": tfe_oauth_new
+                                "oauth-token-id": tfe_vcs_connection_map[policy_set['attributes']['vcs-repo']['oauth-token-id']]
                             }
                         },
                         "relationships": {
@@ -840,7 +1079,7 @@ def migrate_policy_sets(api_original, api_new, tfe_oauth_new, workspaces_map, po
                                 "branch": policy_set['attributes']['vcs-repo']['branch'],
                                 "identifier": policy_set['attributes']['vcs-repo']['identifier'],
                                 "ingress-submodules": policy_set['attributes']['vcs-repo']['ingress-submodules'],
-                                "oauth-token-id": tfe_oauth_new
+                                "oauth-token-id": tfe_vcs_connection_map[policy_set['attributes']['vcs-repo']['oauth-token-id']]
                             }
                         },
                         "relationships": {
@@ -925,6 +1164,195 @@ def migrate_policy_sets(api_original, api_new, tfe_oauth_new, workspaces_map, po
     return policy_sets_map
 
 
+# This is an example version of the migrate_policy_sets function that includes support for Workspaces connected to GitHub Apps
+# Managing these connections is not currently supported via the API, but might be in a future version.
+# def migrate_policy_sets(api_original, api_new, tfe_vcs_connection_map, workspaces_map, policies_map):
+#     # Pull Policy Sets from the Old Organization
+#     policy_sets = api_original.policy_sets.list(
+#         page_size=50, include='policies,workspaces')['data']
+
+#     policy_sets_map = {}
+#     for policy_set in policy_sets:
+#         if policy_set['attributes']['versioned']:
+#             is_oauth = 'oauth-token-id' in policy_set['attributes']['vcs-repo']
+#             if policy_set['attributes']['global']:
+#                 if is_oauth:
+#                     # Build the new policy set payload
+#                     new_policy_set_payload = {
+#                         "data": {
+#                             "type": "policy-sets",
+#                             "attributes": {
+#                                 "name": policy_set['attributes']['name'],
+#                                 "description": policy_set['attributes']['name'],
+#                                 "global": policy_set['attributes']['global'],
+#                                 "policies-path": policy_set['attributes']['policies-path'],
+#                                 "vcs-repo": {
+#                                     "branch": policy_set['attributes']['vcs-repo']['branch'],
+#                                     "identifier": policy_set['attributes']['vcs-repo']['identifier'],
+#                                     "ingress-submodules": policy_set['attributes']['vcs-repo']['ingress-submodules'],
+#                                     "oauth-token-id": tfe_vcs_connection_map[policy_set['attributes']['vcs-repo']['oauth-token-id']]
+#                                 }
+#                             },
+#                             "relationships": {
+#                             }
+#                         }
+#                     }
+#                 else:
+#                     # Build the new policy set payload
+#                     new_policy_set_payload = {
+#                         "data": {
+#                             "type": "policy-sets",
+#                             "attributes": {
+#                                 "name": policy_set['attributes']['name'],
+#                                 "description": policy_set['attributes']['name'],
+#                                 "global": policy_set['attributes']['global'],
+#                                 "policies-path": policy_set['attributes']['policies-path'],
+#                                 "vcs-repo": {
+#                                     "branch": policy_set['attributes']['vcs-repo']['branch'],
+#                                     "identifier": policy_set['attributes']['vcs-repo']['identifier'],
+#                                     "ingress-submodules": policy_set['attributes']['vcs-repo']['ingress-submodules'],
+#                                     "github-app-installation-id": tfe_vcs_connection_map[policy_set['attributes']['vcs-repo']['github-app-installation-id']]
+#                                 }
+#                             },
+#                             "relationships": {
+#                             }
+#                         }
+#                     }
+
+#                 # Create the policy set in the New Organization
+#                 new_policy_set = api_new.policy_sets.create(
+#                     new_policy_set_payload)
+#                 policy_sets_map[policy_set['id']
+#                                 ] = new_policy_set['data']['id']
+#             else:
+#                 workspace_ids = policy_set['relationships']['workspaces']['data']
+#                 for workspace_id in workspace_ids:
+#                     workspace_id['id'] = workspaces_map[workspace_id['id']]
+
+#                 if is_oauth:
+#                     # Build the new policy set payload
+#                     new_policy_set_payload = {
+#                         "data": {
+#                             "type": "policy-sets",
+#                             "attributes": {
+#                                 "name": policy_set['attributes']['name'],
+#                                 "description": policy_set['attributes']['name'],
+#                                 "global": policy_set['attributes']['global'],
+#                                 "policies-path": policy_set['attributes']['policies-path'],
+#                                 "vcs-repo": {
+#                                     "branch": policy_set['attributes']['vcs-repo']['branch'],
+#                                     "identifier": policy_set['attributes']['vcs-repo']['identifier'],
+#                                     "ingress-submodules": policy_set['attributes']['vcs-repo']['ingress-submodules'],
+#                                     "oauth-token-id": tfe_vcs_connection_map[policy_set['attributes']['vcs-repo']['oauth-token-id']]
+#                                 }
+#                             },
+#                             "relationships": {
+#                                 "workspaces": {
+#                                     "data":
+#                                     workspace_ids
+#                                 }
+#                             }
+#                         }
+#                     }
+#                 else:
+#                     # Build the new policy set payload
+#                     new_policy_set_payload = {
+#                         "data": {
+#                             "type": "policy-sets",
+#                             "attributes": {
+#                                 "name": policy_set['attributes']['name'],
+#                                 "description": policy_set['attributes']['name'],
+#                                 "global": policy_set['attributes']['global'],
+#                                 "policies-path": policy_set['attributes']['policies-path'],
+#                                 "vcs-repo": {
+#                                     "branch": policy_set['attributes']['vcs-repo']['branch'],
+#                                     "identifier": policy_set['attributes']['vcs-repo']['identifier'],
+#                                     "ingress-submodules": policy_set['attributes']['vcs-repo']['ingress-submodules'],
+#                                     "github-app-installation-id": tfe_vcs_connection_map[policy_set['attributes']['vcs-repo']['github-app-installation-id']]
+#                                 }
+#                             },
+#                             "relationships": {
+#                                 "workspaces": {
+#                                     "data":
+#                                     workspace_ids
+#                                 }
+#                             }
+#                         }
+#                     }
+
+#                 # Create the policy set in the New Organization
+#                 new_policy_set = api_new.policy_sets.create(
+#                     new_policy_set_payload)
+#                 policy_sets_map[policy_set['id']
+#                                 ] = new_policy_set['data']['id']
+#         else:
+#             if policy_set['attributes']['global']:
+#                 policy_ids = policy_set['relationships']['policies']['data']
+#                 for policy_id in policy_ids:
+#                     policy_id['id'] = policies_map[policy_id['id']]
+
+#                 # Build the new policy set payload
+#                 new_policy_set_payload = {
+#                     "data": {
+#                         "type": "policy-sets",
+#                         "attributes": {
+#                             "name": policy_set['attributes']['name'],
+#                             "description": policy_set['attributes']['name'],
+#                             "global": policy_set['attributes']['global'],
+#                         },
+#                         "relationships": {
+#                             "policies": {
+#                                 "data":
+#                                 policy_ids
+#                             }
+#                         }
+#                     }
+#                 }
+
+#                 # Create the policy set in the New Organization
+#                 new_policy_set = api_new.policy_sets.create(
+#                     new_policy_set_payload)
+#                 policy_sets_map[policy_set['id']
+#                                 ] = new_policy_set['data']['id']
+#             else:
+#                 policy_ids = policy_set['relationships']['policies']['data']
+#                 for policy_id in policy_ids:
+#                     policy_id['id'] = policies_map[policy_id['id']]
+
+#                 workspace_ids = policy_set['relationships']['workspaces']['data']
+#                 for workspace_id in workspace_ids:
+#                     workspace_id['id'] = workspaces_map[workspace_id['id']]
+
+#                 # Build the new policy set payload
+#                 new_policy_set_payload = {
+#                     "data": {
+#                         "type": "policy-sets",
+#                         "attributes": {
+#                             "name": policy_set['attributes']['name'],
+#                             "description": policy_set['attributes']['name'],
+#                             "global": policy_set['attributes']['global'],
+#                         },
+#                         "relationships": {
+#                             "policies": {
+#                                 "data":
+#                                 policy_ids
+#                             },
+#                             "workspaces": {
+#                                 "data":
+#                                 workspace_ids
+#                             }
+#                         }
+#                     }
+#                 }
+
+#                 # Create the policy set in the New Organization
+#                 new_policy_set = api_new.policy_sets.create(
+#                     new_policy_set_payload)
+#                 policy_sets_map[policy_set['id']
+#                                 ] = new_policy_set['data']['id']
+#     return policy_sets_map
+
+
 def migrate_policy_set_parameters(api_original, api_new, policy_sets_map, return_sensitive_variable_data=True):
     sensitive_policy_set_parameter_data = []
     for policy_set_id in policy_sets_map:
@@ -1001,10 +1429,8 @@ def migrate_policy_set_sensitive_parameters(api_new, sensitive_policy_set_parame
     return
 
 
-# TO DO: Account for Modules uploaded via VCS and API
-# TO DO: Account for ALL versions of Module
-# TO DO: Note OAuth token challenges (ex. if they don't all share the same token)
-def migrate_registry_modules(api_original, api_new, tfe_org_original, tfe_oauth_new):
+# TODO: Add Support for Modules uploaded via the API
+def migrate_registry_modules(api_original, api_new, tfe_org_original, tfe_vcs_connection_map):
     modules = api_original.registry_modules.list()['modules']
     for module in modules:
         # Pull VCS Modules from the Old Organization
@@ -1017,7 +1443,7 @@ def migrate_registry_modules(api_original, api_new, tfe_org_original, tfe_oauth_
                 "attributes": {
                     "vcs-repo": {
                         "identifier": module_data['attributes']['vcs-repo']['identifier'],
-                        "oauth-token-id": tfe_oauth_new,
+                        "oauth-token-id": tfe_vcs_connection_map[module_data['attributes']['vcs-repo']['oauth-token-id']],
                         "display_identifier": module_data['attributes']['vcs-repo']['display-identifier']
                     }
                 },

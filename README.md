@@ -53,7 +53,7 @@ api_original.set_org(TFE_ORG_ORIGINAL)
 TFE_TOKEN_NEW = os.getenv("TFE_TOKEN_NEW", None)
 TFE_URL_NEW = os.getenv("TFE_URL_NEW", None)
 TFE_ORG_NEW = os.getenv("TFE_ORG_NEW", None)
-TFE_OAUTH_NEW = os.getenv("TFE_OAUTH_NEW", None)
+TFE_VCS_CONNECTION_MAP = ast.literal_eval(os.getenv("TFE_VCS_CONNECTION_MAP", None))
 
 api_new = TFC(TFE_TOKEN_NEW, url=TFE_URL_NEW)
 api_new.set_org(TFE_ORG_NEW)
@@ -61,6 +61,7 @@ api_new.set_org(TFE_ORG_NEW)
 Note:
 * The Token(s) used above must be either a Team or User Token and have the appropriate level of permissions
 * The URL(s) used above must follow a format of `https://app.terraform.io`
+* The `TFE_VCS_CONNECTION_MAP` will need to be built manually prior to running the migration.  This should be a dict that maps all of the Source Org OAuth Token values to the Destination Org OAuth Token values.  Note that GitHub App connections are not currently supported in this migration tool since those values can not currently be managed via the API.
 
 
 ### 3. Select Desired Functions

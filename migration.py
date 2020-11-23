@@ -1,4 +1,5 @@
 import os
+import ast
 from terrasnek.api import TFC
 from functions import *
 
@@ -14,7 +15,7 @@ api_original.set_org(TFE_ORG_ORIGINAL)
 TFE_TOKEN_NEW = os.getenv("TFE_TOKEN_NEW", None)
 TFE_URL_NEW = os.getenv("TFE_URL_NEW", None)
 TFE_ORG_NEW = os.getenv("TFE_ORG_NEW", None)
-TFE_OAUTH_NEW = os.getenv("TFE_OAUTH_NEW", None)
+TFE_VCS_CONNECTION_MAP = ast.literal_eval(os.getenv("TFE_VCS_CONNECTION_MAP", None))
 
 api_new = TFC(TFE_TOKEN_NEW, url=TFE_URL_NEW)
 api_new.set_org(TFE_ORG_NEW)
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     print('agent pools successfully migrated')
 
     workspaces_map, workspace_to_ssh_key_map = migrate_workspaces(
-        api_original, api_new, TFE_OAUTH_NEW, agent_pool_id)
+        api_original, api_new, TFE_VCS_CONNECTION_MAP, agent_pool_id)
     print('workspaces successfully migrated')
 
     # migrate_all_state(api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     print('policies successfully migrated')
 
     policy_sets_map = migrate_policy_sets(
-        api_original, api_new, TFE_OAUTH_NEW, workspaces_map, policies_map)
+        api_original, api_new, TFE_VCS_CONNECTION_MAP, workspaces_map, policies_map)
     print('policy sets successfully migrated')
 
     # Note: if you wish to generate a map of Sensitive policy set parameters that can be used to update
@@ -98,7 +99,7 @@ if __name__ == "__main__":
     # print('policy set sensitive parameters successfully migrated')
 
     migrate_registry_modules(api_original, api_new,
-                             TFE_ORG_ORIGINAL, TFE_OAUTH_NEW)
+                             TFE_ORG_ORIGINAL, TFE_VCS_CONNECTION_MAP)
     print('registry modules successfully migrated')
 
     # MIGRATION OUTPUTS:
