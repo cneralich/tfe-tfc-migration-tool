@@ -1,145 +1,218 @@
 import os
-import ast
+import argparse
+import json
 from terrasnek.api import TFC
-from functions import *
+from tfc_migrate import \
+    workspaces, teams, policies, policy_sets, registry_modules, \
+        ssh_keys, config_versions, notification_configs, team_access, \
+            agent_pools, workspace_vars, run_triggers, state_versions, \
+                policy_set_params, org_memberships, registry_module_versions
 
-# SOURCE ORG
-TFE_TOKEN_ORIGINAL = os.getenv("TFE_TOKEN_ORIGINAL", None)
-TFE_URL_ORIGINAL = os.getenv("TFE_URL_ORIGINAL", None)
-TFE_ORG_ORIGINAL = os.getenv("TFE_ORG_ORIGINAL", None)
 
-api_original = TFC(TFE_TOKEN_ORIGINAL, url=TFE_URL_ORIGINAL)
-api_original.set_org(TFE_ORG_ORIGINAL)
+DEFAULT_VCS_FILE = "vcs.json"
 
-# NEW ORG
-TFE_TOKEN_NEW = os.getenv("TFE_TOKEN_NEW", None)
-TFE_URL_NEW = os.getenv("TFE_URL_NEW", None)
-TFE_ORG_NEW = os.getenv("TFE_ORG_NEW", None)
-TFE_VCS_CONNECTION_MAP = ast.literal_eval(os.getenv("TFE_VCS_CONNECTION_MAP", None))
+# Source Org
+TFE_TOKEN_SOURCE = os.getenv("TFE_TOKEN_SOURCE", None)
+TFE_URL_SOURCE = os.getenv("TFE_URL_SOURCE", None)
+TFE_ORG_SOURCE = os.getenv("TFE_ORG_SOURCE", None)
 
-api_new = TFC(TFE_TOKEN_NEW, url=TFE_URL_NEW)
-api_new.set_org(TFE_ORG_NEW)
+# Target Org
+TFE_TOKEN_TARGET = os.getenv("TFE_TOKEN_TARGET", None)
+TFE_URL_TARGET = os.getenv("TFE_URL_TARGET", None)
+TFE_ORG_TARGET = os.getenv("TFE_ORG_TARGET", None)
+
+# NOTE: this is parsed in the main function
+TFE_VCS_CONNECTION_MAP = None
+
+
+def confirm_delete_resource_type(resource_type, api):
+    answer = ""
+
+    while answer not in ["y", "n"]:
+        question_string = \
+            "This will destroy all %s in org '%s' (%s). Want to continue? [Y/N]: " \
+                % (resource_type, api.get_org(), api.get_url())
+        answer = input(question_string).lower()
+
+    return answer == "y"
+
+
+def handle_output(\
+    teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
+        workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
+            module_to_module_version_upload_map, policies_map, policy_sets_map, \
+                sensitive_policy_set_parameter_data, sensitive_variable_data, \
+                    write_to_file=False):
+
+        output_json = {
+            "teams_map": teams_map,
+            "ssh_keys_map": ssh_keys_map,
+            "ssh_key_name_map": ssh_key_name_map,
+            "workspaces_map": workspaces_map,
+            "workspace_to_ssh_key_map": workspace_to_ssh_key_map,
+            "workspace_to_config_version_upload_map": workspace_to_config_version_upload_map,
+            "module_to_module_version_upload_map": module_to_module_version_upload_map,
+            "policies_map": policies_map,
+            "policy_sets_map": policy_sets_map,
+            "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
+            "sensitive_variable_data": sensitive_variable_data
+        }
+
+        if write_to_file:
+            with open("outputs.txt", "w") as f:
+                f.write(output_json)
+        else:
+            print(output_json)
+
+def migrate_sensitive_to_target():
+    # TODO: figure out how we want to handle the user inputing sensitive data
+    # ssh_keys.migrate_key_files(api_target, ssh_key_name_map, ssh_key_file_path_map)
+    # workspace_vars.migrate_sensitive(api_target, sensitive_variable_data_map)
+    # policy_set_params.migrate_sensitive(api_target, sensitive_policy_set_parameter_data_map)
+    pass
+
+def migrate_to_target(api_source, api_target, write_to_file, migrate_all_state):
+    teams_map = teams.migrate(api_source, api_target)
+
+    """
+    NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
+    The users must exist in the system ahead of time if you want to use this.
+    Lastly, since most customers use SSO, this function isn't terribly useful.
+    """
+    # org_membership_map = org_memberships.migrate(api_source, api_target, teams_map)
+
+    ssh_keys_map, ssh_key_name_map = ssh_keys.migrate_keys(api_source, api_target)
+
+    agent_pools_map = agent_pools.migrate(api_source, api_target)
+
+    workspaces_map, workspace_to_ssh_key_map = \
+        workspaces.migrate(api_source, api_target, TFE_VCS_CONNECTION_MAP, agent_pools_map)
+
+    if migrate_all_state:
+        state_versions.migrate_all(api_source, api_target, workspaces_map)
+    else:
+        state_versions.migrate_current(api_source, api_target, workspaces_map)
+
+    sensitive_variable_data = workspace_vars.migrate(api_source, api_target, workspaces_map)
+
+    workspaces.migrate_ssh_keys( \
+        api_source, api_target, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
+
+    run_triggers.migrate(api_source, api_target, workspaces_map)
+
+    notification_configs.migrate(api_source, api_target, workspaces_map)
+
+    team_access.migrate(api_source, api_target, workspaces_map, teams_map)
+
+    workspace_to_config_version_upload_map = config_versions.migrate( \
+        api_source, api_target, workspaces_map)
+
+    # TODO: manage extracting state and publishing tarball
+    # config_versions.migrate_config_files(\
+    #   api_target, workspace_to_config_version_upload_map, workspace_to_file_path_map)
+
+    # TODO: make sure that non-VCS policies get mapped properly to their policy sets
+    policies_map = policies.migrate(api_source, api_target)
+
+    policy_sets_map = policy_sets.migrate(\
+        api_source, api_target, TFE_VCS_CONNECTION_MAP, workspaces_map, policies_map)
+
+    # This function returns the information that is needed to publish sensitive
+    # variables, but cannot retrieve the values themselves, so those values will
+    # have to be updated separately.
+    sensitive_policy_set_parameter_data = \
+        policy_set_params.migrate(api_source, api_target, policy_sets_map)
+
+    module_to_module_version_upload_map = \
+        registry_modules.migrate(api_source, api_target, TFE_VCS_CONNECTION_MAP)
+
+    # TODO: manage extracting module and publishing tarball, this doesn't work.
+    # registry_module_versions.migrate_module_version_files(api_source, api_target)
+
+    handle_output(teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
+            workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
+                module_to_module_version_upload_map, policies_map, policy_sets_map, \
+                    sensitive_policy_set_parameter_data, sensitive_variable_data, \
+                        write_to_file=write_to_file)
+
+
+def delete_all_from_target(api, no_confirmation):
+    if no_confirmation or confirm_delete_resource_type("run triggers", api):
+        run_triggers.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("workspace variables", api):
+        workspace_vars.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("team access", api):
+        team_access.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("workspaces", api):
+        workspaces.delete_all(api)
+
+    # No need to delete the key files, they get deleted when deleting keys.
+    if no_confirmation or confirm_delete_resource_type("SSH keys", api):
+        ssh_keys.delete_all_keys(api)
+
+    if no_confirmation or confirm_delete_resource_type("org memberships", api):
+        org_memberships.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("teams", api):
+        teams.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("policies", api):
+        policies.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("policy sets", api):
+        policy_sets.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("policy set params", api):
+        policy_set_params.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("registry modules", api):
+        registry_modules.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("registry module versions", api):
+        registry_module_versions.delete_all(api)
+
+    if no_confirmation or confirm_delete_resource_type("agent pools", api):
+        agent_pools.delete_all(api)
+
+
+def main(api_source, api_target, write_to_file, delete_all, no_confirmation, migrate_all_state):
+
+    if delete_all:
+        delete_all_from_target(api_target, no_confirmation)
+    else:
+        migrate_to_target(api_source, api_target, write_to_file, migrate_all_state)
 
 
 if __name__ == "__main__":
-    # All migration outputs are written to a .txt file by default
-    # If you prefer to have these outputs in the terminal, set the write_to_file parameter to False
-    write_to_file = True
+    """
+    All migration outputs are written to a .txt file by default
+    If you prefer to have these outputs in the terminal,
+    set the write_to_file parameter to False
+    """
+    parser = argparse.ArgumentParser(description='Migrate from TFE/C to TFE/C.')
+    parser.add_argument('--vcs-file-path', dest="vcs_file_path", default=DEFAULT_VCS_FILE, \
+        help="Path to the VCS JSON file. Defaults to `vcs.json`.")
+    parser.add_argument('--write-output', dest="write_output", \
+        action="store_true", help="Write output to a file.")
+    parser.add_argument('--migrate-all-state', dest="migrate_all_state", action="store_true", \
+        help="Migrate all state history workspaces. Default behavior is only current state.")
+    parser.add_argument('--delete-all', dest="delete_all", action="store_true", \
+        help="Delete all resources from the target API.")
+    parser.add_argument('--no-confirmation', dest="no_confirmation", action="store_true", \
+        help="If set, don't ask for confirmation before deleting all target resources.")
+    args = parser.parse_args()
 
-    teams_map = migrate_teams(api_original, api_new)
-    print('teams successfully migrated')
+    api_source = TFC(TFE_TOKEN_SOURCE, url=TFE_URL_SOURCE)
+    api_source.set_org(TFE_ORG_SOURCE)
 
-    # organization_membership_map = migrate_organization_memberships(api_original, api_new, teams_map)
-    # print('organization memberships successfully migrated')
+    api_target = TFC(TFE_TOKEN_TARGET, url=TFE_URL_TARGET)
+    api_target.set_org(TFE_ORG_TARGET)
 
-    ssh_keys_map, ssh_key_name_map = migrate_ssh_keys(api_original, api_new)
-    print('ssh keys successfully migrated')
+    with open(args.vcs_file_path, "r") as f:
+        TFE_VCS_CONNECTION_MAP = json.loads(f.read())
 
-    # migrate_ssh_key_files(api_new, ssh_key_name_map, ssh_key_file_path_map)
-    # print('ssh key files successfully migrated')
-
-    agent_pool_id = migrate_agent_pools(
-        api_original, api_new, TFE_ORG_ORIGINAL, TFE_ORG_NEW)
-    print('agent pools successfully migrated')
-
-    workspaces_map, workspace_to_ssh_key_map = migrate_workspaces(
-        api_original, api_new, TFE_VCS_CONNECTION_MAP, agent_pool_id)
-    print('workspaces successfully migrated')
-
-    # migrate_all_state(api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
-    migrate_current_state(api_original, api_new,
-                          TFE_ORG_ORIGINAL, workspaces_map)
-    print('state successfully migrated')
-
-    # Note: if you wish to generate a map of Sensitive variables that can be used to update
-    # those values via the migrate_workspace_sensitive_variables method, pass True as the final argument (defaults to False)
-    sensitive_variable_data = migrate_workspace_variables(
-        api_original, api_new, TFE_ORG_ORIGINAL, workspaces_map)
-    print('workspace variables successfully migrated')
-
-    # migrate_workspace_sensitive_variables(api_new, sensitive_variable_data_map)
-    # print('workspace sensitive variables successfully migrated')
-
-    migrate_ssh_keys_to_workspaces(
-        api_original, api_new, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
-    print('workspace ssh keys successfully migrated')
-
-    migrate_workspace_run_triggers(api_original, api_new, workspaces_map)
-    print('workspace run triggers successfully migrated')
-
-    migrate_workspace_notifications(api_original, api_new, workspaces_map)
-    print('workspace notifications successfully migrated')
-
-    migrate_workspace_team_access(
-        api_original, api_new, workspaces_map, teams_map)
-    print('workspace team access successfully migrated')
-
-    workspace_to_configuration_version_map = migrate_configuration_versions(
-        api_original, api_new, workspaces_map)
-    print('workspace configuration versions successfully migrated')
-
-    # migrate_configuration_files(api_new, workspace_to_configuration_version_map, workspace_to_file_path_map)
-    # print('workspace configuration files successfully migrated)
-
-    policies_map = migrate_policies(
-        api_original, api_new, TFE_TOKEN_ORIGINAL, TFE_URL_ORIGINAL)
-    print('policies successfully migrated')
-
-    policy_sets_map = migrate_policy_sets(
-        api_original, api_new, TFE_VCS_CONNECTION_MAP, workspaces_map, policies_map)
-    print('policy sets successfully migrated')
-
-    # Note: if you wish to generate a map of Sensitive policy set parameters that can be used to update
-    # those values via the migrate_policy_set_sensitive_variables method, pass True as the final argument (defaults to False)
-    sensitive_policy_set_parameter_data = migrate_policy_set_parameters(
-        api_original, api_new, policy_sets_map)
-    print('policy set parameters successfully migrated')
-
-    # migrate_policy_set_sensitive_parameters(api_new, sensitive_policy_set_parameter_data_map)
-    # print('policy set sensitive parameters successfully migrated')
-
-    migrate_registry_modules(api_original, api_new,
-                             TFE_ORG_ORIGINAL, TFE_VCS_CONNECTION_MAP)
-    print('registry modules successfully migrated')
-
-    # MIGRATION OUTPUTS:
-    if write_to_file:
-        with open('outputs.txt', 'w') as f:
-            f.write('teams_map: %s\n\n' % teams_map)
-            # f.write('organization_membership_map: %s\n\n' % organization_membership_map)
-            f.write('ssh_keys_map: %s\n\n' % ssh_keys_map)
-            f.write('ssh_key_name_map: %s\n\n' % ssh_key_name_map)
-            f.write('workspaces_map: %s\n\n' % workspaces_map)
-            f.write('workspace_to_ssh_key_map: %s\n\n' % workspace_to_ssh_key_map)
-            f.write('workspace_to_configuration_version_map: %s\n\n' % workspace_to_configuration_version_map)
-            f.write('policies_map: %s\n\n' % policies_map)
-            f.write('policy_sets_map: %s\n\n' % policy_sets_map)
-            f.write('policy_sets_map: %s\n\n' % policy_sets_map)
-            f.write('sensitive_policy_set_parameter_data: %s\n\n' % sensitive_policy_set_parameter_data)
-            f.write('sensitive_variable_data: %s\n\n' % sensitive_variable_data)
-    else:
-        print('\n')
-        print('MIGRATION MAPS:')
-        print('teams_map:', teams_map)
-        print('\n')
-        # print('organization_membership_map:', organization_membership_map)
-        # print('\n')
-        print('ssh_keys_map:', ssh_keys_map)
-        print('\n')
-        print('ssh_keys_name_map:', ssh_key_name_map)
-        print('\n')
-        print('workspaces_map:', workspaces_map)
-        print('\n')
-        print('workspace_to_ssh_key_map:', workspace_to_ssh_key_map)
-        print('\n')
-        print('workspace_to_configuration_version_map:',
-            workspace_to_configuration_version_map)
-        print('\n')
-        print('policies_map:', policies_map)
-        print('\n')
-        print('policy_sets_map:', policy_sets_map)
-        print('\n')
-        print('sensitive_policy_set_parameter_data:',
-            sensitive_policy_set_parameter_data)
-        print('\n')
-        print('sensitive_variable_data:', sensitive_variable_data)
+    main(api_source, api_target, args.write_output, args.delete_all, \
+            args.no_confirmation, args.migrate_all_state)

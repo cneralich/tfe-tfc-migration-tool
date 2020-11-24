@@ -1,0 +1,10 @@
+[
+    {
+    "source": "ot-foo",
+    "target": "ot-bar"
+    },
+    {
+    "source": "ot-bar",
+    "target": "ot-baz"
+    }
+]    
