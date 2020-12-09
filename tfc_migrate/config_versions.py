@@ -34,7 +34,7 @@ def migrate(api_source, api_target, workspaces_map):
                 print(f"\t config version for workspace %s created..." % workspace_name)
 
                 workspace_to_config_version_upload_map[workspace_name] = \
-                    new_config_version["attributes"]["upload_url"]
+                    new_config_version["attributes"]["upload-url"]
 
     print("Config versions successfully migrated.")
     return workspace_to_config_version_upload_map
