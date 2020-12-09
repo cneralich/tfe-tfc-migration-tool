@@ -93,7 +93,6 @@ def delete_all(api_target):
 
     # TODO: handle paging
     policy_sets = api_target.policy_sets.list(page_size=50, include="policies,workspaces")["data"]
-    print(policy_sets)
 
     for policy_set in policy_sets:
         print(f"\t deleting policy set %s..." % policy_set["attributes"]["name"])
