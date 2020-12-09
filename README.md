@@ -11,7 +11,7 @@ Currently it only supports 1:1 migrations, but the goal is to support 1:N.
 pip3 install terrasnek==0.0.12
 ```
 
-### 2. Set Required Environment Variables for both the Source Org and the Destination Org
+### 2. Set Required Environment Variables
 
 ```bash
 # Source organization token, URL, and organization name
@@ -28,7 +28,7 @@ export TFE_ORG_DESTINATION="bar"
 * The Token(s) used above must be either a Team or User Token and have the appropriate level of permissions
 * The URL(s) used above must follow a format of `https://app.terraform.io`
 
-### 3. Build the Required TFE_VCS_CONNECTION_MAP to Map OAuth Token Values Between the Source Org and the Destination Org 
+### 3. Build the Required TFE_VCS_CONNECTION_MAP
 
 The TFE_VCS_CONNECTION_MAP is a list of dictionaries, each of which maps a `source` VCS OAuth token value to the corresponding `target` VCS OAuth token value, like so:
 
@@ -67,6 +67,7 @@ python migration.py --vcs-file-path "/path/to/file/vcs.json" --write-output --mi
 ```
 
 For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs ot a `outputs.txt` file, and the migration of all state versions for all workspaces.
+
 
 ## Supported Operations
 
