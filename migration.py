@@ -6,7 +6,8 @@ from tfc_migrate import \
     workspaces, teams, policies, policy_sets, registry_modules, \
         ssh_keys, config_versions, notification_configs, team_access, \
             agent_pools, workspace_vars, run_triggers, state_versions, \
-                policy_set_params, org_memberships, registry_module_versions
+                policy_set_params, org_memberships, registry_module_versions, \
+                    workspace_ssh_keys
 
 
 DEFAULT_VCS_FILE = "vcs.json"
@@ -95,7 +96,7 @@ def migrate_to_target(api_source, api_target, write_to_file, migrate_all_state):
 
     sensitive_variable_data = workspace_vars.migrate(api_source, api_target, workspaces_map)
 
-    workspaces.migrate_ssh_keys( \
+    workspace_ssh_keys.migrate( \
         api_source, api_target, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
 
     run_triggers.migrate(api_source, api_target, workspaces_map)
@@ -145,6 +146,9 @@ def delete_all_from_target(api, no_confirmation):
 
     if no_confirmation or confirm_delete_resource_type("team access", api):
         team_access.delete_all(api)
+    
+    if no_confirmation or confirm_delete_resource_type("workspace ssh keys", api):
+        workspace_ssh_keys.delete_all(api)
 
     if no_confirmation or confirm_delete_resource_type("workspaces", api):
         workspaces.delete_all(api)
