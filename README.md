@@ -58,7 +58,7 @@ Before initiating the migration process, first determine which command line argu
 * `--migrate-all-state`: this flag allows you to set the desired behavior for migrating state versions.  If passed, all version of state will get migrated for all workspaces.  If not specificed, only the current version of state for all workspaces will be migrated by default.
 
 
-## 5. Perform the Migration
+### 5. Perform the Migration
 
 To perform the migration, the following command may be executed (example includes optional arguments):
 
