@@ -176,8 +176,27 @@ resource "tfe_variable" "sensitive-env-vars-agent" {
 # Create state versions
 
 # Create run triggers
+resource "tfe_run_trigger" "api-to-agent" {
+  workspace_id  = tfe_workspace.migration-test-workspace-agent-pool.id
+  sourceable_id = tfe_workspace.migration-test-workspace-api.id
+}
 
-# Create notification configs
+resource "tfe_run_trigger" "vcs-to-agent" {
+  workspace_id  = tfe_workspace.migration-test-workspace-agent-pool.id
+  sourceable_id = tfe_workspace.migration-test-workspace-vcs.id
+}
+
+# Create run triggers
+resource "tfe_run_trigger" "api-to-vcs" {
+  workspace_id  = tfe_workspace.migration-test-workspace-vcs.id
+  sourceable_id = tfe_workspace.migration-test-workspace-api.id
+}
+
+# Create email notification configs
+
+# Create Slack notification configs
+
+# Create generic endpoint notification configs
 
 # Set up team access to workspaces
 
