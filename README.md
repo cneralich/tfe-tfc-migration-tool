@@ -128,7 +128,6 @@ This migration utility leverages the [Terraform Cloud/Enterprise API](https://ww
 To help make testing and/or rollback easier, a complete set of delete functions have been included as well.  Similar to the migration process outlined above, these functions can be invoked by passing the following command line arguments:
 
 * `--delete-all`: this flag allows you to invoke the delete functions instead of the migrate functions.  If passed, all data will be deleted from the destination organization. If not specified, the migration functions will be invoked by default.
-  * Note: the migration tool is non-destructive in nature and will not (including the delete functions) modify or remove any data from the source organization.
 * `--no-confirmation`: this flag allows you to invoke all delete functions if the `--delete-all` flag is also passed.  If the `--delete-all` flag is passed an this is not specified, each delete function will require an explicit Y/N response before executing.
 
 To perform the delete operations, the following command may be executed (example includes optional arguments):
@@ -138,3 +137,5 @@ python migration.py --delete-all --no-confirmation
 ```
 
 For clarity, the command above would result in the deletion of all data from the target organization without any prompts for explicit confirmation.
+
+**Important:** the migration tool is non-destructive in nature and will not (including these delete functions) modify or remove any data from the source organization.
