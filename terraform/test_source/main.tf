@@ -24,7 +24,6 @@ resource "tfe_ssh_key" "migration-test-ssh-key" {
 
 # Create Agent Pools
 resource "tfe_agent_pool" "migration-test-agent-pool" {
-  count = var.hostname == "app.terraform.io" ? 1 : 0
   name         = "${var.prefix}-test-agent-pool"
   organization = var.org_name
 }
@@ -36,7 +35,7 @@ resource "tfe_workspace" "migration-test-workspace-vcs" {
 
   working_directory = var.working_directory
   vcs_repo {
-    identifier = var.repo_identifier
+    identifier     = var.repo_identifier
     oauth_token_id = var.oauth_token_id
   }
 }
@@ -49,28 +48,131 @@ resource "tfe_workspace" "migration-test-workspace-api" {
 
 # Create Workspace w/ Agent Pool
 resource "tfe_workspace" "migration-test-workspace-agent-pool" {
-  count = var.hostname == "app.terraform.io" ? 1 : 0
-  name         = "${var.prefix}-test-workspace-agent-pool"
-  organization = var.org_name
-  agent_pool_id  = tfe_agent_pool.migration-test-agent-pool[count.index].id
+  name           = "${var.prefix}-test-workspace-agent-pool"
+  organization   = var.org_name
+  agent_pool_id  = tfe_agent_pool.migration-test-agent-pool.id
   execution_mode = "agent"
-  ssh_key_id = tfe_ssh_key.migration-test-ssh-key.id
+  ssh_key_id     = tfe_ssh_key.migration-test-ssh-key.id
+  auto_apply     = true
 
   working_directory = var.working_directory
   vcs_repo {
-    identifier = var.repo_identifier
+    identifier     = var.repo_identifier
     oauth_token_id = var.oauth_token_id
   }
 }
 
 # Add variables to workspaces
+resource "tfe_variable" "non-sensitive-tf-vars-vcs" {
+  for_each = var.tf_vars
+  key = each.key
+  value = each.value
+  category = "terraform"
+  sensitive = false
+  workspace_id = tfe_workspace.migration-test-workspace-vcs.id
+}
+
+resource "tfe_variable" "non-sensitive-tf-vars-api" {
+  for_each = var.tf_vars
+  key = each.key
+  value = each.value
+  category = "terraform"
+  sensitive = false
+  workspace_id = tfe_workspace.migration-test-workspace-api.id
+}
+
+resource "tfe_variable" "non-sensitive-tf-vars-agent" {
+  for_each = var.tf_vars
+  key = each.key
+  value = each.value
+  category = "terraform"
+  sensitive = false
+  workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
+}
 
 # Add sensitive variables to workspaces
+resource "tfe_variable" "sensitive-tf-vars-vcs" {
+  for_each = var.sensitive_tf_vars
+  key = each.key
+  value = each.value
+  category = "terraform"
+  sensitive = true
+  workspace_id = tfe_workspace.migration-test-workspace-vcs.id
+}
+
+resource "tfe_variable" "sensitive-tf-vars-api" {
+  for_each = var.sensitive_tf_vars
+  key = each.key
+  value = each.value
+  category = "terraform"
+  sensitive = true
+  workspace_id = tfe_workspace.migration-test-workspace-api.id
+}
+
+resource "tfe_variable" "sensitive-tf-vars-agent" {
+  for_each = var.sensitive_tf_vars
+  key = each.key
+  value = each.value
+  category = "terraform"
+  sensitive = true
+  workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
+}
 
 # Add env variables to workspaces
+resource "tfe_variable" "env-vars-vcs" {
+  for_each = var.env_vars
+  key = each.key
+  value = each.value
+  category = "env"
+  sensitive = false
+  workspace_id = tfe_workspace.migration-test-workspace-vcs.id
+}
+
+resource "tfe_variable" "env-vars-api" {
+  for_each = var.env_vars
+  key = each.key
+  value = each.value
+  category = "env"
+  sensitive = false
+  workspace_id = tfe_workspace.migration-test-workspace-api.id
+}
+
+resource "tfe_variable" "env-vars-agent" {
+  for_each = var.env_vars
+  key = each.key
+  value = each.value
+  category = "env"
+  sensitive = false
+  workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
+}
 
 # Add sensitive env variables to workspaces
+resource "tfe_variable" "sensitive-env-vars-vcs" {
+  for_each = var.sensitive_env_vars
+  key = each.key
+  value = each.value
+  category = "env"
+  sensitive = true
+  workspace_id = tfe_workspace.migration-test-workspace-vcs.id
+}
 
+resource "tfe_variable" "sensitive-env-vars-api" {
+  for_each = var.sensitive_env_vars
+  key = each.key
+  value = each.value
+  category = "env"
+  sensitive = true
+  workspace_id = tfe_workspace.migration-test-workspace-api.id
+}
+
+resource "tfe_variable" "sensitive-env-vars-agent" {
+  for_each = var.sensitive_env_vars
+  key = each.key
+  value = each.value
+  category = "env"
+  sensitive = true
+  workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
+}
 # Create state versions
 
 # Create run triggers
