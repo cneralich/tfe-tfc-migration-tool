@@ -11,7 +11,7 @@ Currently it only supports 1:1 migrations, but the goal is to support 1:N.
 pip3 install terrasnek==0.0.12
 ```
 
-### 2. Set Required Environment Variables for both the Source Org and the Destination Org
+### 2. Set Required Environment Variables
 
 ```bash
 # Source organization token, URL, and organization name
@@ -28,7 +28,7 @@ export TFE_ORG_DESTINATION="bar"
 * The Token(s) used above must be either a Team or User Token and have the appropriate level of permissions
 * The URL(s) used above must follow a format of `https://app.terraform.io`
 
-### 3. Build the Required TFE_VCS_CONNECTION_MAP to Map OAuth Token Values Between the Source Org and the Destination Org 
+### 3. Build the Required TFE_VCS_CONNECTION_MAP
 
 The TFE_VCS_CONNECTION_MAP is a list of dictionaries, each of which maps a `source` VCS OAuth token value to the corresponding `target` VCS OAuth token value, like so:
 
@@ -58,7 +58,7 @@ Before initiating the migration process, first determine which command line argu
 * `--migrate-all-state`: this flag allows you to set the desired behavior for migrating state versions.  If passed, all version of state will get migrated for all workspaces.  If not specificed, only the current version of state for all workspaces will be migrated by default.
 
 
-## 5. Perform the Migration
+### 5. Perform the Migration
 
 To perform the migration, the following command may be executed (example includes optional arguments):
 
@@ -66,7 +66,8 @@ To perform the migration, the following command may be executed (example include
 python migration.py --vcs-file-path "/path/to/file/vcs.json" --write-output --migrate-all-state
 ```
 
-For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs ot a `outputs.txt` file, and the migration of all state versions for all workspaces.
+For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs to a `outputs.txt` file, and the migration of all state versions for all workspaces.
+
 
 ## Supported Operations
 
@@ -117,7 +118,7 @@ The following migration operations are currently supported:
     * Includes a helper function to migrate all 
 
 
-### Notes
+## Notes
 
 This migration utility leverages the [Terraform Cloud/Enterprise API](https://www.terraform.io/docs/cloud/api/index.html) and the [terrasnek](https://github.com/dahlke/terrasnek) Python Client for interacting with it.  For security reasons, there are certain Sensitive values that cannot be extracted (ex. Sensitive Variables, Sensitive Policy Set params, and SSH Keys), so those will need to be re-added after the migration is complete (the Keys will, however, be migrated).  For convenience, additional methods have been included to enable Sensitive value migration (Sensitive Variables, Sensitive Policy Set params, and SSH Keys).
 
@@ -127,7 +128,6 @@ This migration utility leverages the [Terraform Cloud/Enterprise API](https://ww
 To help make testing and/or rollback easier, a complete set of delete functions have been included as well.  Similar to the migration process outlined above, these functions can be invoked by passing the following command line arguments:
 
 * `--delete-all`: this flag allows you to invoke the delete functions instead of the migrate functions.  If passed, all data will be deleted from the destination organization. If not specified, the migration functions will be invoked by default.
-  * Note: the migration tool is non-destructive in nature and will not (including the delete functions) modify or remove any data from the source organization.
 * `--no-confirmation`: this flag allows you to invoke all delete functions if the `--delete-all` flag is also passed.  If the `--delete-all` flag is passed an this is not specified, each delete function will require an explicit Y/N response before executing.
 
 To perform the delete operations, the following command may be executed (example includes optional arguments):
@@ -137,3 +137,5 @@ python migration.py --delete-all --no-confirmation
 ```
 
 For clarity, the command above would result in the deletion of all data from the target organization without any prompts for explicit confirmation.
+
+**Important:** the migration tool is non-destructive in nature and will not (including these delete functions) modify or remove any data from the source organization.
