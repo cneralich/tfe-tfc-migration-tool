@@ -1,53 +1,57 @@
 
+from .base_worker import TFCMigratorBaseWorker
 
-def migrate(\
-        api_source, api_target, workspaces_map, workspace_to_ssh_key_map, \
-            ssh_keys_map):
+class WorkspaceSSHKeysWorker(TFCMigratorBaseWorker):
 
-    print("Migrating SSH keys for workspaces...")
+    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
+        super().__init__(api_source, api_target, vcs_connection_map, log_level)
 
-    # NOTE: No check for existing keys, since this assign function won't throw
-    # an exception if the key already exists.
-    for key, value in workspace_to_ssh_key_map.items():
-        # Build the new ssh key payload
-        new_workspace_ssh_key_payload = {
-            "data": {
-                "attributes": {
-                    "id": ssh_keys_map[value]
-                },
-                "type": "workspaces"
+    def migrate_all(self, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map):
+        self._logger.info("Migrating SSH keys for workspaces...")
+
+        # NOTE: No check for existing keys, since this assign function won't throw
+        # an exception if the key exists.
+        for source_workspace_id, ssh_key_id in workspace_to_ssh_key_map.items():
+            workspace_id = ssh_keys_map[ssh_key_id]
+
+            # Build the new ssh key payload
+            new_workspace_ssh_key_payload = {
+                "data": {
+                    "attributes": {
+                        "id": workspace_id
+                    },
+                    "type": "workspaces"
+                }
             }
-        }
 
-        print(f"\t ssh key %s created for workspace..." % value)
+            self._logger.info(f"SSH key: %s, for workspace: %s, created." % (ssh_key_id, workspace_id))
 
-        # Add SSH Keys to the target workspace
-        api_target.workspaces.assign_ssh_key(
-            workspaces_map[key], new_workspace_ssh_key_payload)
+            # Add SSH Keys to the target workspace
+            self._api_target.workspaces.assign_ssh_key( \
+                workspaces_map[source_workspace_id], new_workspace_ssh_key_payload)
 
-    print("SSH keys for workspaces successfully migrated.")
+        self._logger.info("SSH keys for workspaces migrated.")
 
 
-def delete_all(api_target):
-    print("Deleting workspace SSH keys...")
+    def delete_all_from_target(self):
+        self._logger.info("Deleting workspace SSH keys...")
 
-    workspaces = api_target.workspaces.list()["data"]
+        workspaces = self._api_target.workspaces.list()["data"]
 
-    if workspaces:
-        unassign_workspace_ssh_key_payload = {
-            "data": {
-                "attributes": {
-                    "id": None
-                },
-                "type": "workspaces"
+        if workspaces:
+            unassign_workspace_ssh_key_payload = {
+                "data": {
+                    "attributes": {
+                        "id": None
+                    },
+                    "type": "workspaces"
+                }
             }
-        }
 
-        for workspace in workspaces:
-            if "ssh-key" in workspace["relationships"]:
-                print(f"\t deleting ssh key from workspace %s..." % workspace["attributes"]["name"])
-                api_target.workspaces.unassign_ssh_key( \
-                    workspace["id"], unassign_workspace_ssh_key_payload)
-    
-    print("Workspace SSH keys deleted.")
-                
+            for workspace in workspaces:
+                if "ssh-key" in workspace["relationships"]:
+                    self._logger.info(f"SSH key for workspace: %s, deleted.." % workspace["attributes"]["name"])
+                    self._api_target.workspaces.unassign_ssh_key( \
+                        workspace["id"], unassign_workspace_ssh_key_payload)
+
+        self._logger.info("Workspace SSH keys deleted.")

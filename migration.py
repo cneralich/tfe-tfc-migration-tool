@@ -1,14 +1,9 @@
 import os
 import argparse
 import json
+import logging
 from terrasnek.api import TFC
-from tfc_migrate import \
-    workspaces, teams, policies, policy_sets, registry_modules, \
-        ssh_keys, config_versions, notification_configs, team_access, \
-            agent_pools, workspace_vars, run_triggers, state_versions, \
-                policy_set_params, org_memberships, registry_module_versions, \
-                    workspace_ssh_keys
-
+from tfc_migrate.migrator import TFCMigrator
 
 DEFAULT_VCS_FILE = "vcs.json"
 
@@ -24,19 +19,6 @@ TFE_ORG_TARGET = os.getenv("TFE_ORG_TARGET", None)
 
 # NOTE: this is parsed in the main function
 TFE_VCS_CONNECTION_MAP = None
-
-
-def confirm_delete_resource_type(resource_type, api):
-    answer = ""
-
-    while answer not in ["y", "n"]:
-        question_string = \
-            "This will destroy all %s in org '%s' (%s). Want to continue? [Y/N]: " \
-                % (resource_type, api.get_org(), api.get_url())
-        answer = input(question_string).lower()
-
-    return answer == "y"
-
 
 def handle_output(\
     teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
@@ -65,6 +47,7 @@ def handle_output(\
         else:
             print(output_json)
 
+
 def migrate_sensitive_to_target():
     # TODO: figure out how we want to handle the user inputing sensitive data
     # ssh_keys.migrate_key_files(api_target, ssh_key_name_map, ssh_key_file_path_map)
@@ -72,123 +55,13 @@ def migrate_sensitive_to_target():
     # policy_set_params.migrate_sensitive(api_target, sensitive_policy_set_parameter_data_map)
     pass
 
-def migrate_to_target(api_source, api_target, write_to_file, migrate_all_state):
-    teams_map = teams.migrate(api_source, api_target)
 
-    """
-    NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
-    The users must exist in the system ahead of time if you want to use this.
-    Lastly, since most customers use SSO, this function isn't terribly useful.
-    """
-    # org_membership_map = org_memberships.migrate(api_source, api_target, teams_map)
-
-    ssh_keys_map, ssh_key_name_map = ssh_keys.migrate_keys(api_source, api_target)
-
-    agent_pools_map = agent_pools.migrate(api_source, api_target)
-
-    workspaces_map, workspace_to_ssh_key_map = \
-        workspaces.migrate(api_source, api_target, TFE_VCS_CONNECTION_MAP, agent_pools_map)
-
-    if migrate_all_state:
-        state_versions.migrate_all(api_source, api_target, workspaces_map)
-    else:
-        state_versions.migrate_current(api_source, api_target, workspaces_map)
-
-    sensitive_variable_data = workspace_vars.migrate(api_source, api_target, workspaces_map)
-
-    workspace_ssh_keys.migrate( \
-        api_source, api_target, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
-
-    run_triggers.migrate(api_source, api_target, workspaces_map)
-
-    notification_configs.migrate(api_source, api_target, workspaces_map)
-
-    team_access.migrate(api_source, api_target, workspaces_map, teams_map)
-
-    workspace_to_config_version_upload_map = config_versions.migrate( \
-        api_source, api_target, workspaces_map)
-
-    # TODO: manage extracting state and publishing tarball
-    # config_versions.migrate_config_files(\
-    #   api_target, workspace_to_config_version_upload_map, workspace_to_file_path_map)
-
-    # TODO: make sure that non-VCS policies get mapped properly to their policy sets
-    policies_map = policies.migrate(api_source, api_target)
-
-    policy_sets_map = policy_sets.migrate(\
-        api_source, api_target, TFE_VCS_CONNECTION_MAP, workspaces_map, policies_map)
-
-    # This function returns the information that is needed to publish sensitive
-    # variables, but cannot retrieve the values themselves, so those values will
-    # have to be updated separately.
-    sensitive_policy_set_parameter_data = \
-        policy_set_params.migrate(api_source, api_target, policy_sets_map)
-
-    module_to_module_version_upload_map = \
-        registry_modules.migrate(api_source, api_target, TFE_VCS_CONNECTION_MAP)
-
-    # TODO: manage extracting module and publishing tarball, this doesn't work.
-    # registry_module_versions.migrate_module_version_files(api_source, api_target)
-
-    handle_output(teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
-            workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
-                module_to_module_version_upload_map, policies_map, policy_sets_map, \
-                    sensitive_policy_set_parameter_data, sensitive_variable_data, \
-                        write_to_file=write_to_file)
-
-
-def delete_all_from_target(api, no_confirmation):
-    if no_confirmation or confirm_delete_resource_type("run triggers", api):
-        run_triggers.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("workspace variables", api):
-        workspace_vars.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("team access", api):
-        team_access.delete_all(api)
-    
-    if no_confirmation or confirm_delete_resource_type("workspace ssh keys", api):
-        workspace_ssh_keys.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("workspaces", api):
-        workspaces.delete_all(api)
-
-    # No need to delete the key files, they get deleted when deleting keys.
-    if no_confirmation or confirm_delete_resource_type("SSH keys", api):
-        ssh_keys.delete_all_keys(api)
-
-    if no_confirmation or confirm_delete_resource_type("org memberships", api):
-        org_memberships.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("teams", api):
-        teams.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("policies", api):
-        policies.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("policy sets", api):
-        policy_sets.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("policy set params", api):
-        policy_set_params.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("registry modules", api):
-        registry_modules.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("registry module versions", api):
-        registry_module_versions.delete_all(api)
-
-    if no_confirmation or confirm_delete_resource_type("agent pools", api):
-        agent_pools.delete_all(api)
-
-
-def main(api_source, api_target, write_to_file, delete_all, no_confirmation, migrate_all_state):
+def main(migrator, write_to_file, delete_all, no_confirmation, migrate_all_state):
 
     if delete_all:
-        delete_all_from_target(api_target, no_confirmation)
+        migrator.delete_all_from_target(no_confirmation)
     else:
-        migrate_to_target(api_source, api_target, write_to_file, migrate_all_state)
-
+        migrator.migrate_all(migrate_all_state)
 
 if __name__ == "__main__":
     """
@@ -207,6 +80,8 @@ if __name__ == "__main__":
         help="Delete all resources from the target API.")
     parser.add_argument('--no-confirmation', dest="no_confirmation", action="store_true", \
         help="If set, don't ask for confirmation before deleting all target resources.")
+    parser.add_argument('--debug', dest="debug", action="store_true", \
+        help="If set, run the logger in debug mode.")
     args = parser.parse_args()
 
     api_source = TFC(TFE_TOKEN_SOURCE, url=TFE_URL_SOURCE)
@@ -218,5 +93,13 @@ if __name__ == "__main__":
     with open(args.vcs_file_path, "r") as f:
         TFE_VCS_CONNECTION_MAP = json.loads(f.read())
 
-    main(api_source, api_target, args.write_output, args.delete_all, \
-            args.no_confirmation, args.migrate_all_state)
+    log_level = logging.INFO
+
+    if args.debug:
+        log_level = logging.DEBUG
+
+    logging.basicConfig(level=log_level)
+
+    migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, logging.INFO)
+
+    main(migrator, args.write_output, args.delete_all, args.no_confirmation, args.migrate_all_state)

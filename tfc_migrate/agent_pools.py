@@ -1,54 +1,59 @@
+from .base_worker import TFCMigratorBaseWorker
 
+class AgentPoolsWorker(TFCMigratorBaseWorker):
 
-def migrate(api_source, api_target):
-    print("Migrating agent pools...")
+    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
+        super().__init__(api_source, api_target, vcs_connection_map, log_level)
 
-    # Fetch agent pools from existing org
-    source_agent_pools = api_source.agents.list_pools()["data"]
-    target_agent_pools = api_target.agents.list_pools()["data"]
-    agent_pools_map = {}
+    def migrate_all(self):
+        self._logger.info("Migrating agent pools...")
 
-    if source_agent_pools and "app.terraform.io" in api_target.get_url():
-        target_agent_pool_data = {}
-        for target_agent_pool in target_agent_pools:
-            target_agent_pool_data[target_agent_pool["attributes"]["name"]] = target_agent_pool["id"]
+        # Fetch agent pools from existing org
+        source_agent_pools = self._api_source.agents.list_pools()["data"]
+        target_agent_pools = self._api_target.agents.list_pools()["data"]
+        agent_pools_map = {}
 
-        for source_agent_pool in source_agent_pools:
-            source_agent_pool_name = source_agent_pool["attributes"]["name"]
-            source_agent_pool_id = source_agent_pool["id"]
+        if source_agent_pools and "app.terraform.io" in self._api_target.get_url():
+            target_agent_pool_data = {}
+            for target_agent_pool in target_agent_pools:
+                target_agent_pool_data[target_agent_pool["attributes"]["name"]] = target_agent_pool["id"]
 
-            if source_agent_pool_name in target_agent_pool_data:
-                agent_pools_map[source_agent_pool_id] = target_agent_pool_data[source_agent_pool_name]
-                print("\t", source_agent_pool_name, "agent pool already exists, skipping...")
-                continue
+            for source_agent_pool in source_agent_pools:
+                source_agent_pool_name = source_agent_pool["attributes"]["name"]
+                source_agent_pool_id = source_agent_pool["id"]
 
-            # Build the new agent pool payload
-            new_agent_pool_payload = {
-                "data": {
-                    "type": "agent-pools",
-                    "attributes": {
-                        "name": source_agent_pool_name
+                if source_agent_pool_name in target_agent_pool_data:
+                    agent_pools_map[source_agent_pool_id] = target_agent_pool_data[source_agent_pool_name]
+                    self._logger.info(f" Agent pool: %s, exists. Skipped." % source_agent_pool_name)
+                    continue
+
+                # Build the new agent pool payload
+                new_agent_pool_payload = {
+                    "data": {
+                        "type": "agent-pools",
+                        "attributes": {
+                            "name": source_agent_pool_name
+                        }
                     }
                 }
-            }
 
-            # Create Agent Pool in the target org
-            new_agent_pool = api_target.agents.create_pool(new_agent_pool_payload)
-            new_agent_pool_id = new_agent_pool["data"]["id"]
-            agent_pools_map[source_agent_pool_id] = new_agent_pool_id
+                # Create Agent Pool in the target org
+                new_agent_pool = self._api_target.agents.create_pool(new_agent_pool_payload)
+                new_agent_pool_id = new_agent_pool["data"]["id"]
+                agent_pools_map[source_agent_pool_id] = new_agent_pool_id
 
-    print("Agent pools successfully migrated.")
-    return agent_pools_map
+        self._logger.info("Agent pools migrated.")
+        return agent_pools_map
 
-def delete_all(api_target):
-    print("Deleting agent pools...")
+    def delete_all_from_target(self):
+        self._logger.info("Deleting agent pools...")
 
-    agent_pools = api_target.agents.list_pools()["data"]
+        agent_pools = self._api_target.agents.list_pools()["data"]
 
-    if agent_pools:
-        for agent_pool in agent_pools:
-            if agent_pool["attributes"]["name"] != "Default":
-                print(f"\t deleting agent pool %s..." % agent_pool["attributes"]["name"])
-                api_target.agents.destroy(agent_pool["id"])
+        if agent_pools:
+            for agent_pool in agent_pools:
+                if agent_pool["attributes"]["name"] != "Default":
+                    self._logger.info(f"Agent pool: %s, deleted." % agent_pool["attributes"]["name"])
+                    self._api_target.agents.destroy(agent_pool["id"])
 
-    print("Agent pools deleted.")
+        self._logger.info("Agent pools deleted.")

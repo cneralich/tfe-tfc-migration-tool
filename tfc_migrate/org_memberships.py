@@ -1,86 +1,90 @@
 from terrasnek import exceptions
+from .base_worker import TFCMigratorBaseWorker
 
-def migrate(api_source, api_target, teams_map):
-    print("Migrating org memberships...")
+class OrgMembershipsWorker(TFCMigratorBaseWorker):
 
-    # Set proper membership filters
-    active_member_filter = [
-        {
-            "keys": ["status"],
-            "value": "active"
-        }
-    ]
+    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
+        super().__init__(api_source, api_target, vcs_connection_map, log_level)
 
-    source_org_members = api_source.org_memberships.list_for_org( \
-        filters=active_member_filter, page=0, page_size=100)["data"]
-    target_org_members = api_target.org_memberships.list_for_org( \
-        page=0, page_size=100)["data"]
+    def migrate_all(self, teams_map):
+        self._logger.info("Migrating org memberships...")
 
-    target_org_members_data = {}
-    for target_org_member in target_org_members:
-        target_org_members_data[target_org_member["attributes"]["email"]] = target_org_member["id"]
-
-    org_membership_map = {}
-
-    for source_org_member in source_org_members:
-        source_org_member_email = source_org_member["attributes"]["email"]
-        source_org_member_id = source_org_member["relationships"]["user"]["data"]["id"]
-
-        if source_org_member_email in target_org_members_data:
-            org_membership_map[source_org_member_id] = target_org_members_data[source_org_member_email]
-            # TODO: should the team membership be checked for an existing org member and updated to match
-            # the source_org value if different?
-            print("\t", source_org_member_email, " member already exists, skipping...")
-            continue
-
-        for team in source_org_member["relationships"]["teams"]["data"]:
-            team["id"] = teams_map[team["id"]]
-
-        # Build the new user invite payload
-        new_user_invite_payload = {
-            "data": {
-                "attributes": {
-                    "email": source_org_member_email
-                },
-                "relationships": {
-                    "teams": {
-                        "data": source_org_member["relationships"]["teams"]["data"]
-                    },
-                },
-                "type": "organization-memberships"
+        # Set proper membership filters
+        active_member_filter = [
+            {
+                "keys": ["status"],
+                "value": "active"
             }
-        }
+        ]
 
-        # try statement required in case a user account tied to the email address does not yet exist
-        try:
-            target_org_member = api_target.org_memberships.invite( \
-                new_user_invite_payload)["data"]
-        except:
+        source_org_members = self._api_source.org_memberships.list_for_org( \
+            filters=active_member_filter, page=0, page_size=100)["data"]
+        target_org_members = self._api_target.org_memberships.list_for_org( \
+            page=0, page_size=100)["data"]
+
+        target_org_members_data = {}
+        for target_org_member in target_org_members:
+            target_org_members_data[target_org_member["attributes"]["email"]] = target_org_member["id"]
+
+        org_membership_map = {}
+
+        for source_org_member in source_org_members:
+            source_org_member_email = source_org_member["attributes"]["email"]
+            source_org_member_id = source_org_member["relationships"]["user"]["data"]["id"]
+
+            if source_org_member_email in target_org_members_data:
+                org_membership_map[source_org_member_id] = target_org_members_data[source_org_member_email]
+                # TODO: should the team membership be checked for an existing org member and updated to match
+                # the source_org value if different?
+                self._logger.info(f"Org member: %s, exists. Skipped." % source_org_member_email)
+                continue
+
+            for team in source_org_member["relationships"]["teams"]["data"]:
+                team["id"] = teams_map[team["id"]]
+
+            # Build the new user invite payload
+            new_user_invite_payload = {
+                "data": {
+                    "attributes": {
+                        "email": source_org_member_email
+                    },
+                    "relationships": {
+                        "teams": {
+                            "data": source_org_member["relationships"]["teams"]["data"]
+                        },
+                    },
+                    "type": "organization-memberships"
+                }
+            }
+
+            # try statement required in case a user account tied to the email address does not yet exist
+            try:
+                target_org_member = self._api_target.org_memberships.invite( \
+                    new_user_invite_payload)["data"]
+            except:
+                org_membership_map[source_org_member["relationships"]["user"]["data"]["id"]] = \
+                    None
+                self._logger.info(f"User account for email: %s does not exist. Skipped.", source_org_member_email)
+                continue
+
+            new_user_id = target_org_member["relationships"]["user"]["data"]["id"]
             org_membership_map[source_org_member["relationships"]["user"]["data"]["id"]] = \
-                None
+                new_user_id
 
-            print("\t", "A user account tied to", source_org_member_email, "does not exist, skipping...")
-            continue
+        self._logger.info("Org memberships migrated.")
 
-        new_user_id = target_org_member["relationships"]["user"]["data"]["id"]
-        org_membership_map[source_org_member["relationships"]["user"]["data"]["id"]] = \
-            new_user_id
+        return org_membership_map
 
-    print("Org memberships migrated.")
+    def delete_all_from_target(self):
+        self._logger.info("Deleting organization members...")
 
-    return org_membership_map
+        org_members = self._api_target.org_memberships.list_for_org( \
+            page=0, page_size=100)["data"]
 
-def delete_all(api_target):
-    print("Deleting organization members...")
-
-    org_members = api_target.org_memberships.list_for_org( \
-        page=0, page_size=100)["data"]
-
-    if org_members:
         for org_member in org_members:
             try:
-                api_target.org_memberships.remove(org_member["id"])
-                print(f"\t removed org member %s..." % org_member["attributes"]["email"])
+                self._api_target.org_memberships.remove(org_member["id"])
+                self._logger.info(f"Org member: %s, deleted." % org_member["attributes"]["email"])
             except exceptions.TFCHTTPUnclassified as unclassified:
                 # Rather than add some complicated logic, if we get the error message saying
                 # we can't delete ourselves from a group we own, just skip it. Otherwise
@@ -88,4 +92,4 @@ def delete_all(api_target):
                 if "remove yourself" not in str(unclassified):
                     raise unclassified
 
-    print("Organization members deleted.")
+        self._logger.info("Organization members deleted.")
