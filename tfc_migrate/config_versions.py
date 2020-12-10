@@ -36,10 +36,10 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
                     new_config_version = self._api_target.config_versions.create(\
                         workspaces_map[workspace_id], new_config_version_payload)["data"]
 
-                    self._logger(f"Config version for workspace: %s, created." % workspace_name)
+                    self._logger.info(f"Config version for workspace: %s, created." % workspace_name)
 
                     workspace_to_config_version_upload_map[workspace_name] = \
-                        new_config_version["attributes"]["upload_url"]
+                        new_config_version["attributes"]["upload-url"]
 
         self._logger.info("Config versions migrated.")
 
