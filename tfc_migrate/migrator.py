@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 import json
 import logging
-import requests
 
 from .agent_pools import AgentPoolsWorker
 from .config_versions import ConfigVersionsWorker

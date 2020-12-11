@@ -61,7 +61,8 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
                         "source-name": source_workspace["attributes"]["source-name"],
                         "source-url": source_workspace["attributes"]["source-url"],
                         "queue-all-runs": source_workspace["attributes"]["queue-all-runs"],
-                        "speculative-enabled": source_workspace["attributes"]["speculative-enabled"],
+                        "speculative-enabled": \
+                            source_workspace["attributes"]["speculative-enabled"],
                         "trigger-prefixes": source_workspace["attributes"]["trigger-prefixes"],
                     },
                     "type": "workspaces"
@@ -72,14 +73,16 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
             if source_workspace["attributes"]["execution-mode"] == "agent":
                 if 'app.terraform.io' in self._api_target.get_url():
                     new_workspace_payload["data"]["attributes"]["agent-pool-id"] = \
-                        agent_pools_map[source_workspace["relationships"]["agent-pool"]["data"]["id"]]
+                        agent_pools_map[\
+                            source_workspace["relationships"]["agent-pool"]["data"]["id"]]
                 else:
                     new_workspace_payload["data"]["attributes"]["execution-mode"] = "remote"
 
             if source_workspace["attributes"]["vcs-repo"] is not None:
                 oauth_token_id = ""
                 for vcs_connection in self._vcs_connection_map:
-                    if vcs_connection["source"] == source_workspace["attributes"]["vcs-repo"]["oauth-token-id"]:
+                    if vcs_connection["source"] == \
+                        source_workspace["attributes"]["vcs-repo"]["oauth-token-id"]:
                         oauth_token_id = vcs_connection["target"]
 
                 new_workspace_payload["data"]["attributes"]["vcs-repo"] = {

@@ -52,7 +52,8 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
         return workspace_to_config_version_upload_map
 
 
-    def migrate_config_files(self, workspace_to_config_version_upload_map, workspace_to_file_path_map):
+    def migrate_config_files(self, \
+        workspace_to_config_version_upload_map, workspace_to_file_path_map):
         self._logger.info("Migrating config files...")
 
         for workspace_name in workspace_to_file_path_map:

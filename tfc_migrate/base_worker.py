@@ -13,14 +13,8 @@ class TFCMigratorBaseWorker(ABC):
         self._api_target = api_target
         self._vcs_connection_map = vcs_connection_map
 
-    """
-    # TODO
-
-    @abstractmethod
     def migrate_all(self):
-        return []
+        pass
 
-    @abstractmethod
     def delete_all_from_target(self):
-        return []
-    """
+        pass
