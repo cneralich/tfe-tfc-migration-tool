@@ -37,6 +37,34 @@ def confirm_delete_resource_type(resource_type, api):
     return answer == "y"
 
 
+def handle_output(\
+    teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
+        workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
+            module_to_module_version_upload_map, policies_map, policy_sets_map, \
+                sensitive_policy_set_parameter_data, sensitive_variable_data, \
+                    write_to_file=False):
+
+        output_json = {
+            "teams_map": teams_map,
+            "ssh_keys_map": ssh_keys_map,
+            "ssh_key_name_map": ssh_key_name_map,
+            "workspaces_map": workspaces_map,
+            "workspace_to_ssh_key_map": workspace_to_ssh_key_map,
+            "workspace_to_config_version_upload_map": workspace_to_config_version_upload_map,
+            "module_to_module_version_upload_map": module_to_module_version_upload_map,
+            "policies_map": policies_map,
+            "policy_sets_map": policy_sets_map,
+            "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
+            "sensitive_variable_data": sensitive_variable_data
+        }
+
+        if write_to_file:
+            with open("outputs.txt", "w") as f:
+                f.write(output_json)
+        else:
+            print(output_json)
+
+
 class TFCMigrator(ABC):
 
     def __init__(self, api_source, api_target, vcs_connection_map, log_level):
@@ -65,7 +93,7 @@ class TFCMigrator(ABC):
         self.workspaces = WorkspacesWorker(api_source, api_target, vcs_connection_map, log_level)
         self.workspace_ssh_keys = WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, log_level)
 
-    def migrate_all(self, migrate_all_state):
+    def migrate_all(self, write_to_file, migrate_all_state):
         """
         NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
         The users must exist in the system ahead of time if you want to use this.
@@ -118,11 +146,11 @@ class TFCMigrator(ABC):
         # TODO: manage extracting module and publishing tarball, this doesn't work.
         # registry_module_versions.migrate_module_version_files()
 
-        # handle_output(teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
-                # workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
-                    # module_to_module_version_upload_map, policies_map, policy_sets_map, \
-                        # sensitive_policy_set_parameter_data, sensitive_variable_data, \
-                            # write_to_file=write_to_file)
+        handle_output(teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
+                workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
+                    module_to_module_version_upload_map, policies_map, policy_sets_map, \
+                        sensitive_policy_set_parameter_data, sensitive_variable_data, \
+                            write_to_file=write_to_file)
 
 
     def delete_all_from_target(self, no_confirmation):

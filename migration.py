@@ -20,34 +20,6 @@ TFE_ORG_TARGET = os.getenv("TFE_ORG_TARGET", None)
 # NOTE: this is parsed in the main function
 TFE_VCS_CONNECTION_MAP = None
 
-def handle_output(\
-    teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
-        workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
-            module_to_module_version_upload_map, policies_map, policy_sets_map, \
-                sensitive_policy_set_parameter_data, sensitive_variable_data, \
-                    write_to_file=False):
-
-        output_json = {
-            "teams_map": teams_map,
-            "ssh_keys_map": ssh_keys_map,
-            "ssh_key_name_map": ssh_key_name_map,
-            "workspaces_map": workspaces_map,
-            "workspace_to_ssh_key_map": workspace_to_ssh_key_map,
-            "workspace_to_config_version_upload_map": workspace_to_config_version_upload_map,
-            "module_to_module_version_upload_map": module_to_module_version_upload_map,
-            "policies_map": policies_map,
-            "policy_sets_map": policy_sets_map,
-            "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
-            "sensitive_variable_data": sensitive_variable_data
-        }
-
-        if write_to_file:
-            with open("outputs.txt", "w") as f:
-                f.write(output_json)
-        else:
-            print(output_json)
-
-
 def migrate_sensitive_to_target():
     # TODO: figure out how we want to handle the user inputing sensitive data
     # ssh_keys.migrate_key_files(api_target, ssh_key_name_map, ssh_key_file_path_map)
@@ -61,7 +33,7 @@ def main(migrator, write_to_file, delete_all, no_confirmation, migrate_all_state
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
     else:
-        migrator.migrate_all(migrate_all_state)
+        migrator.migrate_all(write_to_file, migrate_all_state)
 
 if __name__ == "__main__":
     """
