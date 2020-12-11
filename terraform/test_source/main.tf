@@ -2,7 +2,11 @@ provider "tfe" {
   hostname = var.hostname
 }
 
-# Create users
+# Pull User Data
+data "tfe_organization_membership" "migration-test-user" {
+  organization  = var.org_name
+  email = var.email
+}
 
 # Create teams
 resource "tfe_team" "migration-test-team-one" {
@@ -32,6 +36,7 @@ resource "tfe_agent_pool" "migration-test-agent-pool" {
 resource "tfe_workspace" "migration-test-workspace-vcs" {
   name         = "${var.prefix}-test-workspace-vcs"
   organization = var.org_name
+  auto_apply     = true
 
   working_directory = var.working_directory
   vcs_repo {
@@ -53,7 +58,6 @@ resource "tfe_workspace" "migration-test-workspace-agent-pool" {
   agent_pool_id  = tfe_agent_pool.migration-test-agent-pool.id
   execution_mode = "agent"
   ssh_key_id     = tfe_ssh_key.migration-test-ssh-key.id
-  auto_apply     = true
 
   working_directory = var.working_directory
   vcs_repo {
@@ -64,115 +68,116 @@ resource "tfe_workspace" "migration-test-workspace-agent-pool" {
 
 # Add variables to workspaces
 resource "tfe_variable" "non-sensitive-tf-vars-vcs" {
-  for_each = var.tf_vars
-  key = each.key
-  value = each.value
-  category = "terraform"
-  sensitive = false
+  for_each     = var.tf_vars
+  key          = each.key
+  value        = each.value
+  category     = "terraform"
+  sensitive    = false
   workspace_id = tfe_workspace.migration-test-workspace-vcs.id
 }
 
 resource "tfe_variable" "non-sensitive-tf-vars-api" {
-  for_each = var.tf_vars
-  key = each.key
-  value = each.value
-  category = "terraform"
-  sensitive = false
+  for_each     = var.tf_vars
+  key          = each.key
+  value        = each.value
+  category     = "terraform"
+  sensitive    = false
   workspace_id = tfe_workspace.migration-test-workspace-api.id
 }
 
 resource "tfe_variable" "non-sensitive-tf-vars-agent" {
-  for_each = var.tf_vars
-  key = each.key
-  value = each.value
-  category = "terraform"
-  sensitive = false
+  for_each     = var.tf_vars
+  key          = each.key
+  value        = each.value
+  category     = "terraform"
+  sensitive    = false
   workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
 }
 
 # Add sensitive variables to workspaces
 resource "tfe_variable" "sensitive-tf-vars-vcs" {
-  for_each = var.sensitive_tf_vars
-  key = each.key
-  value = each.value
-  category = "terraform"
-  sensitive = true
+  for_each     = var.sensitive_tf_vars
+  key          = each.key
+  value        = each.value
+  category     = "terraform"
+  sensitive    = true
   workspace_id = tfe_workspace.migration-test-workspace-vcs.id
 }
 
 resource "tfe_variable" "sensitive-tf-vars-api" {
-  for_each = var.sensitive_tf_vars
-  key = each.key
-  value = each.value
-  category = "terraform"
-  sensitive = true
+  for_each     = var.sensitive_tf_vars
+  key          = each.key
+  value        = each.value
+  category     = "terraform"
+  sensitive    = true
   workspace_id = tfe_workspace.migration-test-workspace-api.id
 }
 
 resource "tfe_variable" "sensitive-tf-vars-agent" {
-  for_each = var.sensitive_tf_vars
-  key = each.key
-  value = each.value
-  category = "terraform"
-  sensitive = true
+  for_each     = var.sensitive_tf_vars
+  key          = each.key
+  value        = each.value
+  category     = "terraform"
+  sensitive    = true
   workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
 }
 
 # Add env variables to workspaces
 resource "tfe_variable" "env-vars-vcs" {
-  for_each = var.env_vars
-  key = each.key
-  value = each.value
-  category = "env"
-  sensitive = false
+  for_each     = var.env_vars
+  key          = each.key
+  value        = each.value
+  category     = "env"
+  sensitive    = false
   workspace_id = tfe_workspace.migration-test-workspace-vcs.id
 }
 
 resource "tfe_variable" "env-vars-api" {
-  for_each = var.env_vars
-  key = each.key
-  value = each.value
-  category = "env"
-  sensitive = false
+  for_each     = var.env_vars
+  key          = each.key
+  value        = each.value
+  category     = "env"
+  sensitive    = false
   workspace_id = tfe_workspace.migration-test-workspace-api.id
 }
 
 resource "tfe_variable" "env-vars-agent" {
-  for_each = var.env_vars
-  key = each.key
-  value = each.value
-  category = "env"
-  sensitive = false
+  for_each     = var.env_vars
+  key          = each.key
+  value        = each.value
+  category     = "env"
+  sensitive    = false
   workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
 }
 
 # Add sensitive env variables to workspaces
 resource "tfe_variable" "sensitive-env-vars-vcs" {
-  for_each = var.sensitive_env_vars
-  key = each.key
-  value = each.value
-  category = "env"
-  sensitive = true
+  for_each     = var.sensitive_env_vars
+  key          = each.key
+  value        = each.value
+  category     = "env"
+  sensitive    = true
   workspace_id = tfe_workspace.migration-test-workspace-vcs.id
 }
 
 resource "tfe_variable" "sensitive-env-vars-api" {
-  for_each = var.sensitive_env_vars
-  key = each.key
-  value = each.value
-  category = "env"
-  sensitive = true
+  for_each     = var.sensitive_env_vars
+  key          = each.key
+  value        = each.value
+  category     = "env"
+  sensitive    = true
   workspace_id = tfe_workspace.migration-test-workspace-api.id
 }
 
 resource "tfe_variable" "sensitive-env-vars-agent" {
-  for_each = var.sensitive_env_vars
-  key = each.key
-  value = each.value
-  category = "env"
-  sensitive = true
+  for_each     = var.sensitive_env_vars
+  key          = each.key
+  value        = each.value
+  category     = "env"
+  sensitive    = true
   workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
 }
+
 # Create state versions
 
 # Create run triggers
@@ -193,10 +198,34 @@ resource "tfe_run_trigger" "api-to-vcs" {
 }
 
 # Create email notification configs
+resource "tfe_notification_configuration" "email-notification" {
+  name                  = "${var.prefix}-test-notification-email"
+  enabled               = true
+  destination_type      = "email"
+  email_user_ids        = [data.tfe_organization_membership.migration-test-user.user_id]
+  triggers              = ["run:created", "run:planning", "run:errored"]
+  workspace_id = tfe_workspace.migration-test-workspace-vcs.id
+}
 
 # Create Slack notification configs
+resource "tfe_notification_configuration" "slack-notification" {
+  name                      = "${var.prefix}-test-notification-slack"
+  enabled                   = true
+  destination_type          = "slack"
+  triggers                  = ["run:created", "run:planning", "run:errored"]
+  url                       = var.slack_notification_url
+  workspace_id     = tfe_workspace.migration-test-workspace-api.id
+}
 
 # Create generic endpoint notification configs
+resource "tfe_notification_configuration" "generic-notification" {
+  name                      = "${var.prefix}-test-notification-generic"
+  enabled                   = true
+  destination_type          = "generic"
+  triggers                  = ["run:created", "run:planning", "run:errored"]
+  url                       = var.generic_notification_url
+  workspace_id     = tfe_workspace.migration-test-workspace-agent-pool.id
+}
 
 # Set up team access to workspaces
 
