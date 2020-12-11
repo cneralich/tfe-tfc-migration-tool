@@ -1,4 +1,9 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: SSH Keys.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
+
 
 class SSHKeysWorker(TFCMigratorBaseWorker):
 
@@ -28,7 +33,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
             if source_ssh_key_name in target_ssh_keys_data:
                 ssh_keys_map[source_ssh_key_id] = target_ssh_keys_data[source_ssh_key_name]
                 ssh_key_name_map[source_ssh_key_name] = target_ssh_keys_data[source_ssh_key_name]
-                self._logger.info(f" SSH Key: %s, exists. Skipped." % source_ssh_key_name)
+                self._logger.info(" SSH Key: %s, exists. Skipped." % source_ssh_key_name)
                 continue
 
             # Build the new agent pool payload
@@ -45,7 +50,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
             # Create SSH key in the target org
             # NOTE: The actual key material itself must be added separately afterward
             new_ssh_key = self._api_target.ssh_keys.create(new_ssh_key_payload)["data"]
-            self._logger.info(f"SSH Key: %s, created." % source_ssh_key_name)
+            self._logger.info("SSH Key: %s, created." % source_ssh_key_name)
 
             new_ssh_key_id = new_ssh_key["id"]
             ssh_keys_map[source_ssh_key_id] = new_ssh_key_id
@@ -93,7 +98,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
         ssh_keys = self._api_target.ssh_keys.list()["data"]
         if ssh_keys:
             for ssh_key in ssh_keys:
-                self._logger.info(f"SSH key: %s, deleted..." % ssh_key["attributes"]["name"])
+                self._logger.info("SSH key: %s, deleted..." % ssh_key["attributes"]["name"])
                 self._api_target.ssh_keys.destroy(ssh_key["id"])
 
         self._logger.info("SSH keys deleted.")

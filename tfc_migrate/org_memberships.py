@@ -1,3 +1,7 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Org Memberships.
+"""
+
 from terrasnek import exceptions
 from .base_worker import TFCMigratorBaseWorker
 
@@ -24,7 +28,8 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
 
         target_org_members_data = {}
         for target_org_member in target_org_members:
-            target_org_members_data[target_org_member["attributes"]["email"]] = target_org_member["id"]
+            target_org_members_data[target_org_member["attributes"]["email"]] = \
+                target_org_member["id"]
 
         org_membership_map = {}
 
@@ -33,10 +38,12 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
             source_org_member_id = source_org_member["relationships"]["user"]["data"]["id"]
 
             if source_org_member_email in target_org_members_data:
-                org_membership_map[source_org_member_id] = target_org_members_data[source_org_member_email]
-                # TODO: should the team membership be checked for an existing org member and updated to match
-                # the source_org value if different?
-                self._logger.info(f"Org member: %s, exists. Skipped." % source_org_member_email)
+                org_membership_map[source_org_member_id] = \
+                    target_org_members_data[source_org_member_email]
+
+                # TODO: should the team membership be checked for an existing org member
+                # and updated to match the source_org value if different?
+                self._logger.info("Org member: %s, exists. Skipped." % source_org_member_email)
                 continue
 
             for team in source_org_member["relationships"]["teams"]["data"]:
@@ -57,14 +64,16 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
                 }
             }
 
-            # try statement required in case a user account tied to the email address does not yet exist
+            # try statement required in case a user account tied to the email address does
+            # not yet exist
             try:
                 target_org_member = self._api_target.org_memberships.invite( \
                     new_user_invite_payload)["data"]
             except:
                 org_membership_map[source_org_member["relationships"]["user"]["data"]["id"]] = \
                     None
-                self._logger.info(f"User account for email: %s does not exist. Skipped.", source_org_member_email)
+                self._logger.info(\
+                    "User account for email: %s does not exist. Skipped.", source_org_member_email)
                 continue
 
             new_user_id = target_org_member["relationships"]["user"]["data"]["id"]
@@ -84,7 +93,7 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
         for org_member in org_members:
             try:
                 self._api_target.org_memberships.remove(org_member["id"])
-                self._logger.info(f"Org member: %s, deleted." % org_member["attributes"]["email"])
+                self._logger.info("Org member: %s, deleted." % org_member["attributes"]["email"])
             except exceptions.TFCHTTPUnclassified as unclassified:
                 # Rather than add some complicated logic, if we get the error message saying
                 # we can't delete ourselves from a group we own, just skip it. Otherwise

@@ -1,4 +1,9 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Teams.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
+
 
 class TeamsWorker(TFCMigratorBaseWorker):
 
@@ -29,7 +34,7 @@ class TeamsWorker(TFCMigratorBaseWorker):
 
             if source_team_name in target_teams_data:
                 teams_map[source_team["id"]] = target_teams_data[source_team_name]
-                self._logger.info(f"Team: %s, exists. Skipped." % source_team_name)
+                self._logger.info("Team: %s, exists. Skipped." % source_team_name)
                 continue
 
             if source_team_name == "owners":
@@ -56,7 +61,7 @@ class TeamsWorker(TFCMigratorBaseWorker):
 
                 # Create team in the target org
                 new_team = self._api_target.teams.create(new_team_payload)
-                self._logger.info(f"Team %s, created." % source_team_name)
+                self._logger.info("Team %s, created." % source_team_name)
 
                 # Build Team ID Map
                 teams_map[source_team["id"]] = new_team["data"]["id"]
@@ -75,6 +80,6 @@ class TeamsWorker(TFCMigratorBaseWorker):
                 team_name = team["attributes"]["name"]
                 if team_name != "owners":
                     self._api_target.teams.destroy(team["id"])
-                    self._logger.info(f"Team: %s deleted." % team_name)
+                    self._logger.info("Team: %s deleted." % team_name)
 
         self._logger.info("Teams deleted.")

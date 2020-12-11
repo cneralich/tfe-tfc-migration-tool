@@ -1,4 +1,9 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Workspace vars.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
+
 
 class WorkspaceVarsWorker(TFCMigratorBaseWorker):
 
@@ -11,17 +16,23 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
         sensitive_variable_data = []
         for source_workspace_id in workspaces_map:
             target_workspace_id = workspaces_map[source_workspace_id]
-            target_workspace_name = self._api_target.workspaces.show(workspace_id=target_workspace_id)["data"]["attributes"]["name"]
+            target_workspace_name = \
+                self._api_target.workspaces.show(\
+                    workspace_id=target_workspace_id)["data"]["attributes"]["name"]
 
 
             # Pull variables from the old workspace
-            source_workspace_vars = self._api_source.workspace_vars.list(source_workspace_id)["data"]
+            source_workspace_vars = \
+                self._api_source.workspace_vars.list(source_workspace_id)["data"]
+
             # Get the variables that may already exist in the target workspace from a previous run
-            existing_target_workspace_vars = self._api_target.workspace_vars.list(target_workspace_id)["data"]
+            existing_target_workspace_vars = \
+                self._api_target.workspace_vars.list(target_workspace_id)["data"]
 
             target_workspace_var_data = {}
             for target_workspace_var in existing_target_workspace_vars:
-                target_workspace_var_data[target_workspace_var["attributes"]["key"]] = target_workspace_var["id"]
+                target_workspace_var_data[target_workspace_var["attributes"]["key"]] = \
+                    target_workspace_var["id"]
 
             # NOTE: this is reversed to maintain the order present in the source
             for source_variable in reversed(source_workspace_vars):
@@ -45,12 +56,17 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
 
                 # Make sure we haven't already created this variable in a past run
                 if target_variable_key in target_workspace_var_data:
+
                     self._logger.info("Workspace variable: %s, for workspace %s, exists. Skipped." \
                             % (target_variable_key, target_workspace_name))
+
                     if target_variable_sensitive and return_sensitive_variable_data:
-                        sensitive_variable_map["variable_id"] = target_workspace_var_data[target_variable_key]
+                        sensitive_variable_map["variable_id"] = \
+                            target_workspace_var_data[target_variable_key]
+
                         # Build the sensitive variable map
                         sensitive_variable_data.append(sensitive_variable_map)
+
                     continue
 
                 # Build the new variable payload
@@ -121,11 +137,13 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
         if target_workspaces:
             for target_workspace in target_workspaces:
                 target_workspace_id = target_workspace["id"]
-                target_workspace_variables = self._api_target.workspace_vars.list(target_workspace_id)["data"]
+                target_workspace_variables = \
+                    self._api_target.workspace_vars.list(target_workspace_id)["data"]
+
                 if target_workspace_variables:
                     for target_workspace_variable in target_workspace_variables:
                         self._api_target.workspace_vars.destroy(target_workspace_id, target_workspace_variable["id"])
-                        self._logger.info(f"Workspace variable %s, from workspace %s, deleted." \
+                        self._logger.info("Workspace variable %s, from workspace %s, deleted." \
                             % (target_workspace_variable["attributes"]["key"], target_workspace["attributes"]["name"]))
 
         self._logger.info("Workspace variables deleted.")

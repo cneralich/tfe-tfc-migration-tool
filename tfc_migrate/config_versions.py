@@ -1,4 +1,9 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Config Versions.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
+
 
 class ConfigVersionsWorker(TFCMigratorBaseWorker):
 
@@ -36,7 +41,7 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
                     new_config_version = self._api_target.config_versions.create(\
                         workspaces_map[workspace_id], new_config_version_payload)["data"]
 
-                    self._logger.info(f"Config version for workspace: %s, created." % workspace_name)
+                    self._logger.info("Config version for workspace: %s, created." % workspace_name)
 
                     workspace_to_config_version_upload_map[workspace_name] = \
                         new_config_version["attributes"]["upload-url"]
@@ -58,6 +63,6 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
                 workspace_to_file_path_map[workspace_name], \
                     workspace_to_config_version_upload_map[workspace_name])
 
-            self._logger.info(f"Config files for workspace: %s, uploaded." % workspace_name)
+            self._logger.info("Config files for workspace: %s, uploaded." % workspace_name)
 
         self._logger.info("Config files migrated.")

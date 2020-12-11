@@ -1,3 +1,7 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: State Versions.
+"""
+
 import base64
 import hashlib
 import json
@@ -5,6 +9,7 @@ from urllib import request
 from terrasnek import exceptions
 
 from .base_worker import TFCMigratorBaseWorker
+
 
 class StateVersionsWorker(TFCMigratorBaseWorker):
 
@@ -30,7 +35,8 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 }
             ]
 
-            source_state_versions = self._api_source.state_versions.list(filters=source_state_filters)["data"]
+            source_state_versions = \
+                self._api_source.state_versions.list(filters=source_state_filters)["data"]
 
             # TODO: paging
             target_state_filters = [
@@ -57,7 +63,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 source_state_serial = json.loads(source_state_data)["serial"]
 
                 if source_state_serial in target_state_version_serials:
-                    self._logger.info(f"State Version: %s, for workspace %s, exists. Skipped." % \
+                    self._logger.info("State Version: %s, for workspace %s, exists. Skipped." % \
                         (source_state_serial, source_workspace_name))
                     continue
 
@@ -78,7 +84,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                     }
                 }
 
-                self._logger.info(f"State Version: %s, for workspace %s created." % \
+                self._logger.info("State Version: %s, for workspace %s created." % \
                     (source_state_serial, source_workspace_name))
 
                 # Migrate state to the target workspace
@@ -103,7 +109,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             try:
                 current_version = self._api_source.state_versions.get_current(workspace_id)["data"]
             except exceptions.TFCHTTPNotFound:
-                self._logger.info(f"Current state version for workspace: %s, does not exist. Skipped." % source_workspace_name)
+                self._logger.info("Current state version for workspace: %s, does not exist. Skipped." % source_workspace_name)
                 continue
 
             state_url = current_version["attributes"]["hosted-state-download-url"]
@@ -128,7 +134,8 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 }
             }
 
-            self._logger.info(f"Current state version for workspace: %s, created." % source_workspace_name)
+            self._logger.info("Current state version for workspace: %s, created." % \
+                source_workspace_name)
 
             # Migrate state to the target workspace
             self._api_target.workspaces.lock(\

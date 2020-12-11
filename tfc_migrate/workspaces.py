@@ -1,3 +1,7 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Workspaces.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
 
 class WorkspacesWorker(TFCMigratorBaseWorker):
@@ -30,7 +34,7 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
                     ssh_key = source_workspace["relationships"]["ssh-key"]["data"]["id"]
                     workspace_to_ssh_key_map[source_workspace["id"]] = ssh_key
 
-                self._logger.info(f"Workspace: %s, exists. Skipped." % source_workspace_name)
+                self._logger.info("Workspace: %s, exists. Skipped." % source_workspace_name)
                 continue
 
             branch = "" if source_workspace["attributes"]["vcs-repo"] is None \
@@ -66,7 +70,8 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
             # Set agent pool ID unless target is TFE
             if source_workspace["attributes"]["execution-mode"] == "agent":
                 if 'app.terraform.io' in self._api_target.get_url():
-                    new_workspace_payload["data"]["attributes"]["agent-pool-id"] = agent_pools_map[source_workspace["relationships"]["agent-pool"]["data"]["id"]]
+                    new_workspace_payload["data"]["attributes"]["agent-pool-id"] = \
+                        agent_pools_map[source_workspace["relationships"]["agent-pool"]["data"]["id"]]
                 else:
                     new_workspace_payload["data"]["attributes"]["execution-mode"] = "remote"
 
@@ -86,7 +91,7 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
 
             # Build the new workspace
             new_workspace = self._api_target.workspaces.create(new_workspace_payload)
-            self._logger.info(f"Workspace: %s, created." % source_workspace_name)
+            self._logger.info("Workspace: %s, created." % source_workspace_name)
 
             new_workspace_id = new_workspace["data"]["id"]
             workspaces_map[source_workspace["id"]] = new_workspace_id
@@ -106,6 +111,6 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
         if workspaces:
             for workspace in workspaces:
                 self._api_target.workspaces.destroy(workspace["id"])
-                self._logger.info(f"Workspace: %s, deleted." % workspace["attributes"]["name"])
+                self._logger.info("Workspace: %s, deleted." % workspace["attributes"]["name"])
 
         self._logger.info("Workspaces deleted.")

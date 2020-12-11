@@ -36,7 +36,7 @@ def main(migrator, delete_all, no_confirmation, migrate_all_state):
         migrator.migrate_all(migrate_all_state)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Migrate from TFE/C to TFE/C.')
+    parser = argparse.ArgumentParser(description='Migrate from one TFE/C org to another TFE/C org')
     parser.add_argument('--vcs-file-path', dest="vcs_file_path", default=DEFAULT_VCS_FILE, \
         help="Path to the VCS JSON file. Defaults to `vcs.json`.")
     parser.add_argument('--migrate-all-state', dest="migrate_all_state", action="store_true", \

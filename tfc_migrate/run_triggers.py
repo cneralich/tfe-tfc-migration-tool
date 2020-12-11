@@ -1,4 +1,9 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Run Triggers.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
+
 
 class RunTriggersWorker(TFCMigratorBaseWorker):
 
@@ -19,7 +24,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
 
             # pull all inbound run triggers for the source workspace
             source_workspace_run_triggers = self._api_source.run_triggers.list(
-                source_workspace_id, filters=workspace_run_trigger_filters,  page_size=100)["data"]
+                source_workspace_id, filters=workspace_run_trigger_filters, page_size=100)["data"]
 
             if source_workspace_run_triggers:
                 # pull all inbound run triggers for the target workspace
@@ -27,16 +32,20 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                     target_workspace_id, filters=workspace_run_trigger_filters)["data"]
 
                 # compile a list of all originating workspace_ids for the target workspace
-                target_workspace_run_trigger_workspace_ids = [target_workspace_run_trigger["relationships"]["sourceable"]["data"]["id"]\
-                    for target_workspace_run_trigger in target_workspace_run_triggers]
+                target_workspace_run_trigger_workspace_ids = \
+                    [target_workspace_run_trigger["relationships"]["sourceable"]["data"]["id"]\
+                        for target_workspace_run_trigger in target_workspace_run_triggers]
 
                 for source_workspace_run_trigger in source_workspace_run_triggers:
-                    # pull the originating workspace_id for any inbound run trigger for the source workspace
-                    source_workspace_trigger_workspace_id = source_workspace_run_trigger["relationships"]["sourceable"]["data"]["id"]
-                    target_workspace_trigger_workspace_id = workspaces_map[source_workspace_trigger_workspace_id]
+                    # Get originating workspace_id for any inbound trigger for the source workspace
+                    source_workspace_trigger_workspace_id = \
+                        source_workspace_run_trigger["relationships"]["sourceable"]["data"]["id"]
+                    target_workspace_trigger_workspace_id = \
+                        workspaces_map[source_workspace_trigger_workspace_id]
 
-                    if target_workspace_trigger_workspace_id in target_workspace_run_trigger_workspace_ids:
-                        self._logger.info(f"Run Trigger: %s, in target workspace ID %s exists. Skipped." \
+                    if target_workspace_trigger_workspace_id in \
+                        target_workspace_run_trigger_workspace_ids:
+                        self._logger.info("Run Trigger: %s, in workspace ID %s exists. Skipped." \
                             % (target_workspace_trigger_workspace_id, target_workspace_id))
                         continue
 
@@ -58,7 +67,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                     self._api_target.run_triggers.create(
                         target_workspace_id, new_run_trigger_payload)
 
-                    self._logger.info(f"Run trigger from workspace ID: %s, to workspace ID: %s, created." \
+                    self._logger.info("Run trigger workspace ID: %s, to workspace ID: %s, created." \
                         % (target_workspace_trigger_workspace_id, target_workspace_id))
 
         self._logger.info("Run triggers migrated.")
@@ -85,6 +94,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                 if run_triggers:
                     for run_trigger in run_triggers:
                         self._api_target.run_triggers.destroy(run_trigger["id"])
-                        self._logger.info(f"Run Trigger: %s, deleted." % run_trigger["relationships"]["sourceable"]["data"]["id"])
+                        self._logger.info("Run Trigger: %s, deleted." % \
+                            run_trigger["relationships"]["sourceable"]["data"]["id"])
 
         self._logger.info("Run triggers deleted.")

@@ -32,7 +32,7 @@ export TFE_ORG_DESTINATION="bar"
 
 The TFE_VCS_CONNECTION_MAP is a list of dictionaries, each of which maps a `source` VCS OAuth token value to the corresponding `target` VCS OAuth token value, like so:
 
-```
+```json
 [
     {
     "source": "ot-foo",
@@ -42,7 +42,7 @@ The TFE_VCS_CONNECTION_MAP is a list of dictionaries, each of which maps a `sour
     "source": "ot-bar",
     "target": "ot-baz"
     }
-]    
+]
 ```
 
 By default, the migration tool will load these values from a file named `vcs.json`, though a custom file path may also be provided via a command line argument at runtime (more on this below).
@@ -115,7 +115,7 @@ The following migration operations are currently supported:
     * Includes a helper function to migrate sensitive workspace variable values for all workspaces
 * [workspaces.py](tfc_migrate/workspaces.py)
     * Migrates all workspaces
-    * Includes a helper function to migrate all 
+    * Includes a helper function to migrate all
 
 
 ## Notes

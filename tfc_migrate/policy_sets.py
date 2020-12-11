@@ -1,3 +1,7 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Policy Sets.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
 
 class PolicySetsWorker(TFCMigratorBaseWorker):
@@ -15,7 +19,8 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
 
         target_policy_sets_data = {}
         for target_policy_set in target_policy_sets:
-            target_policy_sets_data[target_policy_set["attributes"]["name"]] = target_policy_set["id"]
+            target_policy_sets_data[target_policy_set["attributes"]["name"]] = \
+                target_policy_set["id"]
 
         self._logger.info("Migrating policy sets...")
 
@@ -24,8 +29,9 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
             source_policy_set_name = source_policy_set["attributes"]["name"]
 
             if source_policy_set_name in target_policy_sets_data:
-                policies_map[source_policy_set["id"]] = target_policy_sets_data[source_policy_set_name]
-                self._logger.info(f"Policy set: %s, exists. Skipped.")
+                policies_map[source_policy_set["id"]] = \
+                    target_policy_sets_data[source_policy_set_name]
+                self._logger.info("Policy set: %s, exists. Skipped.")
                 continue
 
             new_policy_set_payload = {
@@ -49,7 +55,8 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
             if source_policy_set["attributes"]["versioned"]:
                 oauth_token_id = ""
                 for vcs_connection in self._vcs_connection_map:
-                    if vcs_connection["source"] == source_policy_set["attributes"]["vcs-repo"]["oauth-token-id"]:
+                    if vcs_connection["source"] == \
+                        source_policy_set["attributes"]["vcs-repo"]["oauth-token-id"]:
                         oauth_token_id = vcs_connection["target"]
 
                 new_policy_set_payload["data"]["attributes"]["vcs-repo"] = {
@@ -82,7 +89,7 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
 
             # Create the policy set in the target organization
             new_policy_set = self._api_target.policy_sets.create(new_policy_set_payload)
-            self._logger.info(f"Policy set: %s, created." % source_policy_set_name)
+            self._logger.info("Policy set: %s, created." % source_policy_set_name)
 
             policy_sets_map[source_policy_set["id"]] = new_policy_set["data"]["id"]
 
@@ -95,10 +102,11 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
         self._logger.info("Deleting policy sets...")
 
         # TODO: handle paging
-        policy_sets = self._api_target.policy_sets.list(page_size=50, include="policies,workspaces")["data"]
+        policy_sets = self._api_target.policy_sets.list( \
+            page_size=50, include="policies,workspaces")["data"]
 
         for policy_set in policy_sets:
             self._api_target.policy_sets.destroy(policy_set["id"])
-            self._logger.info(f"Policy set: %s, deleted." % policy_set["attributes"]["name"])
+            self._logger.info("Policy set: %s, deleted." % policy_set["attributes"]["name"])
 
         self._logger.info("Policy sets deleted.")

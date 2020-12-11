@@ -34,22 +34,31 @@ class TFCMigrator(ABC):
         self._vcs_connection_map = vcs_connection_map
 
         self.agent_pools = AgentPoolsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.config_versions = ConfigVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.notification_configs = NotificationConfigsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.org_memberships = OrgMembershipsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.config_versions = \
+            ConfigVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.notification_configs = \
+            NotificationConfigsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.org_memberships = \
+            OrgMembershipsWorker(api_source, api_target, vcs_connection_map, log_level)
         self.policies = PoliciesWorker(api_source, api_target, vcs_connection_map, log_level)
         self.policy_sets = PolicySetsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.policy_set_params = PolicySetParamsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.registry_module_versions = RegistryModuleVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.registry_modules = RegistryModulesWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.policy_set_params = \
+            PolicySetParamsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.registry_module_versions = \
+            RegistryModuleVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.registry_modules = \
+            RegistryModulesWorker(api_source, api_target, vcs_connection_map, log_level)
         self.run_triggers = RunTriggersWorker(api_source, api_target, vcs_connection_map, log_level)
         self.ssh_keys = SSHKeysWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.state_versions = StateVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.state_versions = \
+            StateVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
         self.team_access = TeamAccessWorker(api_source, api_target, vcs_connection_map, log_level)
         self.teams = TeamsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.workspace_vars = WorkspaceVarsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.workspace_vars = \
+            WorkspaceVarsWorker(api_source, api_target, vcs_connection_map, log_level)
         self.workspaces = WorkspacesWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.workspace_ssh_keys = WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.workspace_ssh_keys = \
+            WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, log_level)
 
     def migrate_all(self, migrate_all_state):
         """
@@ -104,19 +113,6 @@ class TFCMigrator(ABC):
         # TODO: manage extracting module and publishing tarball, this doesn't work.
         # registry_module_versions.migrate_module_version_files()
 
-        self.handle_output(teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
-                workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
-                    module_to_module_version_upload_map, policies_map, policy_sets_map, \
-                        sensitive_policy_set_parameter_data, sensitive_variable_data, \
-                            )
-
-
-    def handle_output(\
-        self, teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
-            workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
-                module_to_module_version_upload_map, policies_map, policy_sets_map, \
-                    sensitive_policy_set_parameter_data, sensitive_variable_data):
-
         output_json = {
             "teams_map": teams_map,
             "ssh_keys_map": ssh_keys_map,
@@ -138,13 +134,15 @@ class TFCMigrator(ABC):
         if no_confirmation or self.confirm_delete_resource_type("run triggers", self._api_target):
             self.run_triggers.delete_all_from_target()
 
-        if no_confirmation or self.confirm_delete_resource_type("workspace variables", self._api_target):
+        if no_confirmation or \
+            self.confirm_delete_resource_type("workspace variables", self._api_target):
             self.workspace_vars.delete_all_from_target()
 
         if no_confirmation or self.confirm_delete_resource_type("team access", self._api_target):
             self.team_access.delete_all_from_target()
 
-        if no_confirmation or self.confirm_delete_resource_type("workspace ssh keys", self._api_target):
+        if no_confirmation or \
+            self.confirm_delete_resource_type("workspace ssh keys", self._api_target):
             self.workspace_ssh_keys.delete_all_from_target()
 
         if no_confirmation or self.confirm_delete_resource_type("workspaces", self._api_target):
@@ -154,7 +152,8 @@ class TFCMigrator(ABC):
         if no_confirmation or self.confirm_delete_resource_type("SSH keys", self._api_target):
             self.ssh_keys.delete_all_from_target()
 
-        if no_confirmation or self.confirm_delete_resource_type("org memberships", self._api_target):
+        if no_confirmation or \
+            self.confirm_delete_resource_type("org memberships", self._api_target):
             self.org_memberships.delete_all_from_target()
 
         if no_confirmation or self.confirm_delete_resource_type("teams", self._api_target):
@@ -166,10 +165,12 @@ class TFCMigrator(ABC):
         if no_confirmation or self.confirm_delete_resource_type("policy sets", self._api_target):
             self.policy_sets.delete_all_from_target()
 
-        if no_confirmation or self.confirm_delete_resource_type("policy set params", self._api_target):
+        if no_confirmation or \
+            self.confirm_delete_resource_type("policy set params", self._api_target):
             self.policy_set_params.delete_all_from_target()
 
-        if no_confirmation or self.confirm_delete_resource_type("registry modules", self._api_target):
+        if no_confirmation or \
+            self.confirm_delete_resource_type("registry modules", self._api_target):
             # NOTE: No need to delete registry module versions since this will handle that.
             self.registry_modules.delete_all_from_target()
 

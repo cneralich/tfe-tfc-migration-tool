@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-import json
 import logging
-import requests
+
 
 class TFCMigratorBaseWorker(ABC):
 

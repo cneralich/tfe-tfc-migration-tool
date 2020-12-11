@@ -1,3 +1,7 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Policy Set Params.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
 
 class PolicySetParamsWorker(TFCMigratorBaseWorker):
@@ -42,7 +46,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
                     new_parameter = self._api_target.policy_set_params.create(
                         new_policy_set_id, new_policy_parameter_payload)["data"]
 
-                    self._logger.info(f"Policy set param: %s, created." % policy_set_parameter_key)
+                    self._logger.info("Policy set param: %s, created." % policy_set_parameter_key)
 
                     new_parameter_id = new_parameter["id"]
 
@@ -99,14 +103,15 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
         self._logger.info("Deleting policy set params...")
 
         # TODO: handle paging
-        policy_sets = self._api_target.policy_sets.list(page_size=50, include="policies,workspaces")["data"]
+        policy_sets = self._api_target.policy_sets.list( \
+            page_size=50, include="policies,workspaces")["data"]
 
         if policy_sets:
             for policy_set in policy_sets:
                 params = self._api_target.policy_set_params.list(policy_set["id"])["data"]
 
                 for param in params:
-                    self._logger.info(f"Policy set param: %s, deleted.." % param["attributes"]["key"])
+                    self._logger.info("Policy set param: %s, deleted.." % param["attributes"]["key"])
                     self._api_target.policy_set_params.destroy(policy_set["id"], param["id"])
 
         self._logger.info("Policy set params deleted.")

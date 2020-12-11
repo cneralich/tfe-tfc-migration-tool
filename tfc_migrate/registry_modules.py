@@ -1,3 +1,7 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Registry Modules.
+"""
+
 from .base_worker import TFCMigratorBaseWorker
 
 class RegistryModulesWorker(TFCMigratorBaseWorker):
@@ -18,7 +22,7 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
                 source_module_name = source_module["name"]
 
                 if source_module_name in target_module_names:
-                    self._logger.info(f"Registry Module: %s, exists. Skipped." % source_module_name)
+                    self._logger.info("Registry Module: %s, exists. Skipped." % source_module_name)
                     continue
 
                 source_module_data = \
@@ -27,7 +31,8 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
 
                 oauth_token_id = ""
                 for vcs_connection in self._vcs_connection_map:
-                    if vcs_connection["source"] == source_module_data["attributes"]["vcs-repo"]["oauth-token-id"]:
+                    if vcs_connection["source"] == \
+                        source_module_data["attributes"]["vcs-repo"]["oauth-token-id"]:
                         oauth_token_id = vcs_connection["target"]
 
                 # Build the new module payload
@@ -35,9 +40,10 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
                     "data": {
                         "attributes": {
                             "vcs-repo": {
-                                "identifier": source_module_data["attributes"]["vcs-repo"]["identifier"],
-                                # NOTE that if the VCS the module was originally connected to has been
-                                # deleted, it will not return an OAuth Token ID and this will error.
+                                "identifier": \
+                                    source_module_data["attributes"]["vcs-repo"]["identifier"],
+                                # NOTE that if the VCS the module was connected to has been
+                                # deleted, it will not return Token ID and this will error.
                                 "oauth-token-id": oauth_token_id,
                                 "display_identifier": source_module_data\
                                     ["attributes"]["vcs-repo"]["display-identifier"]
@@ -66,6 +72,6 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
             for module in modules:
                 if module["source"] != "":
                     self._api_target.registry_modules.destroy(module["name"])
-                    self._logger.info(f"Registry module: %s, deleted." % module["name"])
+                    self._logger.info("Registry module: %s, deleted." % module["name"])
 
         self._logger.info("Registry modules deleted.")

@@ -1,5 +1,9 @@
+"""
+Module for Terraform Enterprise/Cloud Migration Worker: Notification Configs.
+"""
 
 from .base_worker import TFCMigratorBaseWorker
+
 
 class NotificationConfigsWorker(TFCMigratorBaseWorker):
 
@@ -43,15 +47,17 @@ class NotificationConfigsWorker(TFCMigratorBaseWorker):
                     }
 
                 else:
-                    new_notification_payload["data"]["attributes"]["token"] = source_notification["attributes"]["token"]
-                    new_notification_payload["data"]["attributes"]["url"] = source_notification["attributes"]["url"]
+                    new_notification_payload["data"]["attributes"]["token"] = \
+                        source_notification["attributes"]["token"]
+                    new_notification_payload["data"]["attributes"]["url"] = \
+                        source_notification["attributes"]["url"]
 
                 # TODO: add handling for failed webhook response
                 # Add notifications to the target workspace
                 self._api_target.notification_configs.create( \
                     workspaces_map[workspace_id], new_notification_payload)
 
-                self._logger.info(f"Notification Config: %s, created." % notification_name)
+                self._logger.info("Notification Config: %s, created." % notification_name)
 
         self._logger.info("Notification configs migrated.")
 
@@ -66,6 +72,7 @@ class NotificationConfigsWorker(TFCMigratorBaseWorker):
 
             for notification in notifications:
                 self._api_target.notification_configs.destroy(notification["id"])
-                self._logger.info(f"Notification Config: %s, deleted." % notification["attributes"]["name"])
+                self._logger.info("Notification Config: %s, deleted." % \
+                    notification["attributes"]["name"])
 
         self._logger.info("Notification configs deleted.")
