@@ -4,10 +4,12 @@ Module for Terraform Enterprise/Cloud Migration Worker: Registry Modules.
 
 from .base_worker import TFCMigratorBaseWorker
 
-class RegistryModulesWorker(TFCMigratorBaseWorker):
 
-    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
-        super().__init__(api_source, api_target, vcs_connection_map, log_level)
+class RegistryModulesWorker(TFCMigratorBaseWorker):
+    """
+    A class to represent the worker that will migrate all registry modules from
+    one TFC/E org to another TFC/E org.
+    """
 
     def migrate_all(self):
         self._logger.info("Migrating registry modules...")

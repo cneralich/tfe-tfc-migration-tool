@@ -5,9 +5,10 @@ Module for Terraform Enterprise/Cloud Migration Worker: Workspaces.
 from .base_worker import TFCMigratorBaseWorker
 
 class WorkspacesWorker(TFCMigratorBaseWorker):
-
-    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
-        super().__init__(api_source, api_target, vcs_connection_map, log_level)
+    """
+    A class to represent the worker that will migrate all workspaces from one
+    TFC/E org to another TFC/E org.
+    """
 
     def migrate_all(self, agent_pools_map):
         self._logger.info("Migrating workspaces...")

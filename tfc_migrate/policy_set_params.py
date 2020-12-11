@@ -4,10 +4,12 @@ Module for Terraform Enterprise/Cloud Migration Worker: Policy Set Params.
 
 from .base_worker import TFCMigratorBaseWorker
 
-class PolicySetParamsWorker(TFCMigratorBaseWorker):
 
-    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
-        super().__init__(api_source, api_target, vcs_connection_map, log_level)
+class PolicySetParamsWorker(TFCMigratorBaseWorker):
+    """
+    A class to represent the worker that will migrate all policy set params
+    from one TFC/E org to another TFC/E org.
+    """
 
     def migrate_all(self, policy_sets_map, return_sensitive_variable_data=True):
 

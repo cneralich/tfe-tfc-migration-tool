@@ -4,10 +4,12 @@ Module for Terraform Enterprise/Cloud Migration Worker: Policy Sets.
 
 from .base_worker import TFCMigratorBaseWorker
 
-class PolicySetsWorker(TFCMigratorBaseWorker):
 
-    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
-        super().__init__(api_source, api_target, vcs_connection_map, log_level)
+class PolicySetsWorker(TFCMigratorBaseWorker):
+    """
+    A class to represent the worker that will migrate all policy sets from one
+    TFC/E org to another TFC/E org.
+    """
 
     def migrate_all(self, workspaces_map, policies_map):
         # Pull policy sets from the source organization

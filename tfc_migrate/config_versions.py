@@ -6,9 +6,10 @@ from .base_worker import TFCMigratorBaseWorker
 
 
 class ConfigVersionsWorker(TFCMigratorBaseWorker):
-
-    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
-        super().__init__(api_source, api_target, vcs_connection_map, log_level)
+    """
+    A class to represent the worker that will migrate all config versions
+    from one TFC/E org to another TFC/E org.
+    """
 
     def migrate_all(self, workspaces_map):
         self._logger.info("Migrating config versions...")
