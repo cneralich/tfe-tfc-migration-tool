@@ -23,48 +23,6 @@ from .workspaces import WorkspacesWorker
 from .workspace_ssh_keys import WorkspaceSSHKeysWorker
 from .workspace_vars import WorkspaceVarsWorker
 
-
-# TODO: move this into the class
-def confirm_delete_resource_type(resource_type, api):
-    answer = ""
-
-    while answer not in ["y", "n"]:
-        question_string = \
-            "This will destroy all %s in org '%s' (%s). Want to continue? [Y/N]: " \
-                % (resource_type, api.get_org(), api.get_url())
-        answer = input(question_string).lower()
-
-    return answer == "y"
-
-
-def handle_output(\
-    teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
-        workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
-            module_to_module_version_upload_map, policies_map, policy_sets_map, \
-                sensitive_policy_set_parameter_data, sensitive_variable_data, \
-                    write_to_file=False):
-
-        output_json = {
-            "teams_map": teams_map,
-            "ssh_keys_map": ssh_keys_map,
-            "ssh_key_name_map": ssh_key_name_map,
-            "workspaces_map": workspaces_map,
-            "workspace_to_ssh_key_map": workspace_to_ssh_key_map,
-            "workspace_to_config_version_upload_map": workspace_to_config_version_upload_map,
-            "module_to_module_version_upload_map": module_to_module_version_upload_map,
-            "policies_map": policies_map,
-            "policy_sets_map": policy_sets_map,
-            "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
-            "sensitive_variable_data": sensitive_variable_data
-        }
-
-        if write_to_file:
-            with open("outputs.txt", "w") as f:
-                f.write(output_json)
-        else:
-            print(output_json)
-
-
 class TFCMigrator(ABC):
 
     def __init__(self, api_source, api_target, vcs_connection_map, log_level):
@@ -146,51 +104,91 @@ class TFCMigrator(ABC):
         # TODO: manage extracting module and publishing tarball, this doesn't work.
         # registry_module_versions.migrate_module_version_files()
 
-        handle_output(teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
+        self.handle_output(teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
                 workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
                     module_to_module_version_upload_map, policies_map, policy_sets_map, \
                         sensitive_policy_set_parameter_data, sensitive_variable_data, \
                             write_to_file=write_to_file)
 
 
+    def handle_output(\
+        self, teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
+            workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
+                module_to_module_version_upload_map, policies_map, policy_sets_map, \
+                    sensitive_policy_set_parameter_data, sensitive_variable_data, \
+                        write_to_file=False):
+
+        output_json = {
+            "teams_map": teams_map,
+            "ssh_keys_map": ssh_keys_map,
+            "ssh_key_name_map": ssh_key_name_map,
+            "workspaces_map": workspaces_map,
+            "workspace_to_ssh_key_map": workspace_to_ssh_key_map,
+            "workspace_to_config_version_upload_map": workspace_to_config_version_upload_map,
+            "module_to_module_version_upload_map": module_to_module_version_upload_map,
+            "policies_map": policies_map,
+            "policy_sets_map": policy_sets_map,
+            "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
+            "sensitive_variable_data": sensitive_variable_data
+        }
+
+        if write_to_file:
+            with open("outputs.txt", "w") as f:
+                f.write(output_json)
+        else:
+            print(output_json)
+
+    
     def delete_all_from_target(self, no_confirmation):
-        if no_confirmation or confirm_delete_resource_type("run triggers", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("run triggers", self._api_target):
             self.run_triggers.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("workspace variables", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("workspace variables", self._api_target):
             self.workspace_vars.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("team access", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("team access", self._api_target):
             self.team_access.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("workspace ssh keys", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("workspace ssh keys", self._api_target):
             self.workspace_ssh_keys.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("workspaces", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("workspaces", self._api_target):
             self.workspaces.delete_all_from_target()
 
         # No need to delete the key files, they get deleted when deleting keys.
-        if no_confirmation or confirm_delete_resource_type("SSH keys", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("SSH keys", self._api_target):
             self.ssh_keys.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("org memberships", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("org memberships", self._api_target):
             self.org_memberships.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("teams", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("teams", self._api_target):
             self.teams.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("policies", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("policies", self._api_target):
             self.policies.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("policy sets", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("policy sets", self._api_target):
             self.policy_sets.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("policy set params", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("policy set params", self._api_target):
             self.policy_set_params.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("registry modules", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("registry modules", self._api_target):
             # NOTE: No need to delete registry module versions since this will handle that.
             self.registry_modules.delete_all_from_target()
 
-        if no_confirmation or confirm_delete_resource_type("agent pools", self._api_target):
+        if no_confirmation or self.confirm_delete_resource_type("agent pools", self._api_target):
             self.agent_pools.delete_all_from_target()
+    
+
+    def confirm_delete_resource_type(self, resource_type, api):
+        answer = ""
+
+        while answer not in ["y", "n"]:
+            question_string = \
+                "This will destroy all %s in org '%s' (%s). Want to continue? [Y/N]: " \
+                    % (resource_type, api.get_org(), api.get_url())
+            answer = input(question_string).lower()
+
+        return answer == "y"
