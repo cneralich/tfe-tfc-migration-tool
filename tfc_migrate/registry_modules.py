@@ -24,7 +24,7 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
                 source_module_name = source_module["name"]
 
                 if source_module_name in target_module_names:
-                    self._logger.info("Registry Module: %s, exists. Skipped." % source_module_name)
+                    self._logger.info("Registry Module: %s, exists. Skipped.", source_module_name)
                     continue
 
                 source_module_data = \
@@ -74,6 +74,6 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
             for module in modules:
                 if module["source"] != "":
                     self._api_target.registry_modules.destroy(module["name"])
-                    self._logger.info("Registry module: %s, deleted." % module["name"])
+                    self._logger.info("Registry module: %s, deleted.", module["name"])
 
         self._logger.info("Registry modules deleted.")

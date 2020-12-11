@@ -58,7 +58,7 @@ class NotificationConfigsWorker(TFCMigratorBaseWorker):
                 self._api_target.notification_configs.create( \
                     workspaces_map[workspace_id], new_notification_payload)
 
-                self._logger.info("Notification Config: %s, created." % notification_name)
+                self._logger.info("Notification Config: %s, created.", notification_name)
 
         self._logger.info("Notification configs migrated.")
 
@@ -73,7 +73,7 @@ class NotificationConfigsWorker(TFCMigratorBaseWorker):
 
             for notification in notifications:
                 self._api_target.notification_configs.destroy(notification["id"])
-                self._logger.info("Notification Config: %s, deleted." % \
+                self._logger.info("Notification Config: %s, deleted.",  \
                     notification["attributes"]["name"])
 
         self._logger.info("Notification configs deleted.")

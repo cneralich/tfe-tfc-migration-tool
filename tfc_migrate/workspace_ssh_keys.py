@@ -29,8 +29,8 @@ class WorkspaceSSHKeysWorker(TFCMigratorBaseWorker):
                 }
             }
 
-            self._logger.info("SSH key: %s, for workspace: %s, created." % \
-                (ssh_key_id, workspace_id))
+            self._logger.info("SSH key: %s, for workspace: %s, created.", \
+                ssh_key_id, workspace_id)
 
             # Add SSH Keys to the target workspace
             self._api_target.workspaces.assign_ssh_key( \
@@ -56,7 +56,7 @@ class WorkspaceSSHKeysWorker(TFCMigratorBaseWorker):
 
             for workspace in workspaces:
                 if "ssh-key" in workspace["relationships"]:
-                    self._logger.info("SSH key for workspace: %s, deleted.." % \
+                    self._logger.info("SSH key for workspace: %s, deleted..", \
                         workspace["attributes"]["name"])
                     self._api_target.workspaces.unassign_ssh_key( \
                         workspace["id"], unassign_workspace_ssh_key_payload)

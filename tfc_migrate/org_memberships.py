@@ -45,7 +45,7 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
 
                 # TODO: should the team membership be checked for an existing org member
                 # and updated to match the source_org value if different?
-                self._logger.info("Org member: %s, exists. Skipped." % source_org_member_email)
+                self._logger.info("Org member: %s, exists. Skipped.", source_org_member_email)
                 continue
 
             for team in source_org_member["relationships"]["teams"]["data"]:
@@ -95,7 +95,7 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
         for org_member in org_members:
             try:
                 self._api_target.org_memberships.remove(org_member["id"])
-                self._logger.info("Org member: %s, deleted." % org_member["attributes"]["email"])
+                self._logger.info("Org member: %s, deleted.", org_member["attributes"]["email"])
             except exceptions.TFCHTTPUnclassified as unclassified:
                 # Rather than add some complicated logic, if we get the error message saying
                 # we can't delete ourselves from a group we own, just skip it. Otherwise

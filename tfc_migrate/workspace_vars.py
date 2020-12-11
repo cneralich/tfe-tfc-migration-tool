@@ -58,8 +58,8 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
                 # Make sure we haven't already created this variable in a past run
                 if target_variable_key in target_workspace_var_data:
 
-                    self._logger.info("Workspace variable: %s, for workspace %s, exists. Skipped." \
-                            % (target_variable_key, target_workspace_name))
+                    self._logger.info("Workspace variable: %s, for workspace %s, exists. Skipped.", \
+                            target_variable_key, target_workspace_name)
 
                     if target_variable_sensitive and return_sensitive_variable_data:
                         sensitive_variable_map["variable_id"] = \
@@ -100,9 +100,9 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
 
     def migrate_sensitive(self, sensitive_variable_data_map):
         """
-        NOTE: The sensitive_variable_data_map map must be created ahead of time. The easiest way to
-        do this is to update the value for each variable in the list returned by the
-        migrate_workspace_variables method
+        NOTE: The sensitive_variable_data_map map must be created ahead of time.
+        The easiest way to do this is to update the value for each variable in
+        the list returned by the migrate_workspace_variables method
         """
 
         for sensitive_variable in sensitive_variable_data_map:
@@ -144,7 +144,7 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
                 if target_workspace_variables:
                     for target_workspace_variable in target_workspace_variables:
                         self._api_target.workspace_vars.destroy(target_workspace_id, target_workspace_variable["id"])
-                        self._logger.info("Workspace variable %s, from workspace %s, deleted." \
-                            % (target_workspace_variable["attributes"]["key"], target_workspace["attributes"]["name"]))
+                        self._logger.info("Workspace variable %s, from workspace %s, deleted.", \
+                            target_workspace_variable["attributes"]["key"], target_workspace["attributes"]["name"])
 
         self._logger.info("Workspace variables deleted.")

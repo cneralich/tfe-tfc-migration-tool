@@ -48,7 +48,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
                     new_parameter = self._api_target.policy_set_params.create(
                         new_policy_set_id, new_policy_parameter_payload)["data"]
 
-                    self._logger.info("Policy set param: %s, created." % policy_set_parameter_key)
+                    self._logger.info("Policy set param: %s, created.", policy_set_parameter_key)
 
                     new_parameter_id = new_parameter["id"]
 
@@ -113,7 +113,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
                 params = self._api_target.policy_set_params.list(policy_set["id"])["data"]
 
                 for param in params:
-                    self._logger.info("Policy set param: %s, deleted.." % param["attributes"]["key"])
+                    self._logger.info("Policy set param: %s, deleted..", param["attributes"]["key"])
                     self._api_target.policy_set_params.destroy(policy_set["id"], param["id"])
 
         self._logger.info("Policy set params deleted.")

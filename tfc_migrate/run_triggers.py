@@ -46,8 +46,8 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
 
                     if target_workspace_trigger_workspace_id in \
                         target_workspace_run_trigger_workspace_ids:
-                        self._logger.info("Run Trigger: %s, in workspace ID %s exists. Skipped." \
-                            % (target_workspace_trigger_workspace_id, target_workspace_id))
+                        self._logger.info("Run Trigger: %s, in workspace ID %s exists. Skipped.", \
+                            target_workspace_trigger_workspace_id, target_workspace_id)
                         continue
 
                     # build the new run trigger payload
@@ -65,11 +65,10 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                     }
 
                     # add run triggers to the target workspace
-                    self._api_target.run_triggers.create(
-                        target_workspace_id, new_run_trigger_payload)
+                    self._api_target.run_triggers.create(target_workspace_id, new_run_trigger_payload)
 
-                    self._logger.info("Run trigger workspace ID: %s, to workspace ID: %s, created." \
-                        % (target_workspace_trigger_workspace_id, target_workspace_id))
+                    self._logger.info("Run trigger workspace ID: %s, to workspace ID: %s, created.", \
+                        target_workspace_trigger_workspace_id, target_workspace_id)
 
         self._logger.info("Run triggers migrated.")
 
@@ -95,7 +94,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                 if run_triggers:
                     for run_trigger in run_triggers:
                         self._api_target.run_triggers.destroy(run_trigger["id"])
-                        self._logger.info("Run Trigger: %s, deleted." % \
+                        self._logger.info("Run Trigger: %s, deleted.", \
                             run_trigger["relationships"]["sourceable"]["data"]["id"])
 
         self._logger.info("Run triggers deleted.")

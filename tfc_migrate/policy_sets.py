@@ -91,7 +91,7 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
 
             # Create the policy set in the target organization
             new_policy_set = self._api_target.policy_sets.create(new_policy_set_payload)
-            self._logger.info("Policy set: %s, created." % source_policy_set_name)
+            self._logger.info("Policy set: %s, created.", source_policy_set_name)
 
             policy_sets_map[source_policy_set["id"]] = new_policy_set["data"]["id"]
 
@@ -109,6 +109,6 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
 
         for policy_set in policy_sets:
             self._api_target.policy_sets.destroy(policy_set["id"])
-            self._logger.info("Policy set: %s, deleted." % policy_set["attributes"]["name"])
+            self._logger.info("Policy set: %s, deleted.", policy_set["attributes"]["name"])
 
         self._logger.info("Policy sets deleted.")

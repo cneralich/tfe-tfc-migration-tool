@@ -32,7 +32,7 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
                 if source_agent_pool_name in target_agent_pool_data:
                     agent_pools_map[source_agent_pool_id] = \
                         target_agent_pool_data[source_agent_pool_name]
-                    self._logger.info(" Agent pool: %s, exists. Skipped." % source_agent_pool_name)
+                    self._logger.info("Agent pool: %s, exists. Skipped.", source_agent_pool_name)
                     continue
 
                 # Build the new agent pool payload
@@ -61,7 +61,7 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
         if agent_pools:
             for agent_pool in agent_pools:
                 if agent_pool["attributes"]["name"] != "Default":
-                    self._logger.info("Agent pool: %s, deleted." % agent_pool["attributes"]["name"])
+                    self._logger.info("Agent pool: %s, deleted.", agent_pool["attributes"]["name"])
                     self._api_target.agents.destroy(agent_pool["id"])
 
         self._logger.info("Agent pools deleted.")

@@ -48,8 +48,8 @@ class TeamAccessWorker(TFCMigratorBaseWorker):
 
                 if new_target_team_id in target_team_ids:
                     self._logger.info(\
-                        "Team access for workspace: %s, exists (%s). Skipped." % \
-                            (new_target_team_id, target_workspace_id))
+                        "Team access for workspace: %s, exists (%s). Skipped.", \
+                            new_target_team_id, target_workspace_id)
                     continue
 
                 new_workspace_team_payload = {
@@ -120,8 +120,8 @@ class TeamAccessWorker(TFCMigratorBaseWorker):
                         target_workspace_team_name = \
                             target_workspace_team_data["attributes"]["name"]
 
-                        self._logger.info("Team access: %s, for workspace: %s..." \
-                            % (target_workspace_team_name, target_workspace["attributes"]["name"]))
+                        self._logger.info("Team access: %s, for workspace: %s...", \
+                            target_workspace_team_name, target_workspace["attributes"]["name"])
                         self._api_target.team_access.remove_team_access(target_workspace_team["id"])
 
         self._logger.info("Team workspace access deleted.")

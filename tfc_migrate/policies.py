@@ -32,7 +32,7 @@ class PoliciesWorker(TFCMigratorBaseWorker):
 
             if source_policy_name in target_policies_data:
                 policies_map[source_policy_id] = target_policies_data[source_policy_name]
-                self._logger.info("Policy: %s, exists. Skipped." % source_policy_name)
+                self._logger.info("Policy: %s, exists. Skipped.", source_policy_name)
                 continue
 
             headers = {
@@ -73,7 +73,7 @@ class PoliciesWorker(TFCMigratorBaseWorker):
             new_policy_id = new_policy["data"]["id"]
             policies_map[source_policy_id] = new_policy_id
 
-            self._logger.info("Policy: %s, created." % source_policy_name)
+            self._logger.info("Policy: %s, created.", source_policy_name)
 
             # Upload the policy content to the target policy in the target organization
             self._api_target.policies.upload(new_policy_id, policy_b64)
@@ -91,6 +91,6 @@ class PoliciesWorker(TFCMigratorBaseWorker):
         if policies:
             for policy in policies:
                 self._api_target.policies.destroy(policy["id"])
-                self._logger.info("Policy: %s, deleted." % policy["attributes"]["name"])
+                self._logger.info("Policy: %s, deleted.", policy["attributes"]["name"])
 
         self._logger.info("Policies deleted.")
