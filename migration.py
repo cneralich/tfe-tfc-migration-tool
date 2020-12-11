@@ -28,24 +28,17 @@ def migrate_sensitive_to_target():
     pass
 
 
-def main(migrator, write_to_file, delete_all, no_confirmation, migrate_all_state):
+def main(migrator, delete_all, no_confirmation, migrate_all_state):
 
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
     else:
-        migrator.migrate_all(write_to_file, migrate_all_state)
+        migrator.migrate_all(migrate_all_state)
 
 if __name__ == "__main__":
-    """
-    All migration outputs are written to a .txt file by default
-    If you prefer to have these outputs in the terminal,
-    set the write_to_file parameter to False
-    """
     parser = argparse.ArgumentParser(description='Migrate from TFE/C to TFE/C.')
     parser.add_argument('--vcs-file-path', dest="vcs_file_path", default=DEFAULT_VCS_FILE, \
         help="Path to the VCS JSON file. Defaults to `vcs.json`.")
-    parser.add_argument('--write-output', dest="write_output", \
-        action="store_true", help="Write output to a file.")
     parser.add_argument('--migrate-all-state', dest="migrate_all_state", action="store_true", \
         help="Migrate all state history workspaces. Default behavior is only current state.")
     parser.add_argument('--delete-all', dest="delete_all", action="store_true", \
@@ -74,4 +67,4 @@ if __name__ == "__main__":
 
     migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, logging.INFO)
 
-    main(migrator, args.write_output, args.delete_all, args.no_confirmation, args.migrate_all_state)
+    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state)

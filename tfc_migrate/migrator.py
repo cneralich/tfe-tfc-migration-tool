@@ -51,7 +51,7 @@ class TFCMigrator(ABC):
         self.workspaces = WorkspacesWorker(api_source, api_target, vcs_connection_map, log_level)
         self.workspace_ssh_keys = WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, log_level)
 
-    def migrate_all(self, write_to_file, migrate_all_state):
+    def migrate_all(self, migrate_all_state):
         """
         NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
         The users must exist in the system ahead of time if you want to use this.
@@ -108,15 +108,14 @@ class TFCMigrator(ABC):
                 workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
                     module_to_module_version_upload_map, policies_map, policy_sets_map, \
                         sensitive_policy_set_parameter_data, sensitive_variable_data, \
-                            write_to_file=write_to_file)
+                            )
 
 
     def handle_output(\
         self, teams_map, ssh_keys_map, ssh_key_name_map, workspaces_map, \
             workspace_to_ssh_key_map, workspace_to_config_version_upload_map, \
                 module_to_module_version_upload_map, policies_map, policy_sets_map, \
-                    sensitive_policy_set_parameter_data, sensitive_variable_data, \
-                        write_to_file=False):
+                    sensitive_policy_set_parameter_data, sensitive_variable_data):
 
         output_json = {
             "teams_map": teams_map,
@@ -132,13 +131,9 @@ class TFCMigrator(ABC):
             "sensitive_variable_data": sensitive_variable_data
         }
 
-        if write_to_file:
-            with open("outputs.txt", "w") as f:
-                f.write(output_json)
-        else:
-            print(output_json)
+        print(json.dumps(output_json))
 
-    
+
     def delete_all_from_target(self, no_confirmation):
         if no_confirmation or self.confirm_delete_resource_type("run triggers", self._api_target):
             self.run_triggers.delete_all_from_target()
@@ -180,7 +175,7 @@ class TFCMigrator(ABC):
 
         if no_confirmation or self.confirm_delete_resource_type("agent pools", self._api_target):
             self.agent_pools.delete_all_from_target()
-    
+
 
     def confirm_delete_resource_type(self, resource_type, api):
         answer = ""
