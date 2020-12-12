@@ -312,7 +312,18 @@ resource "tfe_policy_set" "migration-test-non-vcs-policy-set" {
 }
 
 # Create policy sets params
+resource "tfe_policy_set_parameter" "migration-test-policy-param" {
+  key          = "test_key"
+  value        = "test_key_value"
+  policy_set_id = tfe_policy_set.migration-test-vcs-policy-set.id
+}
 
 # Create sensitive policy sets params
+resource "tfe_policy_set_parameter" "migration-test-sensitive-policy-param" {
+  key          = "test_sensitive_key"
+  value        = "test_sensitive_key_value"
+  sensitive = true
+  policy_set_id = tfe_policy_set.migration-test-vcs-policy-set.id
+}
 
 # Create registry modules
