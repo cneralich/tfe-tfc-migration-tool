@@ -64,3 +64,7 @@ variable "slack_notification_url" {
 variable "generic_notification_url" {
     type = string
 }
+
+variable "github_org_name" {
+    type = string
+}

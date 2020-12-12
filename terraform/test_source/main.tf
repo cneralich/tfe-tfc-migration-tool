@@ -228,14 +228,88 @@ resource "tfe_notification_configuration" "generic-notification" {
 }
 
 # Set up team access to workspaces
+resource "tfe_team_access" "team-one-vcs-access" {
+  access       = "read"
+  team_id      = tfe_team.migration-test-team-one.id
+  workspace_id = tfe_workspace.migration-test-workspace-vcs.id
+}
 
-# Create policies w/ VCS
+resource "tfe_team_access" "team-two-vcs-access" {
+  access       = "plan"
+  team_id      = tfe_team.migration-test-team-two.id
+  workspace_id = tfe_workspace.migration-test-workspace-vcs.id
+}
 
-# Create policies w/o VCS
+resource "tfe_team_access" "team-one-api-access" {
+  access       = "write"
+  team_id      = tfe_team.migration-test-team-one.id
+  workspace_id = tfe_workspace.migration-test-workspace-api.id
+}
+
+resource "tfe_team_access" "team-two-api-access" {
+  access       = "admin"
+  team_id      = tfe_team.migration-test-team-two.id
+  workspace_id = tfe_workspace.migration-test-workspace-api.id
+}
+
+resource "tfe_team_access" "team-one-agent-pool-access" {
+  team_id      = tfe_team.migration-test-team-one.id
+  workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
+
+  permissions {
+    runs = "read"
+    variables = "read"
+    state_versions = "read-outputs"
+    sentinel_mocks = "read"
+    workspace_locking = true
+  }
+}
+
+resource "tfe_team_access" "team-two-agent-pool-access" {
+  team_id      = tfe_team.migration-test-team-two.id
+  workspace_id = tfe_workspace.migration-test-workspace-agent-pool.id
+
+  permissions {
+    runs = "apply"
+    variables = "write"
+    state_versions = "write"
+    sentinel_mocks = "read"
+    workspace_locking = true
+  }
+}
 
 # Create policy sets w/ VCS
+resource "tfe_policy_set" "migration-test-vcs-policy-set" {
+  name          = "${var.prefix}-test-vcs-policy-set"
+  description   = "A vcs-backed policy set"
+  organization  = var.org_name
+  global = true
+  policies_path = "terraform/test_source/sentinel"
 
-# Create policy sets w/o VCS
+  vcs_repo {
+    identifier         = "${var.github_org_name}/tfe-tfc-migration-tool"
+    branch             = "master"
+    ingress_submodules = false
+    oauth_token_id     = var.oauth_token_id
+  }
+}
+
+# Create policies and policy sets w/o VCS
+resource "tfe_sentinel_policy" "migration-test-non-vcs-policy" {
+  name         = "${var.prefix}-test-non-vcs-policy"
+  description  = "This policy is a non-vcs-backed policy"
+  organization = var.org_name
+  policy       = file("./sentinel/policy-limit-cost.sentinel")
+  enforce_mode = "soft-mandatory"
+}
+
+resource "tfe_policy_set" "migration-test-non-vcs-policy-set" {
+  name          = "${var.prefix}-test-non-vcs-policy-set"
+  description   = "A non-vcs-backed policy set"
+  organization  = var.org_name
+  policy_ids    = [tfe_sentinel_policy.migration-test-non-vcs-policy.id]
+  workspace_ids = [tfe_workspace.migration-test-workspace-vcs.id, tfe_workspace.migration-test-workspace-agent-pool.id]
+}
 
 # Create policy sets params
 
