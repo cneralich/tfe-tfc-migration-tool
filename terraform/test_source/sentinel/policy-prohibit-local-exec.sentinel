@@ -46,4 +46,5 @@ validate_command = func(prohibited) {
 # Main rule
 validated = validate_command(prohibited_list)
 main = rule {
-  
+  validated
+}
