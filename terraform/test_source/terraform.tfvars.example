@@ -1,7 +1,6 @@
 org_name = "<tfc-tfe-org-name>"
 hostname = "<hostname>"
 oauth_token_id = "<oauth_token_id>"
-repo_identifier = "<org/repo>"
 email = "<email@address.com>"
 slack_notification_url = "<slack_notification_endpoint>"
 generic_notification_url = "<generic_notification_endpoint>"

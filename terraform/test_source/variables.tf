@@ -12,16 +12,7 @@ variable "prefix" {
   default = "migration"
 }
 
-variable "working_directory" {
-  type    = string
-  default = ""
-}
-
 variable "oauth_token_id" {
-  type = string
-}
-
-variable "repo_identifier" {
   type = string
 }
 

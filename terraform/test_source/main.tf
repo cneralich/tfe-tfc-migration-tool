@@ -38,9 +38,9 @@ resource "tfe_workspace" "migration-test-workspace-vcs" {
   organization = var.org_name
   auto_apply     = true
 
-  working_directory = var.working_directory
+  working_directory = "terraform/test_source/module/"
   vcs_repo {
-    identifier     = var.repo_identifier
+    identifier     = "${var.github_org_name}/tfe-tfc-migration-tool"
     oauth_token_id = var.oauth_token_id
   }
 }
@@ -59,7 +59,7 @@ resource "tfe_workspace" "migration-test-workspace-agent-pool" {
   execution_mode = "agent"
   ssh_key_id     = tfe_ssh_key.migration-test-ssh-key.id
 
-  working_directory = var.working_directory
+  working_directory = "terraform/test_source/module/"
   vcs_repo {
     identifier     = var.repo_identifier
     oauth_token_id = var.oauth_token_id
