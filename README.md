@@ -54,8 +54,8 @@ By default, the migration tool will load these values from a file named `vcs.jso
 
 Before initiating the migration process, first determine which command line arguments you wish to pass (if any).  The following arguments are currently supported:
 * `--vcs-file-path`: this flag allows you to pass a custom file path for your TFE_VCS_CONNECTION_MAP JSON file. If not specified, `vcs.json` will be used by default.
-* `--write-output`: this flag allows you to set the desired behavior for handling outputs.  If passed, all outputs will will be written to an `outputs.txt` file.  If not specified, all outputs will appear in the terminal by default.
 * `--migrate-all-state`: this flag allows you to set the desired behavior for migrating state versions.  If passed, all version of state will get migrated for all workspaces.  If not specificed, only the current version of state for all workspaces will be migrated by default.
+* `> outputs.txt`: this allows you to set the desired behavior for handling outputs.  If passed, all outputs will will be written to an `outputs.txt` file (or file name of your choice).  If not specified, all outputs will appear in the terminal by default.
 
 
 ### 5. Perform the Migration
@@ -63,10 +63,10 @@ Before initiating the migration process, first determine which command line argu
 To perform the migration, the following command may be executed (example includes optional arguments):
 
 ```bash
-python migration.py --vcs-file-path "/path/to/file/vcs.json" --write-output --migrate-all-state
+python migration.py --vcs-file-path "/path/to/file/vcs.json" --write-output --migrate-all-state > outputs.txt
 ```
 
-For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs to a `outputs.txt` file, and the migration of all state versions for all workspaces.
+For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs to an `outputs.txt` file, and the migration of all state versions for all workspaces.
 
 
 ## Supported Operations
