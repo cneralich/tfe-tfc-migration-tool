@@ -63,7 +63,7 @@ Before initiating the migration process, first determine which command line argu
 To perform the migration, the following command may be executed (example includes optional arguments):
 
 ```bash
-python migration.py --vcs-file-path "/path/to/file/vcs.json" --write-output --migrate-all-state > outputs.txt
+python migration.py --vcs-file-path "/path/to/file/vcs.json" --migrate-all-state > outputs.txt
 ```
 
 For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs to an `outputs.txt` file, and the migration of all state versions for all workspaces.
