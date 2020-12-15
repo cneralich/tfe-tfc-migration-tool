@@ -19,6 +19,8 @@
 
     "ssh_key_file_path_map": [],
 
+    "module_to_file_path_map": [],
+
     "sensitive_policy_set_parameter_data": [],
 
     "sensitive_variable_data": []
