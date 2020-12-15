@@ -2,8 +2,6 @@
 Module for Terraform Enterprise/Cloud Migration Worker: Policies.
 """
 
-from urllib import request
-
 from .base_worker import TFCMigratorBaseWorker
 
 
@@ -35,20 +33,7 @@ class PoliciesWorker(TFCMigratorBaseWorker):
                 self._logger.info("Policy: %s, exists. Skipped.", source_policy_name)
                 continue
 
-            headers = {
-                "Authorization": "Bearer %s" % (self._api_source.get_token()),
-                "Content-Type": "application/vnd.api+json"
-            }
-
-            policy_download_url = "%s/api/v2/policies/%s/download" % \
-                (self._api_source.get_url(), source_policy_id)
-
-            # TODO: use the new endpoint
-            # Retrieve the policy content
-            policy_request = request.Request(policy_download_url, headers=headers)
-            pull_policy = request.urlopen(policy_request)
-            policy_data = pull_policy.read()
-            policy_b64 = policy_data.decode("utf-8")
+            source_policy_text = self._api_source.policies.get_policy_text(source_policy["id"])
 
             # Build the new policy payload
             new_policy_payload = {
@@ -77,7 +62,7 @@ class PoliciesWorker(TFCMigratorBaseWorker):
             self._logger.info("Policy: %s, created.", source_policy_name)
 
             # Upload the policy content to the target policy in the target organization
-            self._api_target.policies.upload(new_policy_id, policy_b64)
+            self._api_target.policies.upload(new_policy_id, source_policy_text)
 
         self._logger.info("Policies migrated.")
 
