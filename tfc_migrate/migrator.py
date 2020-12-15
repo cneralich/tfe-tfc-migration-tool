@@ -93,10 +93,6 @@ class TFCMigrator(ABC):
 
         workspace_to_config_version_upload_url_map, workspace_to_config_version_file_path_map = self.config_versions.migrate_all(workspaces_map)
 
-        # TODO: manage extracting state and publishing tarball
-        # config_versions.migrate_config_files(\
-        #   workspace_to_config_version_upload_map, workspace_to_file_path_map)
-
         policies_map = self.policies.migrate_all()
 
         policy_sets_map = self.policy_sets.migrate_all(workspaces_map, policies_map)
@@ -106,10 +102,8 @@ class TFCMigrator(ABC):
         # have to be updated separately.
         sensitive_policy_set_parameter_data = self.policy_set_params.migrate_all(policy_sets_map)
 
-        module_to_module_version_upload_map = self.registry_modules.migrate_all()
+        module_to_module_version_upload_map, module_to_file_path_map = self.registry_module_versions.migrate_all()
 
-        # TODO: manage extracting module and publishing tarball, this doesn't work.
-        # registry_module_versions.migrate_module_version_files()
 
         output_json = {
             "teams_map": teams_map,
@@ -123,6 +117,7 @@ class TFCMigrator(ABC):
             "policy_sets_map": policy_sets_map,
             "workspace_to_config_version_file_path_map": workspace_to_config_version_file_path_map,
             "ssh_key_file_path_map": ssh_key_file_path_map,
+            "module_to_file_path_map": module_to_file_path_map,
             "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
             "sensitive_variable_data": sensitive_variable_data
         }
@@ -138,6 +133,8 @@ class TFCMigrator(ABC):
         self. policy_set_params.migrate_sensitive()
         
         self.workspace_vars.migrate_sensitive()
+
+        self.registry_module_versions.migrate_module_version_files()
 
 
 

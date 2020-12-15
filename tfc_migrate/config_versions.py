@@ -60,7 +60,9 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
     def migrate_config_files(self):
         self._logger.info("Migrating config files...")
 
-        if "workspace_to_config_version_upload_url_map" and "workspace_to_config_version_file_path_map" in self._sensitive_data_map:
+        if "workspace_to_config_version_upload_url_map" in self._sensitive_data_map and \
+            "workspace_to_config_version_file_path_map" in self._sensitive_data_map:
+            
             workspace_to_config_version_upload_url_map = self._sensitive_data_map["workspace_to_config_version_upload_url_map"]
             workspace_to_config_version_file_path_map = self._sensitive_data_map["workspace_to_config_version_file_path_map"]
 

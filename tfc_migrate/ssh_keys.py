@@ -74,7 +74,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Migrating SSH key files...")
 
-        if "ssh_key_name_map" and "ssh_key_file_path_map" in self._sensitive_data_map:
+        if "ssh_key_name_map" in self._sensitive_data_map and "ssh_key_file_path_map" in self._sensitive_data_map:
             ssh_key_name_map = self._sensitive_data_map["ssh_key_name_map"]
             ssh_key_file_path_map = self._sensitive_data_map["ssh_key_file_path_map"]
 
