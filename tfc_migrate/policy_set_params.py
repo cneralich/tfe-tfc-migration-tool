@@ -73,12 +73,15 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
         return sensitive_policy_set_parameter_data
 
 
-    """
-    NOTE: The sensitive_policy_set_parameter_data_map map must be manually created ahead of time.
-    The easiest way to do this is to update the value for each variable in the list returned by
-    the migrate_policy_set_parameters method
-    """
-    def migrate_sensitive(self, sensitive_policy_set_parameter_data_map):
+    def migrate_sensitive(self):
+        """
+        NOTE: The sensitive_policy_set_parameter_data_map map must be manually created ahead of time.
+        The easiest way to do this is to update the value for each variable in the list returned by
+        the migrate_policy_set_parameters method
+        """
+
+        sensitive_policy_set_parameter_data_map = self._sensitive_data_map["sensitive_policy_set_parameter_data_map"]
+        
         for sensitive_policy_set_parameter in sensitive_policy_set_parameter_data_map:
             # Build the new parameter payload
             update_policy_set_parameter_payload = {

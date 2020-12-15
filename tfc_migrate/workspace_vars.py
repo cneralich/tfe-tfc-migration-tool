@@ -98,13 +98,15 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
         return sensitive_variable_data
 
 
-    def migrate_sensitive(self, sensitive_variable_data_map):
+    def migrate_sensitive(self):
         """
         NOTE: The sensitive_variable_data_map map must be created ahead of time.
         The easiest way to do this is to update the value for each variable in
         the list returned by the migrate_workspace_variables method
         """
 
+        sensitive_variable_data_map = self._sensitive_data_map["sensitive_variable_data_map"]
+        
         for sensitive_variable in sensitive_variable_data_map:
             # Build the new variable payload
             update_variable_payload = {

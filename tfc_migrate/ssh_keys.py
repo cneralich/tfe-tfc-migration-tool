@@ -25,6 +25,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
 
         ssh_keys_map = {}
         ssh_key_name_map = {}
+        ssh_key_file_path_map = []
 
         # NOTE: this is reversed to maintain the order present in the source
         for source_ssh_key in reversed(source_ssh_keys):
@@ -56,23 +57,29 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
             new_ssh_key_id = new_ssh_key["id"]
             ssh_keys_map[source_ssh_key_id] = new_ssh_key_id
             ssh_key_name_map[source_ssh_key_name] = new_ssh_key_id
+            ssh_key_file_path_map.append({"ssh_key_name":source_ssh_key_name, "path_to_ssh_key_file":""})
 
         self._logger.info("SSH keys migrated.")
 
-        return ssh_keys_map, ssh_key_name_map
+        return ssh_keys_map, ssh_key_name_map, ssh_key_file_path_map
 
 
-    def migrate_key_files(self, ssh_key_name_map, ssh_key_file_path_map):
+    def migrate_key_files(self):
         """
-        NOTE: The ssh_key_file_path_map must be created ahead of time with a format of
-        {"ssh_key_name":"path/to/file"}
+        NOTE: The ssh_key_file_path_map is provided as an output by the migrate_all method
+        above, and the missing "path_to_ssh_key_file" values should be updated prior to invoking this function.
+        For reference, the correct format for each item in the list should be:
+        {"ssh_key_name":"name_of_ssh_key", "path_to_ssh_key_file":"path/to/file"}
         """
 
         self._logger.info("Migrating SSH key files...")
 
+        ssh_key_name_map = self._sensitive_data_map["ssh_key_name_map"]
+        ssh_key_file_path_map = self._sensitive_data_map["ssh_key_file_path_map"]
+
         for ssh_key in ssh_key_file_path_map:
             # Pull SSH key data
-            get_ssh_key = open(ssh_key_file_path_map[ssh_key], "r")
+            get_ssh_key = open(ssh_key_file_path_map["path_to_ssh_key_file"], "r")
             ssh_key_data = get_ssh_key.read()
 
             # Build the new ssh key file payload
@@ -88,7 +95,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
             # TODO: logging, and make sure this works / document it
 
             # Upload the SSH key file to the target organization
-            self._api_target.ssh_keys.update(ssh_key_name_map[ssh_key], new_ssh_key_file_payload)
+            self._api_target.ssh_keys.update(ssh_key_name_map[ssh_key["ssh_key_name"]], new_ssh_key_file_payload)
 
         self._logger.info("SSH key files migrated.")
 
