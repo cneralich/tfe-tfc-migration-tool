@@ -17,8 +17,8 @@ class PoliciesWorker(TFCMigratorBaseWorker):
         self._logger.info("Migrating policies...")
 
         # Pull policies from the old organization
-        source_policies = self._api_source.policies.list()["data"]
-        target_policies = self._api_target.policies.list()["data"]
+        source_policies = self._api_source.policies.list_all()
+        target_policies = self._api_target.policies.list_all()
 
         target_policies_data = {}
         for target_policy in target_policies:
@@ -43,6 +43,7 @@ class PoliciesWorker(TFCMigratorBaseWorker):
             policy_download_url = "%s/api/v2/policies/%s/download" % \
                 (self._api_source.get_url(), source_policy_id)
 
+            # TODO: use the new endpoint
             # Retrieve the policy content
             policy_request = request.Request(policy_download_url, headers=headers)
             pull_policy = request.urlopen(policy_request)
@@ -86,11 +87,10 @@ class PoliciesWorker(TFCMigratorBaseWorker):
     def delete_all_from_target(self):
         self._logger.info("Deleting policies...")
 
-        policies = self._api_target.policies.list()["data"]
+        policies = self._api_target.policies.list_all()
 
-        if policies:
-            for policy in policies:
-                self._api_target.policies.destroy(policy["id"])
-                self._logger.info("Policy: %s, deleted.", policy["attributes"]["name"])
+        for policy in policies:
+            self._api_target.policies.destroy(policy["id"])
+            self._logger.info("Policy: %s, deleted.", policy["attributes"]["name"])
 
         self._logger.info("Policies deleted.")

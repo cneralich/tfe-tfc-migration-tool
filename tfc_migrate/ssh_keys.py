@@ -85,7 +85,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
                 }
             }
 
-            # TODO: logging, and make sure this works / document it
+            self._logger.info("SSH key: %s, key data uploaded.", ssh_key)
 
             # Upload the SSH key file to the target organization
             self._api_target.ssh_keys.update(ssh_key_name_map[ssh_key], new_ssh_key_file_payload)

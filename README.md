@@ -1,14 +1,15 @@
 # TFC/E Migration Tool
 
-This tool is designed to help automate the migration from one TFE/C Organization to another, whether that’s TFE to TFC, or vice versa.
-Currently it only supports 1:1 migrations, but the goal is to support 1:N.
+This tool is designed to help automate the migration from one TFE/C Organization to another, whether that’s TFE to TFC, or vice versa. It's organization to organization. Currently it only supports 1:1 migrations, but the goal is to support 1:N. Note that the source and target organizations may be running on different versions, and because of that, some API endpoints may not exist in one or the other.
+
+If you're trying to migrate from one TFE installation to another TFE installation, use the backup-restore functionality, not this tool.
 
 ## Steps
 
 ### 1. Install the Python Dependencies
 
 ```bash
-pip3 install terrasnek==0.0.12
+pip3 install terrasnek==0.0.15
 ```
 
 ### 2. Set Required Environment Variables

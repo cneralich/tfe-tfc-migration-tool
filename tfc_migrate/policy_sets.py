@@ -13,11 +13,8 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
 
     def migrate_all(self, workspaces_map, policies_map):
         # Pull policy sets from the source organization
-        # TODO: handle paging
-        source_policy_sets = self._api_source.policy_sets.list(
-            page_size=50, include="policies,workspaces")["data"]
-        target_policy_sets = self._api_target.policy_sets.list(
-            page_size=50, include="policies,workspaces")["data"]
+        source_policy_sets = self._api_source.policy_sets.list_all(include="policies,workspaces")
+        target_policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")
 
         target_policy_sets_data = {}
         for target_policy_set in target_policy_sets:
@@ -33,7 +30,7 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
             if source_policy_set_name in target_policy_sets_data:
                 policies_map[source_policy_set["id"]] = \
                     target_policy_sets_data[source_policy_set_name]
-                self._logger.info("Policy set: %s, exists. Skipped.")
+                self._logger.info("Policy set: %s, exists. Skipped.", source_policy_set_name)
                 continue
 
             new_policy_set_payload = {
@@ -103,9 +100,7 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
     def delete_all_from_target(self):
         self._logger.info("Deleting policy sets...")
 
-        # TODO: handle paging
-        policy_sets = self._api_target.policy_sets.list( \
-            page_size=50, include="policies,workspaces")["data"]
+        policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")
 
         for policy_set in policy_sets:
             self._api_target.policy_sets.destroy(policy_set["id"])

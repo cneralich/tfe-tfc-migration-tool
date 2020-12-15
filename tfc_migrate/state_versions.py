@@ -24,7 +24,6 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             source_workspace_name = self._api_source.workspaces.show(workspace_id=workspace_id)\
                 ["data"]["attributes"]["name"]
 
-            # TODO: paging
             source_state_filters = [
                 {
                     "keys": ["workspace", "name"],
@@ -37,9 +36,8 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             ]
 
             source_state_versions = \
-                self._api_source.state_versions.list(filters=source_state_filters)["data"]
+                self._api_source.state_versions.list_all(filters=source_state_filters)
 
-            # TODO: paging
             target_state_filters = [
                 {
                     "keys": ["workspace", "name"],
@@ -52,7 +50,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             ]
 
             target_state_versions = \
-                self._api_target.state_versions.list(filters=target_state_filters)["data"]
+                self._api_target.state_versions.list_all(filters=target_state_filters)
             target_state_version_serials = \
                 [state_version["attributes"]["serial"] for state_version in target_state_versions]
 

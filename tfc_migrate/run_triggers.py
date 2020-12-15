@@ -23,16 +23,16 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                 }
             ]
 
-            # pull all inbound run triggers for the source workspace
-            source_workspace_run_triggers = self._api_source.run_triggers.list(
-                source_workspace_id, filters=workspace_run_trigger_filters, page_size=100)["data"]
+            # Pull all inbound run triggers for the source workspace
+            source_workspace_run_triggers = self._api_source.run_triggers.list_all(
+                source_workspace_id, filters=workspace_run_trigger_filters)
 
             if source_workspace_run_triggers:
                 # pull all inbound run triggers for the target workspace
                 target_workspace_run_triggers = self._api_target.run_triggers.list(\
-                    target_workspace_id, filters=workspace_run_trigger_filters)["data"]
+                    target_workspace_id, filters=workspace_run_trigger_filters)
 
-                # compile a list of all originating workspace_ids for the target workspace
+                # Compile a list of all originating workspace_ids for the target workspace
                 target_workspace_run_trigger_workspace_ids = \
                     [target_workspace_run_trigger["relationships"]["sourceable"]["data"]["id"]\
                         for target_workspace_run_trigger in target_workspace_run_triggers]
@@ -50,7 +50,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                             target_workspace_trigger_workspace_id, target_workspace_id)
                         continue
 
-                    # build the new run trigger payload
+                    # Build the new run trigger payload
                     new_run_trigger_payload = {
                         "data": {
                             "relationships": {

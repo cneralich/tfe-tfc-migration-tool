@@ -23,10 +23,9 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
             }
         ]
 
-        source_org_members = self._api_source.org_memberships.list_for_org( \
-            filters=active_member_filter, page=0, page_size=100)["data"]
-        target_org_members = self._api_target.org_memberships.list_for_org( \
-            page=0, page_size=100)["data"]
+        source_org_members = self._api_source.org_memberships.list_all_for_org( \
+            filters=active_member_filter)
+        target_org_members = self._api_target.org_memberships.list_all_for_org()
 
         target_org_members_data = {}
         for target_org_member in target_org_members:
@@ -89,8 +88,7 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
     def delete_all_from_target(self):
         self._logger.info("Deleting organization members...")
 
-        org_members = self._api_target.org_memberships.list_for_org( \
-            page=0, page_size=100)["data"]
+        org_members = self._api_target.org_memberships.list_all_for_org()
 
         for org_member in org_members:
             try:

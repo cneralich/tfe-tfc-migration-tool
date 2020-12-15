@@ -14,8 +14,8 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
         self._logger.info("Migrating workspaces...")
 
         # Fetch workspaces from existing org
-        source_workspaces = self._api_source.workspaces.list()["data"]
-        target_workspaces = self._api_target.workspaces.list()["data"]
+        source_workspaces = self._api_source.workspaces.list_all()
+        target_workspaces = self._api_target.workspaces.list_all()
 
         target_workspaces_data = {}
         for target_workspace in target_workspaces:

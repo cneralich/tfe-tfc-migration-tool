@@ -104,16 +104,13 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
     def delete_all_from_target(self):
         self._logger.info("Deleting policy set params...")
 
-        # TODO: handle paging
-        policy_sets = self._api_target.policy_sets.list( \
-            page_size=50, include="policies,workspaces")["data"]
+        policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")
 
-        if policy_sets:
-            for policy_set in policy_sets:
-                params = self._api_target.policy_set_params.list(policy_set["id"])["data"]
+        for policy_set in policy_sets:
+            params = self._api_target.policy_set_params.list(policy_set["id"])["data"]
 
-                for param in params:
-                    self._logger.info("Policy set param: %s, deleted..", param["attributes"]["key"])
-                    self._api_target.policy_set_params.destroy(policy_set["id"], param["id"])
+            for param in params:
+                self._logger.info("Policy set param: %s, deleted..", param["attributes"]["key"])
+                self._api_target.policy_set_params.destroy(policy_set["id"], param["id"])
 
         self._logger.info("Policy set params deleted.")

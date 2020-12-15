@@ -85,12 +85,8 @@ class TeamAccessWorker(TFCMigratorBaseWorker):
                         new_workspace_team_payload["data"]["attributes"][attr] = \
                             source_workspace_team["attributes"][attr]
 
-                try:
-                    # Create the team workspace access map for the target workspace
-                    self._api_target.team_access.add_team_access(new_workspace_team_payload)
-                except Exception as err:
-                    # TODO
-                    print(err)
+                # Create the team workspace access map for the target workspace
+                self._api_target.team_access.add_team_access(new_workspace_team_payload)
 
         self._logger.info("Team access migrated.")
 
