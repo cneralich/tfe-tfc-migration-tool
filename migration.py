@@ -6,6 +6,7 @@ from terrasnek.api import TFC
 from tfc_migrate.migrator import TFCMigrator
 
 DEFAULT_VCS_FILE = "vcs.json"
+DEFAULT_SENSITIVE_DATA_FILE = "sensitive_data.txt"
 
 # Source Org
 TFE_TOKEN_SOURCE = os.getenv("TFE_TOKEN_SOURCE", None)
@@ -19,19 +20,23 @@ TFE_ORG_TARGET = os.getenv("TFE_ORG_TARGET", None)
 
 # NOTE: this is parsed in the main function
 TFE_VCS_CONNECTION_MAP = None
+SENSITIVE_DATA_MAP = None
 
 def migrate_sensitive_to_target():
     # TODO: figure out how we want to handle the user inputing sensitive data
+    # config_versions.migrate_config_files(workspace_to_config_version_upload_map, workspace_to_file_path_map)
     # ssh_keys.migrate_key_files(api_target, ssh_key_name_map, ssh_key_file_path_map)
-    # workspace_vars.migrate_sensitive(api_target, sensitive_variable_data_map)
     # policy_set_params.migrate_sensitive(api_target, sensitive_policy_set_parameter_data_map)
+    # workspace_vars.migrate_sensitive(api_target, sensitive_variable_data_map)
     pass
 
 
-def main(migrator, delete_all, no_confirmation, migrate_all_state):
+def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data):
 
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
+    elif migrate_sensitive_data:
+        migrator.migrate_sensitive()
     else:
         migrator.migrate_all(migrate_all_state)
 
@@ -41,6 +46,11 @@ if __name__ == "__main__":
         help="Path to the VCS JSON file. Defaults to `vcs.json`.")
     parser.add_argument('--migrate-all-state', dest="migrate_all_state", action="store_true", \
         help="Migrate all state history workspaces. Default behavior is only current state.")
+    parser.add_argument('--sensitive-data-file-path', dest="sensitive_data_file_path", \
+        default=DEFAULT_SENSITIVE_DATA_FILE, \
+            help="Path the the sensitive values file. Defaults to `sensitive_data.txt`.")
+    parser.add_argument('--migrate-sensitive-data', dest="migrate_sensitive_data", action="store_true", \
+        help="Migrate sensitive data to the target organization.")
     parser.add_argument('--delete-all', dest="delete_all", action="store_true", \
         help="Delete all resources from the target API.")
     parser.add_argument('--no-confirmation', dest="no_confirmation", action="store_true", \
@@ -58,6 +68,9 @@ if __name__ == "__main__":
     with open(args.vcs_file_path, "r") as f:
         TFE_VCS_CONNECTION_MAP = json.loads(f.read())
 
+    with open(args.sensitive_data_file_path) as f:
+        SENSITIVE_DATA_MAP = json.loads(f.read())
+
     log_level = logging.INFO
 
     if args.debug:
@@ -65,6 +78,6 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=log_level)
 
-    migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, logging.INFO)
+    migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, SENSITIVE_DATA_MAP, logging.INFO)
 
-    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state)
+    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state, args.migrate_sensitive_data)

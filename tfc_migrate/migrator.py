@@ -24,40 +24,41 @@ from .workspace_vars import WorkspaceVarsWorker
 
 class TFCMigrator(ABC):
 
-    def __init__(self, api_source, api_target, vcs_connection_map, log_level):
+    def __init__(self, api_source, api_target, vcs_connection_map, sensitive_data_map, log_level):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._log_level = log_level
         self._logger.setLevel(self._log_level)
         self._api_source = api_source
         self._api_target = api_target
         self._vcs_connection_map = vcs_connection_map
+        self._sensitive_data_map = sensitive_data_map
 
-        self.agent_pools = AgentPoolsWorker(api_source, api_target, vcs_connection_map, log_level)
+        self.agent_pools = AgentPoolsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.config_versions = \
-            ConfigVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
+            ConfigVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.notification_configs = \
-            NotificationConfigsWorker(api_source, api_target, vcs_connection_map, log_level)
+            NotificationConfigsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.org_memberships = \
-            OrgMembershipsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.policies = PoliciesWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.policy_sets = PolicySetsWorker(api_source, api_target, vcs_connection_map, log_level)
+            OrgMembershipsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.policies = PoliciesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.policy_sets = PolicySetsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.policy_set_params = \
-            PolicySetParamsWorker(api_source, api_target, vcs_connection_map, log_level)
+            PolicySetParamsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.registry_module_versions = \
-            RegistryModuleVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
+            RegistryModuleVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.registry_modules = \
-            RegistryModulesWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.run_triggers = RunTriggersWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.ssh_keys = SSHKeysWorker(api_source, api_target, vcs_connection_map, log_level)
+            RegistryModulesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.run_triggers = RunTriggersWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.ssh_keys = SSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.state_versions = \
-            StateVersionsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.team_access = TeamAccessWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.teams = TeamsWorker(api_source, api_target, vcs_connection_map, log_level)
+            StateVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.team_access = TeamAccessWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.teams = TeamsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.workspace_vars = \
-            WorkspaceVarsWorker(api_source, api_target, vcs_connection_map, log_level)
-        self.workspaces = WorkspacesWorker(api_source, api_target, vcs_connection_map, log_level)
+            WorkspaceVarsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.workspaces = WorkspacesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
         self.workspace_ssh_keys = \
-            WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, log_level)
+            WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
 
     def migrate_all(self, migrate_all_state):
         """
@@ -69,8 +70,7 @@ class TFCMigrator(ABC):
 
         teams_map = self.teams.migrate_all()
 
-        ssh_keys_map, ssh_key_name_map = self.ssh_keys.migrate_all()
-        # TODO: ssh_keys_map, ssh_key_name_map = ssh_keys.migrate_keys(api_source, api_target)
+        ssh_keys_map, ssh_key_name_map, ssh_key_file_path_map = self.ssh_keys.migrate_all()
 
         agent_pools_map = self.agent_pools.migrate_all()
 
@@ -91,13 +91,12 @@ class TFCMigrator(ABC):
 
         self.team_access.migrate_all(workspaces_map, teams_map)
 
-        workspace_to_config_version_upload_map = self.config_versions.migrate_all(workspaces_map)
+        workspace_to_config_version_upload_url_map, workspace_to_config_version_file_path_map = self.config_versions.migrate_all(workspaces_map)
 
         # TODO: manage extracting state and publishing tarball
         # config_versions.migrate_config_files(\
         #   workspace_to_config_version_upload_map, workspace_to_file_path_map)
 
-        # TODO: make sure that non-VCS policies get mapped properly to their policy sets
         policies_map = self.policies.migrate_all()
 
         policy_sets_map = self.policy_sets.migrate_all(workspaces_map, policies_map)
@@ -118,15 +117,28 @@ class TFCMigrator(ABC):
             "ssh_key_name_map": ssh_key_name_map,
             "workspaces_map": workspaces_map,
             "workspace_to_ssh_key_map": workspace_to_ssh_key_map,
-            "workspace_to_config_version_upload_map": workspace_to_config_version_upload_map,
+            "workspace_to_config_version_upload_url_map": workspace_to_config_version_upload_url_map,
             "module_to_module_version_upload_map": module_to_module_version_upload_map,
             "policies_map": policies_map,
             "policy_sets_map": policy_sets_map,
+            "workspace_to_config_version_file_path_map": workspace_to_config_version_file_path_map,
+            "ssh_key_file_path_map": ssh_key_file_path_map,
             "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
             "sensitive_variable_data": sensitive_variable_data
         }
 
         print(json.dumps(output_json))
+
+    
+    def migrate_sensitive(self):
+        self.config_versions.migrate_config_files()
+        
+        self.ssh_keys.migrate_key_files()
+        
+        self. policy_set_params.migrate_sensitive()
+        
+        self.workspace_vars.migrate_sensitive()
+
 
 
     def delete_all_from_target(self, no_confirmation):

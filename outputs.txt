@@ -1,20 +1,25 @@
-teams_map: {}
+{
+"teams_map": {},
 
-ssh_keys_map: {}
+"ssh_keys_map": {},
 
-ssh_key_name_map: {}
+"ssh_key_name_map": {},
 
-workspaces_map: {}
+"workspaces_map": {},
 
-workspace_to_ssh_key_map: {}
+"workspace_to_ssh_key_map": {},
 
-workspace_to_config_version_map: {}
+"workspace_to_config_version_upload_url_map": {},
 
-policies_map: {}
+"policies_map": {},
 
-policy_sets_map: {}
+"policy_sets_map": {},
 
-sensitive_policy_set_parameter_data: []
+"workspace_to_config_version_file_path_map": [],
 
-sensitive_variable_data: []
+"ssh_key_file_path_map": [],
 
+"sensitive_policy_set_parameter_data": [],
+
+"sensitive_variable_data": []
+}

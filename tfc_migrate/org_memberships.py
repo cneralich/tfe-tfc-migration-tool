@@ -85,6 +85,7 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
 
         return org_membership_map
 
+
     def delete_all_from_target(self):
         self._logger.info("Deleting organization members...")
 
