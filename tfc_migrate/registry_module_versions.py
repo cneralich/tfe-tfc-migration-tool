@@ -70,6 +70,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
         return module_to_module_version_upload_map
 
 
+    # TODO: Add module_to_file_path_map to the outputs file and add this to the migrator
     def migrate_module_version_files(\
         self, module_to_module_version_upload_map, module_to_file_path_map):
         self._logger.info("Migrating module version files...")
