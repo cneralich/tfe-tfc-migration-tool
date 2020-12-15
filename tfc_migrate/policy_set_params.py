@@ -80,28 +80,31 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
         the migrate_policy_set_parameters method
         """
 
-        sensitive_policy_set_parameter_data_map = self._sensitive_data_map["sensitive_policy_set_parameter_data_map"]
-        
-        for sensitive_policy_set_parameter in sensitive_policy_set_parameter_data_map:
-            # Build the new parameter payload
-            update_policy_set_parameter_payload = {
-                "data": {
-                    "id": sensitive_policy_set_parameter["parameter_id"],
-                    "attributes": {
-                        "key": sensitive_policy_set_parameter["parameter_key"],
-                        "value": sensitive_policy_set_parameter["parameter_value"],
-                        "category": "policy-set",
-                        "sensitive": "true"
-                    },
-                    "type": "vars"
-                }
-            }
+        if "sensitive_policy_set_parameter_data_map" in self._sensitive_data_map:
+            sensitive_policy_set_parameter_data_map = self._sensitive_data_map["sensitive_policy_set_parameter_data_map"]
 
-            # Update the sensitive parameter value in the policy set
-            self._api_target.policy_set_params.update(
-                sensitive_policy_set_parameter["policy_set_id"], \
-                    sensitive_policy_set_parameter["parameter_id"], \
-                        update_policy_set_parameter_payload)
+            for sensitive_policy_set_parameter in sensitive_policy_set_parameter_data_map:
+                # Build the new parameter payload
+                update_policy_set_parameter_payload = {
+                    "data": {
+                        "id": sensitive_policy_set_parameter["parameter_id"],
+                        "attributes": {
+                            "key": sensitive_policy_set_parameter["parameter_key"],
+                            "value": sensitive_policy_set_parameter["parameter_value"],
+                            "category": "policy-set",
+                            "sensitive": "true"
+                        },
+                        "type": "vars"
+                    }
+                }
+
+                # Update the sensitive parameter value in the policy set
+                self._api_target.policy_set_params.update(
+                    sensitive_policy_set_parameter["policy_set_id"], \
+                        sensitive_policy_set_parameter["parameter_id"], \
+                            update_policy_set_parameter_payload)
+
+        self._logger.info("Sensitive policy set params migrated.")
 
 
     def delete_all_from_target(self):

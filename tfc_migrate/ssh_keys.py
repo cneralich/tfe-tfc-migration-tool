@@ -74,28 +74,29 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Migrating SSH key files...")
 
-        ssh_key_name_map = self._sensitive_data_map["ssh_key_name_map"]
-        ssh_key_file_path_map = self._sensitive_data_map["ssh_key_file_path_map"]
+        if "ssh_key_name_map" and "ssh_key_file_path_map" in self._sensitive_data_map:
+            ssh_key_name_map = self._sensitive_data_map["ssh_key_name_map"]
+            ssh_key_file_path_map = self._sensitive_data_map["ssh_key_file_path_map"]
 
-        for ssh_key in ssh_key_file_path_map:
-            # Pull SSH key data
-            get_ssh_key = open(ssh_key_file_path_map["path_to_ssh_key_file"], "r")
-            ssh_key_data = get_ssh_key.read()
+            for ssh_key in ssh_key_file_path_map:
+                # Pull SSH key data
+                get_ssh_key = open(ssh_key_file_path_map["path_to_ssh_key_file"], "r")
+                ssh_key_data = get_ssh_key.read()
 
-            # Build the new ssh key file payload
-            new_ssh_key_file_payload = {
-                "data": {
-                    "type": "ssh-keys",
-                    "attributes": {
-                        "value": ssh_key_data
+                # Build the new ssh key file payload
+                new_ssh_key_file_payload = {
+                    "data": {
+                        "type": "ssh-keys",
+                        "attributes": {
+                            "value": ssh_key_data
+                        }
                     }
                 }
-            }
 
-            self._logger.info("SSH key: %s, key data uploaded.", ssh_key)
+                self._logger.info("SSH key: %s, key data uploaded.", ssh_key)
 
-            # Upload the SSH key file to the target organization
-            self._api_target.ssh_keys.update(ssh_key_name_map[ssh_key["ssh_key_name"]], new_ssh_key_file_payload)
+                # Upload the SSH key file to the target organization
+                self._api_target.ssh_keys.update(ssh_key_name_map[ssh_key["ssh_key_name"]], new_ssh_key_file_payload)
 
         self._logger.info("SSH key files migrated.")
 

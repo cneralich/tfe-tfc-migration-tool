@@ -22,14 +22,6 @@ TFE_ORG_TARGET = os.getenv("TFE_ORG_TARGET", None)
 TFE_VCS_CONNECTION_MAP = None
 SENSITIVE_DATA_MAP = None
 
-def migrate_sensitive_to_target():
-    # TODO: figure out how we want to handle the user inputing sensitive data
-    # config_versions.migrate_config_files(workspace_to_config_version_upload_map, workspace_to_file_path_map)
-    # ssh_keys.migrate_key_files(api_target, ssh_key_name_map, ssh_key_file_path_map)
-    # policy_set_params.migrate_sensitive(api_target, sensitive_policy_set_parameter_data_map)
-    # workspace_vars.migrate_sensitive(api_target, sensitive_variable_data_map)
-    pass
-
 
 def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data):
 
