@@ -8,7 +8,7 @@ Currently it only supports 1:1 migrations, but the goal is to support 1:N.
 ### 1. Install the Python Dependencies
 
 ```bash
-pip3 install terrasnek==0.0.12
+pip3 install terrasnek==0.0.13
 ```
 
 ### 2. Set Required Environment Variables
