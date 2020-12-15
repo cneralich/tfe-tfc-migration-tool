@@ -9,15 +9,7 @@ If you're trying to migrate from one TFE installation to another TFE installatio
 ### 1. Install the Python Dependencies
 
 ```bash
-<<<<<<< HEAD
-<<<<<<< HEAD
 pip3 install terrasnek==0.0.15
-=======
-pip3 install terrasnek==0.0.13
->>>>>>> Update README
-=======
-pip3 install terrasnek==0.0.13
->>>>>>> ab484eed0ddeb4e89ec1c3a70c6656c14dae04a4
 ```
 
 ### 2. Set Required Environment Variables
