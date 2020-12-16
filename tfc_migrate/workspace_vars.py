@@ -98,40 +98,44 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
                     sensitive_variable_map["variable_id"] = target_variable_id
                     # Build the sensitive variable map
                     sensitive_variable_data.append(sensitive_variable_map)
-
+        
+        self._logger.info("Workspace variables migrated.")
+        
         return sensitive_variable_data
 
 
-    def migrate_sensitive(self, sensitive_variable_data_map):
+    def migrate_sensitive(self):
         """
         NOTE: The sensitive_variable_data_map map must be created ahead of time.
         The easiest way to do this is to update the value for each variable in
         the list returned by the migrate_workspace_variables method
         """
+        if "sensitive_variable_data_map" in self._sensitive_data_map:
+            sensitive_variable_data_map = self._sensitive_data_map["sensitive_variable_data_map"]
 
-        for sensitive_variable in sensitive_variable_data_map:
-            # Build the new variable payload
-            update_variable_payload = {
-                "data": {
-                    "id": sensitive_variable["variable_id"],
-                    "attributes": {
-                        "key": sensitive_variable["variable_key"],
-                        "value": sensitive_variable["variable_value"],
-                        "description": sensitive_variable["variable_description"],
-                        "category": sensitive_variable["variable_category"],
-                        "hcl": sensitive_variable["variable_hcl"],
-                        "sensitive": "true"
-                    },
-                    "type": "vars"
+            for sensitive_variable in sensitive_variable_data_map:
+                # Build the new variable payload
+                update_variable_payload = {
+                    "data": {
+                        "id": sensitive_variable["variable_id"],
+                        "attributes": {
+                            "key": sensitive_variable["variable_key"],
+                            "value": sensitive_variable["variable_value"],
+                            "description": sensitive_variable["variable_description"],
+                            "category": sensitive_variable["variable_category"],
+                            "hcl": sensitive_variable["variable_hcl"],
+                            "sensitive": "true"
+                        },
+                        "type": "vars"
+                    }
                 }
-            }
 
-            # Update the sensitive variable value in the target workspace
-            self._api_target.workspace_vars.update(
-                sensitive_variable["workspace_id"], \
-                    sensitive_variable["variable_id"], update_variable_payload)
+                # Update the sensitive variable value in the target workspace
+                self._api_target.workspace_vars.update(
+                    sensitive_variable["workspace_id"], \
+                        sensitive_variable["variable_id"], update_variable_payload)
 
-        self._logger.info("Workspace variables migrated.")
+        self._logger.info("Sensitive workspace variables migrated.")
 
 
     def delete_all_from_target(self):

@@ -50,7 +50,6 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
                 }
             }
 
-            # TODO: handle non VCS backed policies
             if "policies-path" in source_policy_set["attributes"]:
                 new_policy_set_payload["data"]["attributes"]["policies-path"] = \
                     source_policy_set["attributes"]["policies-path"]

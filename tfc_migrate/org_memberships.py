@@ -89,6 +89,7 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
 
         return org_membership_map
 
+
     def delete_all_from_target(self):
         """
         Function to delete all org memberships from the target TFC/E org.

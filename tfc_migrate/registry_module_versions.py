@@ -24,6 +24,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
             [target_module["name"] for target_module in target_modules]
 
         module_to_module_version_upload_map = {}
+        module_to_file_path_map = []
 
         for source_module in source_modules:
             if source_module["source"] == "":
@@ -61,36 +62,58 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                 }
 
                 # Create the module version in the target organization
-                new_module_version = self._api_target.registry_module.create_version(\
+                new_module_version = self._api_target.registry_modules.create_version(\
                     source_module_name, source_module_provider, new_module_version_payload)["data"]
                 self._logger.info("Module version: %s, for module: %s, created.", \
                     source_module_version, source_module_name)
 
                 module_to_module_version_upload_map[source_module_name] = \
                     new_module_version["links"]["upload"]
+                module_to_file_path_map.append({"module_name":source_module_name,"path_to_module_file":""})
 
         self._logger.info("Registry module versions migrated.")
 
-        return module_to_module_version_upload_map
+        return module_to_module_version_upload_map, module_to_file_path_map
 
 
-    def migrate_module_version_files(\
-        self, module_to_module_version_upload_map, module_to_file_path_map):
+    def migrate_module_version_files(self):
         self._logger.info("Migrating module version files...")
 
-        for module_name in module_to_file_path_map:
-            # NOTE: The module_to_file_path_map must be created ahead of time
-            # with a format of {"module_name":"path/to/file"}
+        if "module_to_module_version_upload_map" in self._sensitive_data_map \
+            and "module_to_file_path_map" in self._sensitive_data_map:
 
-            # Upload the module version file
-            self._api_target.registry_modules.upload_version(\
-                module_to_file_path_map[module_name], \
-                    module_to_module_version_upload_map[module_name])
+            module_to_module_version_upload_map = self._sensitive_data_map["module_to_module_version_upload_map"]
+            module_to_file_path_map = self._sensitive_data_map["module_to_file_path_map"]
 
-            self._logger.info("Module version file for module: %s, uploaded.", module_name)
+            for module in module_to_file_path_map:
+                """
+                NOTE: The module_to_file_path_map is provided as an output by the migrate_all method
+                above, and the missing "path_to_ssh_key_file" values should be updated prior to invoking this function.
+                For reference, the correct format for each item in the list should be:
+                {"module_name":"name_of_module", "path_to_module_file":"path/to/file"}
+                """
+                
+                module_name = module["module_name"]
 
-        self._logger.info("Module version files migrated.")
+                # Upload the module version file
+                self._api_target.registry_modules.upload_version(\
+                    module_to_file_path_map["path_to_module_file"], \
+                        module_to_module_version_upload_map[module_name])
+
+                self._logger.info("Module version file for module: %s, uploaded.", module_name)
+
+            self._logger.info("Module version files migrated.")
 
 
-# NOTE: no need for a delete function here, since it will get cleaned up in
-# the RegistryModulesWorker.
+    def delete_all_from_target(self):
+        self._logger.info("Deleting registry modules...")
+
+        modules = self._api_target.registry_modules.list()["modules"]
+
+        if modules:
+            for module in modules:
+                if module["source"] == "":
+                    self._api_target.registry_modules.destroy(module["name"])
+                    self._logger.info("Registry module: %s, deleted.", module["name"])
+
+        self._logger.info("Registry modules deleted.")
