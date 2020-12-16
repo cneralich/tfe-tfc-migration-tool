@@ -110,7 +110,7 @@ class TFCMigrator(ABC):
         # have to be updated separately.
         sensitive_policy_set_parameter_data = self.policy_set_params.migrate_all(policy_sets_map)
 
-        module_to_module_version_upload_map = self.registry_modules.migrate_all()
+        module_to_module_version_upload_map = self.registry_module_versions.migrate_all()
 
         # TODO: manage extracting module and publishing tarball, this doesn't work.
         # registry_module_versions.migrate_module_version_files()
