@@ -12,6 +12,10 @@ class NotificationConfigsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, workspaces_map):
+        """
+        Function to migrate all notification configs from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating notification configs...")
 
         for workspace_id in workspaces_map:
@@ -64,6 +68,10 @@ class NotificationConfigsWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all notification configs from the target TFC/E org.
+        """
+
         self._logger.info("Deleting notification configs...")
 
         workspaces = self._api_target.workspaces.list()["data"]

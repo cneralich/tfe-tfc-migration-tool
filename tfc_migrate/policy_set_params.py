@@ -12,6 +12,9 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, policy_sets_map, return_sensitive_variable_data=True):
+        """
+        Function to migrate all policy set params from one TFC/E org to another TFC/E org.
+        """
 
         self._logger.info("Migrating policy set params...")
 
@@ -73,12 +76,16 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
         return sensitive_policy_set_parameter_data
 
 
-    """
-    NOTE: The sensitive_policy_set_parameter_data_map map must be manually created ahead of time.
-    The easiest way to do this is to update the value for each variable in the list returned by
-    the migrate_policy_set_parameters method
-    """
     def migrate_sensitive(self, sensitive_policy_set_parameter_data_map):
+        """
+        A secondary function that allows for a user to manually update a map of sensitive variables
+        locally, then upload them after the fact.
+
+        NOTE: The sensitive_policy_set_parameter_data_map map must be manually created ahead of time.
+        The easiest way to do this is to update the value for each variable in the list returned by
+        the migrate_policy_set_parameters method
+        """
+
         for sensitive_policy_set_parameter in sensitive_policy_set_parameter_data_map:
             # Build the new parameter payload
             update_policy_set_parameter_payload = {
@@ -102,6 +109,10 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all policy set params from the target TFC/E org.
+        """
+
         self._logger.info("Deleting policy set params...")
 
         policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")

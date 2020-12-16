@@ -12,6 +12,9 @@ class TeamAccessWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, workspaces_map, teams_map):
+        """
+        Function to migrate all team access from one TFC/E org to another TFC/E org.
+        """
 
         self._logger.info("Migrating team access...")
 
@@ -92,6 +95,10 @@ class TeamAccessWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all team access from the target TFC/E org.
+        """
+
         self._logger.info("Deleting team workspace access...")
 
         target_workspaces = self._api_target.workspaces.list()["data"]

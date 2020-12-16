@@ -12,6 +12,10 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, workspaces_map, policies_map):
+        """
+        Function to migrate all policy sets from one TFC/E org to another TFC/E org.
+        """
+
         # Pull policy sets from the source organization
         source_policy_sets = self._api_source.policy_sets.list_all(include="policies,workspaces")
         target_policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")
@@ -61,8 +65,8 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
                 new_policy_set_payload["data"]["attributes"]["vcs-repo"] = {
                     "branch": source_policy_set["attributes"]["vcs-repo"]["branch"],
                     "identifier": source_policy_set["attributes"]["vcs-repo"]["identifier"],
-                    "ingress-submodules": source_policy_set
-                    ["attributes"]["vcs-repo"]["ingress-submodules"],
+                    "ingress-submodules": source_policy_set\
+                        ["attributes"]["vcs-repo"]["ingress-submodules"],
                     "oauth-token-id": oauth_token_id
                 }
             else:
@@ -98,6 +102,10 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all policy sets from the target TFC/E org.
+        """
+
         self._logger.info("Deleting policy sets...")
 
         policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")

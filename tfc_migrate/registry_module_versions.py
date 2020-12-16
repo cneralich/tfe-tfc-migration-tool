@@ -12,6 +12,10 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self):
+        """
+        Function to migrate all registry module versions from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating registry module versions...")
 
         source_modules = self._api_source.registry_modules.list()["modules"]
@@ -36,8 +40,8 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                     "data": {
                         "type": "registry-modules",
                         "attributes": {
-                        "name": source_module_name,
-                        "provider": source_module_provider
+                            "name": source_module_name,
+                            "provider": source_module_provider
                         }
                     }
                 }
@@ -51,7 +55,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                     "data": {
                         "type": "registry-module-versions",
                         "attributes": {
-                        "version": source_module_version
+                            "version": source_module_version
                         }
                     }
                 }

@@ -12,6 +12,10 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self):
+        """
+        Function to migrate all agent pools from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating agent pools...")
 
         if "app.terraform.io" in self._api_source.get_url():
@@ -33,7 +37,8 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
                     if source_agent_pool_name in target_agent_pool_data:
                         agent_pools_map[source_agent_pool_id] = \
                             target_agent_pool_data[source_agent_pool_name]
-                        self._logger.info("Agent pool: %s, exists. Skipped.", source_agent_pool_name)
+                        self._logger.info(\
+                            "Agent pool: %s, exists. Skipped.", source_agent_pool_name)
                         continue
 
                     # Build the new agent pool payload
@@ -55,6 +60,10 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
         return agent_pools_map
 
     def delete_all_from_target(self):
+        """
+        Function to delete all agent pools from the target TFC/E org.
+        """
+
         self._logger.info("Deleting agent pools...")
 
         agent_pools = self._api_target.agents.list_pools()["data"]

@@ -1,4 +1,9 @@
-from abc import ABC, abstractmethod
+"""
+Module for class that is the basic required properties for a TFC/E API migration
+worker.
+"""
+
+from abc import ABC
 
 import logging
 
@@ -13,8 +18,10 @@ class TFCMigratorBaseWorker(ABC):
         self._api_target = api_target
         self._vcs_connection_map = vcs_connection_map
 
+    """
     def migrate_all(self):
         pass
 
     def delete_all_from_target(self):
         pass
+    """

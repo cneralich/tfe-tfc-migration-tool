@@ -12,6 +12,10 @@ class WorkspaceSSHKeysWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map):
+        """
+        Function to migrate all SSH keys for workspaces from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating SSH keys for workspaces...")
 
         # NOTE: No check for existing keys, since this assign function won't throw
@@ -40,6 +44,10 @@ class WorkspaceSSHKeysWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all workspace SSH keys from the target TFC/E org.
+        """
+
         self._logger.info("Deleting workspace SSH keys...")
 
         workspaces = self._api_target.workspaces.list()["data"]

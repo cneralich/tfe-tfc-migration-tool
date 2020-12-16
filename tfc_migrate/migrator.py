@@ -1,3 +1,7 @@
+"""
+Module for class that allows migration of all TFC/E API resources.
+"""
+
 from abc import ABC
 
 import json
@@ -15,7 +19,6 @@ from .team_access import TeamAccessWorker
 from .registry_modules import RegistryModulesWorker
 from .registry_module_versions import RegistryModuleVersionsWorker
 from .run_triggers import RunTriggersWorker
-from .ssh_keys import SSHKeysWorker
 from .state_versions import StateVersionsWorker
 from .ssh_keys import SSHKeysWorker
 from .workspaces import WorkspacesWorker

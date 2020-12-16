@@ -12,6 +12,10 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self):
+        """
+        Function to migrate all SSH keys from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating SSH keys...")
 
         # Fetch SSH Keys from existing org
@@ -94,6 +98,10 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all SSH keys from the target TFC/E org.
+        """
+
         self._logger.info("Deleting SSH keys...")
 
         ssh_keys = self._api_target.ssh_keys.list()["data"]

@@ -12,6 +12,10 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, workspaces_map):
+        """
+        Function to migrate all run triggers from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating run triggers...")
 
         for source_workspace_id in workspaces_map:
@@ -65,22 +69,28 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                     }
 
                     # add run triggers to the target workspace
-                    self._api_target.run_triggers.create(target_workspace_id, new_run_trigger_payload)
+                    self._api_target.run_triggers.create(\
+                        target_workspace_id, new_run_trigger_payload)
 
-                    self._logger.info("Run trigger workspace ID: %s, to workspace ID: %s, created.", \
-                        target_workspace_trigger_workspace_id, target_workspace_id)
+                    self._logger.info(\
+                        "Run trigger workspace ID: %s, to workspace ID: %s, created.", \
+                            target_workspace_trigger_workspace_id, target_workspace_id)
 
         self._logger.info("Run triggers migrated.")
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all run triggers from the target TFC/E org.
+        """
+
         self._logger.info("Deleting run triggers...")
 
         workspaces = self._api_target.workspaces.list()["data"]
 
         if workspaces:
             for workspace in workspaces:
-                workspace_id =  workspace["id"]
+                workspace_id = workspace["id"]
 
                 workspace_run_trigger_filters = [
                     {

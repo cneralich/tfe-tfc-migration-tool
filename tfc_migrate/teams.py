@@ -12,6 +12,10 @@ class TeamsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self):
+        """
+        Function to migrate all teams from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating teams...")
 
         # Fetch Teams from Existing Org
@@ -50,11 +54,14 @@ class TeamsWorker(TFCMigratorBaseWorker):
                             "name": source_team_name,
                             "organization-access": {
                                 "manage-workspaces": \
-                                    source_team["attributes"]["organization-access"]["manage-workspaces"],
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-workspaces"],
                                 "manage-policies": \
-                                    source_team["attributes"]["organization-access"]["manage-policies"],
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-policies"],
                                 "manage-vcs-settings": \
-                                    source_team["attributes"]["organization-access"]["manage-vcs-settings"]
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-vcs-settings"]
                             }
                         }
                     }
@@ -73,6 +80,10 @@ class TeamsWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all teams from the target TFC/E org.
+        """
+
         self._logger.info("Deleting teams...")
 
         teams = self._api_target.teams.list()["data"]
