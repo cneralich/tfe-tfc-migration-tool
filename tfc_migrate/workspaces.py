@@ -11,6 +11,10 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, agent_pools_map):
+        """
+        Function to migrate all workspaces from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating workspaces...")
 
         # Fetch workspaces from existing org
@@ -108,6 +112,10 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
         return workspaces_map, workspace_to_ssh_key_map
 
     def delete_all_from_target(self):
+        """
+        Function to delete all workspaces from the target TFC/E org.
+        """
+
         self._logger.info("Deleting workspaces...")
 
         workspaces = self._api_target.workspaces.list()["data"]

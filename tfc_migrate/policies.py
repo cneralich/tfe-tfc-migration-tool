@@ -12,6 +12,10 @@ class PoliciesWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self):
+        """
+        Function to migrate all policies from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating policies...")
 
         # Pull policies from the old organization
@@ -70,6 +74,10 @@ class PoliciesWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all policies from the target TFC/E org.
+        """
+
         self._logger.info("Deleting policies...")
 
         policies = self._api_target.policies.list_all()

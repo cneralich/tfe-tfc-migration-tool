@@ -12,6 +12,9 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, policy_sets_map, return_sensitive_variable_data=True):
+        """
+        Function to migrate all policy set params from one TFC/E org to another TFC/E org.
+        """
 
         self._logger.info("Migrating policy set params...")
 
@@ -108,6 +111,10 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all policy set params from the target TFC/E org.
+        """
+
         self._logger.info("Deleting policy set params...")
 
         policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")

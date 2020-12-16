@@ -13,6 +13,10 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, teams_map):
+        """
+        Function to migrate all org memberships from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating org memberships...")
 
         # Set proper membership filters
@@ -87,6 +91,10 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all org memberships from the target TFC/E org.
+        """
+
         self._logger.info("Deleting organization members...")
 
         org_members = self._api_target.org_memberships.list_all_for_org()

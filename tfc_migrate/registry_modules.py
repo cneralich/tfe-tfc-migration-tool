@@ -12,6 +12,10 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self):
+        """
+        Function to migrate all registry modules from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating registry modules...")
 
         source_modules = self._api_source.registry_modules.list()["modules"]
@@ -66,6 +70,10 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
 
 
     def delete_all_from_target(self):
+        """
+        Function to delete all registry modules from the target TFC/E org.
+        """
+
         self._logger.info("Deleting registry modules...")
 
         modules = self._api_target.registry_modules.list()["modules"]

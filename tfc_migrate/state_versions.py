@@ -18,6 +18,10 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, workspaces_map):
+        """
+        Function to migrate all state versions from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating all state versions...")
 
         for workspace_id in workspaces_map:
@@ -97,6 +101,10 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
 
 
     def migrate_current(self, workspaces_map):
+        """
+        Function to migrate current state versions from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating current state versions...")
 
         for workspace_id in workspaces_map:
@@ -108,8 +116,9 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             try:
                 current_version = self._api_source.state_versions.get_current(workspace_id)["data"]
             except exceptions.TFCHTTPNotFound:
-                self._logger.info("Current state version for workspace: %s, does not exist. Skipped.", \
-                    source_workspace_name)
+                self._logger.info(\
+                    "Current state version for workspace: %s, does not exist. Skipped.", \
+                        source_workspace_name)
                 continue
 
             state_url = current_version["attributes"]["hosted-state-download-url"]

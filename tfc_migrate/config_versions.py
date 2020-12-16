@@ -12,6 +12,10 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
     """
 
     def migrate_all(self, workspaces_map):
+        """
+        Function to migrate all config versions from one TFC/E org to another TFC/E org.
+        """
+
         self._logger.info("Migrating config versions...")
 
         workspace_to_config_version_upload_url_map = {}
