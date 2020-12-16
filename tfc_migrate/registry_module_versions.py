@@ -58,7 +58,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                 }
 
                 # Create the module version in the target organization
-                new_module_version = self._api_target.registry_module.create_version(\
+                new_module_version = self._api_target.registry_modules.create_version(\
                     source_module_name, source_module_provider, new_module_version_payload)["data"]
                 self._logger.info("Module version: %s, for module: %s, created.", \
                     source_module_version, source_module_name)
@@ -101,5 +101,15 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
             self._logger.info("Module version files migrated.")
 
 
-# NOTE: no need for a delete function here, since it will get cleaned up in
-# the RegistryModulesWorker.
+    def delete_all_from_target(self):
+        self._logger.info("Deleting registry modules...")
+
+        modules = self._api_target.registry_modules.list()["modules"]
+
+        if modules:
+            for module in modules:
+                if module["source"] == "":
+                    self._api_target.registry_modules.destroy(module["name"])
+                    self._logger.info("Registry module: %s, deleted.", module["name"])
+
+        self._logger.info("Registry modules deleted.")

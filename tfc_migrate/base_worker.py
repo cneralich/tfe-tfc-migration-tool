@@ -12,6 +12,7 @@ class TFCMigratorBaseWorker(ABC):
         self._api_source = api_source
         self._api_target = api_target
         self._vcs_connection_map = vcs_connection_map
+        self._sensitive_data_map = sensitive_data_map
 
     def migrate_all(self):
         pass

@@ -179,8 +179,11 @@ class TFCMigrator(ABC):
 
         if no_confirmation or \
             self.confirm_delete_resource_type("registry modules", self._api_target):
-            # NOTE: No need to delete registry module versions since this will handle that.
             self.registry_modules.delete_all_from_target()
+        
+        if no_confirmation or \
+            self.confirm_delete_resource_type("registry modules versions", self._api_target):
+            self.registry_module_versions.delete_all_from_target()
 
         if no_confirmation or self.confirm_delete_resource_type("agent pools", self._api_target):
             self.agent_pools.delete_all_from_target()
