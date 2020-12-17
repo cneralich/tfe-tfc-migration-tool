@@ -48,7 +48,7 @@ The TFE_VCS_CONNECTION_MAP is a list of dictionaries, each of which maps a `sour
 
 By default, the migration tool will load these values from a file named `vcs.json`, though a custom file path may also be provided via a command line argument at runtime (more on this below).
 
-* Note that GitHub App connections are not currently supported in this migration tool since those values can not currently be managed via the API.
+> **_Note:_** GitHub App connections are not currently supported in this migration tool since those values can not currently be managed via the API.
 
 
 ### 4. Choose Desired Runtime Arguments
