@@ -111,6 +111,7 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
         self._logger.info("Workspaces migrated.")
         return workspaces_map, workspace_to_ssh_key_map
 
+
     def delete_all_from_target(self):
         """
         Function to delete all workspaces from the target TFC/E org.

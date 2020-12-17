@@ -105,7 +105,7 @@ class TFCMigrator(ABC):
         # have to be updated separately.
         sensitive_policy_set_parameter_data = self.policy_set_params.migrate_all(policy_sets_map)
 
-        module_to_module_version_upload_map, module_to_file_path_map = self.registry_module_versions.migrate_all()
+        module_to_module_version_upload_url_map, module_to_file_path_map = self.registry_module_versions.migrate_all()
 
 
         output_json = {
@@ -114,13 +114,13 @@ class TFCMigrator(ABC):
             "ssh_key_name_map": ssh_key_name_map,
             "workspaces_map": workspaces_map,
             "workspace_to_ssh_key_map": workspace_to_ssh_key_map,
-            "workspace_to_config_version_upload_url_map": workspace_to_config_version_upload_url_map,
-            "module_to_module_version_upload_map": module_to_module_version_upload_map,
             "policies_map": policies_map,
             "policy_sets_map": policy_sets_map,
+            "workspace_to_config_version_upload_url_map": workspace_to_config_version_upload_url_map,
+            "module_to_module_version_upload_url_map": module_to_module_version_upload_url_map,
             "workspace_to_config_version_file_path_map": workspace_to_config_version_file_path_map,
-            "ssh_key_file_path_map": ssh_key_file_path_map,
             "module_to_file_path_map": module_to_file_path_map,
+            "ssh_key_file_path_map": ssh_key_file_path_map,
             "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
             "sensitive_variable_data": sensitive_variable_data
         }

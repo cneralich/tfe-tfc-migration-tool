@@ -23,7 +23,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
         target_module_names = \
             [target_module["name"] for target_module in target_modules]
 
-        module_to_module_version_upload_map = {}
+        module_to_module_version_upload_url_map = {}
         module_to_file_path_map = []
 
         for source_module in source_modules:
@@ -67,22 +67,22 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                 self._logger.info("Module version: %s, for module: %s, created.", \
                     source_module_version, source_module_name)
 
-                module_to_module_version_upload_map[source_module_name] = \
+                module_to_module_version_upload_url_map[source_module_name] = \
                     new_module_version["links"]["upload"]
                 module_to_file_path_map.append({"module_name":source_module_name,"path_to_module_file":""})
 
         self._logger.info("Registry module versions migrated.")
 
-        return module_to_module_version_upload_map, module_to_file_path_map
+        return module_to_module_version_upload_url_map, module_to_file_path_map
 
 
     def migrate_module_version_files(self):
         self._logger.info("Migrating module version files...")
 
-        if "module_to_module_version_upload_map" in self._sensitive_data_map \
+        if "module_to_module_version_upload_url_map" in self._sensitive_data_map \
             and "module_to_file_path_map" in self._sensitive_data_map:
 
-            module_to_module_version_upload_map = self._sensitive_data_map["module_to_module_version_upload_map"]
+            module_to_module_version_upload_url_map = self._sensitive_data_map["module_to_module_version_upload_url_map"]
             module_to_file_path_map = self._sensitive_data_map["module_to_file_path_map"]
 
             for module in module_to_file_path_map:
@@ -98,7 +98,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                 # Upload the module version file
                 self._api_target.registry_modules.upload_version(\
                     module_to_file_path_map["path_to_module_file"], \
-                        module_to_module_version_upload_map[module_name])
+                        module_to_module_version_upload_url_map[module_name])
 
                 self._logger.info("Module version file for module: %s, uploaded.", module_name)
 

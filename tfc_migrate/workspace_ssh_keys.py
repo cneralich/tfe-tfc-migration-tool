@@ -21,24 +21,25 @@ class WorkspaceSSHKeysWorker(TFCMigratorBaseWorker):
         # NOTE: No check for existing keys, since this assign function won't throw
         # an exception if the key exists.
         for source_workspace_id, ssh_key_id in workspace_to_ssh_key_map.items():
-            workspace_id = ssh_keys_map[ssh_key_id]
+            target_ssh_key_id = ssh_keys_map[ssh_key_id]
+            target_workspace_id = workspaces_map[source_workspace_id]
 
             # Build the new ssh key payload
             new_workspace_ssh_key_payload = {
                 "data": {
                     "attributes": {
-                        "id": workspace_id
+                        "id": target_ssh_key_id
                     },
                     "type": "workspaces"
                 }
             }
 
             self._logger.info("SSH key: %s, for workspace: %s, created.", \
-                ssh_key_id, workspace_id)
+                target_ssh_key_id, target_workspace_id)
 
             # Add SSH Keys to the target workspace
             self._api_target.workspaces.assign_ssh_key( \
-                workspaces_map[source_workspace_id], new_workspace_ssh_key_payload)
+                target_workspace_id, new_workspace_ssh_key_payload)
 
         self._logger.info("SSH keys for workspaces migrated.")
 
