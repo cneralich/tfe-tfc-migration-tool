@@ -132,7 +132,6 @@ Each of the supported operations outlined above are performed by separate functi
 * `workspace_to_config_version_upload_url_map`: a dictionary that maps the workspace name in the target organization to the configuration version upload URL for that workspace in the target organization
 * `workspace_to_config_version_file_path_map`: a list of dictionaries, each of which contains a workspace name, workspace ID, and file path for the config version files associated with that workspace in the target organization
 * `ssh_key_file_path_map`: a list of dictionaries, each of which contains a SSH key name and file path for the SSH key files associated with that SSH key in the target organization
-* `module_to_file_path_map`: a list of dictionaries, each of which contains a module name and file path for the module version files associated with that module in the target organization
 * `sensitive_policy_set_parameter_data`: a list of dictionaries, each of which includes a policy set name, policy set ID, policy set parameter ID, policy set parameter key, policy set parameter value, and policy set parameter category for all policy set parameters in the destination organization that were created from policy set parameters in the source organization that were marked as 'sensitive'
 * `sensitive_variable_data`: a list of dictionaries, each of which includes a workspace name, workspace ID, variable key, variable value, variable description, variable category, and variable type for all workspace variables in the destination organization that were created from workspace variables in the source organization that were marked as 'sensitive'
 
@@ -141,15 +140,13 @@ Each of the supported operations outlined above are performed by separate functi
 
 ## Sensitive Value and File Migration
 
-This migration tool leverages the [Terraform Cloud/Enterprise API](https://www.terraform.io/docs/cloud/api/index.html) and the [terrasnek](https://github.com/dahlke/terrasnek) Python Client for interacting with it.  For security reasons, there are certain sensitive values and files that cannot be extracted via the API, including sensitive workspace variables, sensitive policy set params, SSH keys, module version files, and configuration version files. For that reason, those items will need to be re-added after the initial migration is finished by completing the following steps:
+This migration tool leverages the [Terraform Cloud/Enterprise API](https://www.terraform.io/docs/cloud/api/index.html) and the [terrasnek](https://github.com/dahlke/terrasnek) Python Client for interacting with it.  For security reasons, there are certain sensitive values and files that cannot be extracted via the API, including sensitive workspace variables, sensitive policy set params, SSH keys, and configuration version files. For that reason, those items will need to be re-added after the initial migration is finished by completing the following steps:
 
 ### 1. Update all Missing Values
 
 Once the initial migration is complete and the outputs are generated, save them to a file (if not done initially using the instructions above) and complete the following:
 
 * In the `workspace_to_config_version_file_path_map` list, update the `path_to_config_version_file` value in each dictionary with the correct local file path for that configuration version's configuration version files
-
-* In the `module_to_file_path_map` list, update the `path_to_module_file` value in each dictionary with the correct local file path for that module version's module version files
 
 * In the `ssh_key_to_file_path_map` list, update the `path_to_ssh_key_file` value in each dictionary with the correct local file path for that SSH key's SSH key files 
 

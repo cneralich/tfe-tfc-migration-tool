@@ -73,7 +73,7 @@ class TFCMigrator(ABC):
 
         teams_map = self.teams.migrate_all()
 
-        ssh_keys_map, ssh_key_name_map, ssh_key_file_path_map = self.ssh_keys.migrate_all()
+        ssh_keys_map, ssh_key_name_map, ssh_key_to_file_path_map = self.ssh_keys.migrate_all()
 
         agent_pools_map = self.agent_pools.migrate_all()
 
@@ -105,7 +105,7 @@ class TFCMigrator(ABC):
         # have to be updated separately.
         sensitive_policy_set_parameter_data = self.policy_set_params.migrate_all(policy_sets_map)
 
-        module_to_module_version_upload_url_map, module_to_file_path_map = self.registry_module_versions.migrate_all()
+        self.registry_module_versions.migrate_all()
 
 
         output_json = {
@@ -117,10 +117,8 @@ class TFCMigrator(ABC):
             "policies_map": policies_map,
             "policy_sets_map": policy_sets_map,
             "workspace_to_config_version_upload_url_map": workspace_to_config_version_upload_url_map,
-            "module_to_module_version_upload_url_map": module_to_module_version_upload_url_map,
             "workspace_to_config_version_file_path_map": workspace_to_config_version_file_path_map,
-            "module_to_file_path_map": module_to_file_path_map,
-            "ssh_key_file_path_map": ssh_key_file_path_map,
+            "ssh_key_to_file_path_map": ssh_key_to_file_path_map,
             "sensitive_policy_set_parameter_data": sensitive_policy_set_parameter_data,
             "sensitive_variable_data": sensitive_variable_data
         }
@@ -136,9 +134,6 @@ class TFCMigrator(ABC):
         self. policy_set_params.migrate_sensitive()
         
         self.workspace_vars.migrate_sensitive()
-
-        self.registry_module_versions.migrate_module_version_files()
-
 
 
     def delete_all_from_target(self, no_confirmation):

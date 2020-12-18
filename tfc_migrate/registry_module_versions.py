@@ -2,6 +2,8 @@
 Module for Terraform Enterprise/Cloud Migration Worker: Registry Module Versions.
 """
 
+import os
+
 from .base_worker import TFCMigratorBaseWorker
 
 
@@ -22,9 +24,6 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
         target_modules = self._api_target.registry_modules.list()["modules"]
         target_module_names = \
             [target_module["name"] for target_module in target_modules]
-
-        module_to_module_version_upload_url_map = {}
-        module_to_file_path_map = []
 
         for source_module in source_modules:
             if source_module["source"] == "":
@@ -67,42 +66,18 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                 self._logger.info("Module version: %s, for module: %s, created.", \
                     source_module_version, source_module_name)
 
-                module_to_module_version_upload_url_map[source_module_name] = \
-                    new_module_version["links"]["upload"]
-                module_to_file_path_map.append({"module_name":source_module_name,"path_to_module_file":""})
+                # Pull module version file and upload to target organization
+                source_module_file_path = "/tmp/%s.tar.gz" % (source_module_name)
+                self._api_source.registry_modules.download_latest_source( \
+                    source_module_name, source_module_provider, source_module_file_path)
+                
+                self._api_target.registry_modules.upload_version(\
+                   source_module_file_path, new_module_version["links"]["upload"])
+                self._logger.info("Module version file for version: %s, for module: %s, uploaded.", \
+                    source_module_version, source_module_name)
+                os.remove(source_module_file_path)
 
         self._logger.info("Registry module versions migrated.")
-
-        return module_to_module_version_upload_url_map, module_to_file_path_map
-
-
-    def migrate_module_version_files(self):
-        self._logger.info("Migrating module version files...")
-
-        if "module_to_module_version_upload_url_map" in self._sensitive_data_map \
-            and "module_to_file_path_map" in self._sensitive_data_map:
-
-            module_to_module_version_upload_url_map = self._sensitive_data_map["module_to_module_version_upload_url_map"]
-            module_to_file_path_map = self._sensitive_data_map["module_to_file_path_map"]
-
-            for module in module_to_file_path_map:
-                """
-                NOTE: The module_to_file_path_map is provided as an output by the migrate_all method
-                above, and the missing "path_to_ssh_key_file" values should be updated prior to invoking this function.
-                For reference, the correct format for each item in the list should be:
-                {"module_name":"name_of_module", "path_to_module_file":"path/to/file"}
-                """
-                
-                module_name = module["module_name"]
-
-                # Upload the module version file
-                self._api_target.registry_modules.upload_version(\
-                    module_to_file_path_map["path_to_module_file"], \
-                        module_to_module_version_upload_url_map[module_name])
-
-                self._logger.info("Module version file for module: %s, uploaded.", module_name)
-
-            self._logger.info("Module version files migrated.")
 
 
     def delete_all_from_target(self):

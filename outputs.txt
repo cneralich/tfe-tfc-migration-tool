@@ -15,11 +15,7 @@
 
     "workspace_to_config_version_upload_url_map": {},
 
-    "module_to_module_version_upload_url_map": {},
-
     "workspace_to_config_version_file_path_map": [],
-
-    "module_to_file_path_map": [],
 
     "ssh_key_to_file_path_map": [],
 
