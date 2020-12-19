@@ -23,14 +23,14 @@ TFE_VCS_CONNECTION_MAP = None
 SENSITIVE_DATA_MAP = None
 
 
-def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data):
+def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data, target_tfc_org_subscription_tier):
 
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
     elif migrate_sensitive_data:
         migrator.migrate_sensitive()
     else:
-        migrator.migrate_all(migrate_all_state)
+        migrator.migrate_all(migrate_all_state, target_tfc_org_subscription_tier)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Migrate from one TFE/C org to another TFE/C org')
@@ -38,6 +38,9 @@ if __name__ == "__main__":
         help="Path to the VCS JSON file. Defaults to `vcs.json`.")
     parser.add_argument('--migrate-all-state', dest="migrate_all_state", action="store_true", \
         help="Migrate all state history workspaces. Default behavior is only current state.")
+    parser.add_argument('--tfc-subscription', dest="target_tfc_org_subscription_tier", choices=["free", "team", "governance", \
+        "business"], default="business", help="Specifices the subscription tier for a target TFC organization. \
+            Defaults to `business`.")
     parser.add_argument('--sensitive-data-file-path', dest="sensitive_data_file_path", \
         default=DEFAULT_SENSITIVE_DATA_FILE, \
             help="Path the the sensitive values file. Defaults to `sensitive_data.txt`.")
@@ -72,4 +75,5 @@ if __name__ == "__main__":
 
     migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, SENSITIVE_DATA_MAP, log_level)
 
-    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state, args.migrate_sensitive_data)
+    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state, args.migrate_sensitive_data, \
+        args.target_tfc_org_subscription_tier)

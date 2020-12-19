@@ -63,19 +63,24 @@ class TFCMigrator(ABC):
         self.workspace_ssh_keys = \
             WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
 
-    def migrate_all(self, migrate_all_state):
+    def migrate_all(self, migrate_all_state, target_tfc_org_subscription_tier):
         """
         NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
         The users must exist in the system ahead of time if you want to use this.
         Lastly, since most customers use SSO, this function isn't terribly useful.
         """
         # TODO: org_membership_map = org_memberships.migrate(api_source, api_target, teams_map)
-
-        teams_map = self.teams.migrate_all()
+        if target_tfc_org_subscription_tier == "free":
+            teams_map = {}
+        else:
+            teams_map = self.teams.migrate_all()
 
         ssh_keys_map, ssh_key_name_map, ssh_key_to_file_path_map = self.ssh_keys.migrate_all()
 
-        agent_pools_map = self.agent_pools.migrate_all()
+        if target_tfc_org_subscription_tier == "business":
+            agent_pools_map = self.agent_pools.migrate_all()
+        else:
+            agent_pools_map = {}
 
         workspaces_map, workspace_to_ssh_key_map = self.workspaces.migrate_all(agent_pools_map)
 
@@ -92,18 +97,24 @@ class TFCMigrator(ABC):
 
         self.notification_configs.migrate_all(workspaces_map)
 
-        self.team_access.migrate_all(workspaces_map, teams_map)
+        if target_tfc_org_subscription_tier != "free":
+            self.team_access.migrate_all(workspaces_map, teams_map)
 
         workspace_to_config_version_upload_url_map, workspace_to_config_version_file_path_map = self.config_versions.migrate_all(workspaces_map)
 
-        policies_map = self.policies.migrate_all()
+        if target_tfc_org_subscription_tier == "free" or target_tfc_org_subscription_tier == "teams":
+            policies_map = {}
+            policy_sets_map = {}
+            sensitive_policy_set_parameter_data = []
+        else:
+            policies_map = self.policies.migrate_all()
 
-        policy_sets_map = self.policy_sets.migrate_all(workspaces_map, policies_map)
+            policy_sets_map = self.policy_sets.migrate_all(workspaces_map, policies_map)
 
-        # This function returns the information that is needed to publish sensitive
-        # variables, but cannot retrieve the values themselves, so those values will
-        # have to be updated separately.
-        sensitive_policy_set_parameter_data = self.policy_set_params.migrate_all(policy_sets_map)
+            # This function returns the information that is needed to publish sensitive
+            # variables, but cannot retrieve the values themselves, so those values will
+            # have to be updated separately.
+            sensitive_policy_set_parameter_data = self.policy_set_params.migrate_all(policy_sets_map)
 
         self.registry_module_versions.migrate_all()
 
