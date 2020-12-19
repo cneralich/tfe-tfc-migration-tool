@@ -56,6 +56,7 @@ By default, the migration tool will load these values from a file named `vcs.jso
 Before initiating the migration process, first determine which command line arguments you wish to pass (if any).  The following arguments are currently supported:
 * `--vcs-file-path`: this flag allows you to pass a custom file path for your TFE_VCS_CONNECTION_MAP JSON file. If not specified, `vcs.json` will be used by default.
 * `--migrate-all-state`: this flag allows you to set the desired behavior for migrating state versions.  If passed, all versions of state will get migrated for all workspaces.  If not specificed, only the current version of state for all workspaces will be migrated by default.
+*`--tfc-subscription`: this flag allows you to select the subscription tier for a target TFC organization to ensure that only data permitted under that tier is transferred.  The available options are `free`, `teams`, `governance`, and `business`.  If not specificed, `business` will be used by default.
 * `> outputs.txt`: this allows you to set the desired behavior for handling outputs.  If passed, all outputs will will be written to an `outputs.txt` file (or file name of your choice).  If not specified, all outputs will appear in the terminal by default.
 
 
