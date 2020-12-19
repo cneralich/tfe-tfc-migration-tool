@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser.add_argument('--migrate-all-state', dest="migrate_all_state", action="store_true", \
         help="Migrate all state history workspaces. Default behavior is only current state.")
     parser.add_argument('--tfc-subscription', dest="target_tfc_org_subscription_tier", choices=["free", "team", "governance", \
-        "business"], default="business", help="Specifices the subscription tier for a target TFC organization. \
+        "business", "legacy", "trial"], default="business", help="Specifices the subscription tier for a target TFC organization. \
             Defaults to `business`.")
     parser.add_argument('--sensitive-data-file-path', dest="sensitive_data_file_path", \
         default=DEFAULT_SENSITIVE_DATA_FILE, \
