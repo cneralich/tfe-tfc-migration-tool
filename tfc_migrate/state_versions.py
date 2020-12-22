@@ -65,9 +65,10 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 source_state_data = source_pull_state.read()
                 source_state_serial = json.loads(source_state_data)["serial"]
 
-                if source_state_serial in target_state_version_serials:
-                    self._logger.info("State Version: %s, for workspace %s, exists. Skipped.", \
-                        source_state_serial, source_workspace_name)
+                if target_state_version_serials and source_state_serial <= target_state_version_serials[0]:
+                    self._logger.info( \
+                        "State Version: %s, for workspace %s, exists or is older than the current version. Skipped.", \
+                            source_state_serial, source_workspace_name)
                     continue
 
                 source_state_hash = hashlib.md5()
@@ -91,6 +92,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                     source_state_serial, source_workspace_name)
 
                 # Migrate state to the target workspace
+                # TODO: Add try statement and logging in case a workspace is already locked and this fails
                 self._api_target.workspaces.lock(workspaces_map[workspace_id], \
                     {"reason": "migration script"})
                 self._api_target.state_versions.create( \
@@ -112,33 +114,56 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 ["data"]["attributes"]["name"]
 
             # Set proper state filters to pull state versions for each workspace
-            current_version = None
+            current_source_version = None
+
+            target_state_filters = [
+                {
+                    "keys": ["workspace", "name"],
+                    "value":  source_workspace_name
+                },
+                {
+                    "keys": ["organization", "name"],
+                    "value": self._api_target.get_org()
+                }
+            ]
+
+            target_state_versions = \
+                self._api_target.state_versions.list_all(filters=target_state_filters)
+            target_state_version_serials = \
+                [state_version["attributes"]["serial"] for state_version in target_state_versions]
+            
             try:
-                current_version = self._api_source.state_versions.get_current(workspace_id)["data"]
+                current_source_version = self._api_source.state_versions.get_current(workspace_id)["data"]
+                current_source_version_number = current_source_version["attributes"]["serial"]
             except exceptions.TFCHTTPNotFound:
                 self._logger.info(\
                     "Current state version for workspace: %s, does not exist. Skipped.", \
                         source_workspace_name)
                 continue
+            
+            if target_state_version_serials and current_source_version_number <= target_state_version_serials[0]:
+                self._logger.info( \
+                    "State Version: %s, for workspace %s, exists or is older than the current version. Skipped.", \
+                        current_source_version_number, source_workspace_name)
+                        
+            source_state_url = current_source_version["attributes"]["hosted-state-download-url"]
+            source_pull_state = request.urlopen(source_state_url)
+            source_state_data = source_pull_state.read()
+            source_state_serial = json.loads(source_state_data)["serial"]
 
-            state_url = current_version["attributes"]["hosted-state-download-url"]
-            pull_state = request.urlopen(state_url)
-            state_data = pull_state.read()
-            state_serial = json.loads(state_data)["serial"]
-
-            state_hash = hashlib.md5()
-            state_hash.update(state_data)
-            state_md5 = state_hash.hexdigest()
-            state_b64 = base64.b64encode(state_data).decode("utf-8")
+            source_state_hash = hashlib.md5()
+            source_state_hash.update(source_state_data)
+            source_state_md5 = source_state_hash.hexdigest()
+            source_state_b64 = base64.b64encode(source_state_data).decode("utf-8")
 
             # Build the new state payload
             create_state_version_payload = {
                 "data": {
                     "type": "state-versions",
                     "attributes": {
-                        "serial": state_serial,
-                        "md5": state_md5,
-                        "state": state_b64
+                        "serial": source_state_serial,
+                        "md5": source_state_md5,
+                        "state": source_state_b64
                     }
                 }
             }
