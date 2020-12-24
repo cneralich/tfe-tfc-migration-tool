@@ -29,21 +29,28 @@ class TFCMigratorBaseWorker(ABC):
         #   "sentinel", "state-storage", "teams", "vcs-integrations", "usage-reporting", "user-limit",
         #   "self-serve-billing", "audit-logging", "agents", "sso"
         # ]
-        source_entitlements = self._api_source.get_entitlements()
-        target_entitlements = self._api_target.get_entitlements()
-
         has_source_entitlements = True
         has_target_entitlements = True
 
-        for required_entitlement in self._required_entitlements:
-            if not source_entitlements[required_entitlement]:
-                has_source_entitlements = False
-                break
+        source_is_tfc = self._api_source.is_terraform_cloud()
+        target_is_tfc = self._api_target.is_terraform_cloud()
 
-        for required_entitlement in self._required_entitlements:
-            if not target_entitlements[required_entitlement]:
-                has_target_entitlements = False
-                break
+        # Only need to do entitlement checks if it's not TFE
+        if source_is_tfc:
+            source_entitlements = self._api_source.get_entitlements()
+
+            for required_entitlement in self._required_entitlements:
+                if not source_entitlements[required_entitlement]:
+                    has_source_entitlements = False
+                    break
+
+        if target_is_tfc:
+            target_entitlements = self._api_target.get_entitlements()
+
+            for required_entitlement in self._required_entitlements:
+                if not target_entitlements[required_entitlement]:
+                    has_target_entitlements = False
+                    break
 
         return has_source_entitlements and has_target_entitlements
 
