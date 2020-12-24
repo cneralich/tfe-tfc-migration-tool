@@ -11,6 +11,9 @@ class TeamsWorker(TFCMigratorBaseWorker):
     TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "teams"
+    _required_entitlements = ["teams"]
+
     def migrate_all(self):
         """
         Function to migrate all teams from one TFC/E org to another TFC/E org.
@@ -18,7 +21,12 @@ class TeamsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Migrating teams...")
 
-        # Fetch Teams from Existing Org
+        teams_map = {}
+
+        self._check_entitlements()
+        self._check_terraform_platform()
+
+        # Fetch teams from existing org
         source_teams = self._api_source.teams.list()["data"]
         target_teams = self._api_target.teams.list()["data"]
 
@@ -33,7 +41,6 @@ class TeamsWorker(TFCMigratorBaseWorker):
                 new_org_owners_team_id = source_team["id"]
                 break
 
-        teams_map = {}
         for source_team in source_teams:
             source_team_name = source_team["attributes"]["name"]
 

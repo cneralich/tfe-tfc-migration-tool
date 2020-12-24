@@ -18,11 +18,15 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Migrating agent pools...")
 
-        if "app.terraform.io" in self._api_source.get_url():
+        # Only perform this migration if it's TFC to TFC, otherwise it won't work.
+        agent_pools_map = {}
+
+        # TODO: check entitlements
+        # TODO: check api.agents.terraform_cloud_only() / api.agents.terraform_enterprise_only()
+        if self._api_source.is_terraform_cloud() and self._api_target.is_terraform_cloud():
             # Fetch agent pools from existing org
             source_agent_pools = self._api_source.agents.list_pools()["data"]
             target_agent_pools = self._api_target.agents.list_pools()["data"]
-            agent_pools_map = {}
 
             if source_agent_pools and "app.terraform.io" in self._api_target.get_url():
                 target_agent_pool_data = {}
@@ -55,6 +59,8 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
                     new_agent_pool = self._api_target.agents.create_pool(new_agent_pool_payload)
                     new_agent_pool_id = new_agent_pool["data"]["id"]
                     agent_pools_map[source_agent_pool_id] = new_agent_pool_id
+        else:
+            self._logger.info("Source org or target org is not TFC, so agent pools are not supported. Skipping.")
 
         self._logger.info("Agent pools migrated.")
         return agent_pools_map
@@ -66,12 +72,18 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting agent pools...")
 
-        agent_pools = self._api_target.agents.list_pools()["data"]
+        # TODO: check api.agents.terraform_cloud_only() / api.agents.terraform_enterprise_only()
+        if self._api_source.is_terraform_cloud() and self._api_target.is_terraform_cloud():
 
-        if agent_pools:
-            for agent_pool in agent_pools:
-                if agent_pool["attributes"]["name"] != "Default":
-                    self._logger.info("Agent pool: %s, deleted.", agent_pool["attributes"]["name"])
-                    self._api_target.agents.destroy(agent_pool["id"])
+            agent_pools = self._api_target.agents.list_pools()["data"]
+
+            if agent_pools:
+                for agent_pool in agent_pools:
+                    if agent_pool["attributes"]["name"] != "Default":
+                        self._logger.info("Agent pool: %s, deleted.", agent_pool["attributes"]["name"])
+                        self._api_target.agents.destroy(agent_pool["id"])
+
+        else:
+            self._logger.info("Source org or target org is not TFC, so agent pools are not supported. Skipping.")
 
         self._logger.info("Agent pools deleted.")

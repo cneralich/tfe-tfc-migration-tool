@@ -54,7 +54,8 @@ if __name__ == "__main__":
     api_source = TFC(TFE_TOKEN_SOURCE, url=TFE_URL_SOURCE)
     api_source.set_org(TFE_ORG_SOURCE)
 
-    api_target = TFC(TFE_TOKEN_TARGET, url=TFE_URL_TARGET)
+    # TODO: take the verification as an env var
+    api_target = TFC(TFE_TOKEN_TARGET, url=TFE_URL_TARGET, verify=False)
     api_target.set_org(TFE_ORG_TARGET)
 
     with open(args.vcs_file_path, "r") as f:

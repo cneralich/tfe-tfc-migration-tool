@@ -9,7 +9,7 @@ If you're trying to migrate from one TFE installation to another TFE installatio
 ### 1. Install the Python Dependencies
 
 ```bash
-pip3 install terrasnek==0.0.15
+pip3 install terrasnek==0.0.16
 ```
 
 ### 2. Set Required Environment Variables
@@ -148,7 +148,7 @@ Once the initial migration is complete and the outputs are generated, save them 
 
 * In the `workspace_to_config_version_file_path_map` list, update the `path_to_config_version_file` value in each dictionary with the correct local file path for that configuration version's configuration version files
 
-* In the `ssh_key_to_file_path_map` list, update the `path_to_ssh_key_file` value in each dictionary with the correct local file path for that SSH key's SSH key files 
+* In the `ssh_key_to_file_path_map` list, update the `path_to_ssh_key_file` value in each dictionary with the correct local file path for that SSH key's SSH key files
 
 * In the `sensitive_policy_set_parameter_data` list, update the `parameter_value` value in each dictionary with the sensitive parameter value for that sensitive parameter key
 
