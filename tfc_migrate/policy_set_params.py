@@ -11,6 +11,9 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
     from one TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "policy_set_params"
+    _required_entitlements = ["sentinel"]
+
     def migrate_all(self, policy_sets_map, return_sensitive_variable_data=True):
         """
         Function to migrate all policy set params from one TFC/E org to another TFC/E org.

@@ -43,8 +43,9 @@ class TFCMigratorBaseWorker(ABC):
         for required_entitlement in self._required_entitlements:
             if not target_entitlements[required_entitlement]:
                 has_target_entitlements = False
+                break
 
-        return has_source_entitlments and has_target_entitlements
+        return has_source_entitlements and has_target_entitlements
 
     def _check_terraform_platform(self):
         target_is_tfc = self._api_target.is_terraform_cloud()

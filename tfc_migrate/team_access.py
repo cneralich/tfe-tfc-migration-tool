@@ -11,6 +11,9 @@ class TeamAccessWorker(TFCMigratorBaseWorker):
     TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "team_access"
+    _required_entitlements = []
+
     def migrate_all(self, workspaces_map, teams_map):
         """
         Function to migrate all team access from one TFC/E org to another TFC/E org.

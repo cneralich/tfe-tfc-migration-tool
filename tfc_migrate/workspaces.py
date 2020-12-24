@@ -10,6 +10,9 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
     TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "workspaces"
+    _required_entitlements = []
+
     def migrate_all(self, agent_pools_map):
         """
         Function to migrate all workspaces from one TFC/E org to another TFC/E org.

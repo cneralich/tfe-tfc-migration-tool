@@ -11,6 +11,9 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
     TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "agent_pools"
+    _required_entitlements = []
+
     def migrate_all(self):
         """
         Function to migrate all agent pools from one TFC/E org to another TFC/E org.

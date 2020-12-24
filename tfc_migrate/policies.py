@@ -11,6 +11,9 @@ class PoliciesWorker(TFCMigratorBaseWorker):
     TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "policies"
+    _required_entitlements = ["sentinel"]
+
     def migrate_all(self):
         """
         Function to migrate all policies from one TFC/E org to another TFC/E org.

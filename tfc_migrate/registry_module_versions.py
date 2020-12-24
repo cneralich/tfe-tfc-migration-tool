@@ -13,6 +13,9 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
     versions from one TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "registry_modules"
+    _required_entitlements = []
+
     def migrate_all(self):
         """
         Function to migrate all registry module versions from one TFC/E org to another TFC/E org.
@@ -70,7 +73,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
                 source_module_file_path = "/tmp/%s.tar.gz" % (source_module_name)
                 self._api_source.registry_modules.download_latest_source( \
                     source_module_name, source_module_provider, source_module_file_path)
-                
+
                 self._api_target.registry_modules.upload_version(\
                    source_module_file_path, new_module_version["links"]["upload"])
                 self._logger.info("Module version file for version: %s, for module: %s, uploaded.", \

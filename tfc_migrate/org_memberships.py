@@ -12,6 +12,9 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
     one TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "org_memberships"
+    _required_entitlements = []
+
     def migrate_all(self, teams_map):
         """
         Function to migrate all org memberships from one TFC/E org to another TFC/E org.

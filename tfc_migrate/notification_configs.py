@@ -11,6 +11,9 @@ class NotificationConfigsWorker(TFCMigratorBaseWorker):
     from one TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "notification_configs"
+    _required_entitlements = []
+
     def migrate_all(self, workspaces_map):
         """
         Function to migrate all notification configs from one TFC/E org to another TFC/E org.

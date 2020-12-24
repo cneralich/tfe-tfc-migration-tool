@@ -17,6 +17,9 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
     one TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "state_versions"
+    _required_entitlements = []
+
     def migrate_all(self, workspaces_map):
         """
         Function to migrate all state versions from one TFC/E org to another TFC/E org.
@@ -131,7 +134,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 self._api_target.state_versions.list_all(filters=target_state_filters)
             target_state_version_serials = \
                 [state_version["attributes"]["serial"] for state_version in target_state_versions]
-            
+
             try:
                 current_source_version = self._api_source.state_versions.get_current(workspace_id)["data"]
                 current_source_version_number = current_source_version["attributes"]["serial"]
@@ -140,12 +143,12 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                     "Current state version for workspace: %s, does not exist. Skipped.", \
                         source_workspace_name)
                 continue
-            
+
             if target_state_version_serials and current_source_version_number <= target_state_version_serials[0]:
                 self._logger.info( \
                     "State Version: %s, for workspace %s, exists or is older than the current version. Skipped.", \
                         current_source_version_number, source_workspace_name)
-                        
+
             source_state_url = current_source_version["attributes"]["hosted-state-download-url"]
             source_pull_state = request.urlopen(source_state_url)
             source_state_data = source_pull_state.read()

@@ -11,6 +11,9 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
     from one TFC/E org to another TFC/E org.
     """
 
+    _api_module_used = "config_versions"
+    _required_entitlements = []
+
     def migrate_all(self, workspaces_map):
         """
         Function to migrate all config versions from one TFC/E org to another TFC/E org.
@@ -52,7 +55,7 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
 
                     workspace_to_config_version_upload_url_map[source_workspace_name] = \
                         new_config_version["attributes"]["upload-url"]
-                    
+
                     workspace_to_config_version_file_path_map.append(\
                         {"workspace_name":source_workspace_name, "workspace_id":target_workspace_id, "path_to_config_version_file":""})
 
@@ -66,7 +69,7 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
 
         if "workspace_to_config_version_upload_url_map" in self._sensitive_data_map and \
             "workspace_to_config_version_file_path_map" in self._sensitive_data_map:
-            
+
             workspace_to_config_version_upload_url_map = self._sensitive_data_map["workspace_to_config_version_upload_url_map"]
             workspace_to_config_version_file_path_map = self._sensitive_data_map["workspace_to_config_version_file_path_map"]
 
