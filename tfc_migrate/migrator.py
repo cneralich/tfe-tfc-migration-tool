@@ -153,6 +153,7 @@ class TFCMigrator(ABC):
 
 
     def delete_all_from_target(self, no_confirmation):
+
         if no_confirmation or self.confirm_delete_resource_type("run triggers", self._api_target):
             self.run_triggers.delete_all_from_target()
 
@@ -199,7 +200,10 @@ class TFCMigrator(ABC):
             self.confirm_delete_resource_type("registry modules versions", self._api_target):
             self.registry_module_versions.delete_all_from_target()
 
-        if no_confirmation or self.confirm_delete_resource_type("agent pools", self._api_target):
+        # TODO: is_valid_migration doesn't make sense cause deletion only matters on the target
+        if (no_confirmation \
+            or self.confirm_delete_resource_type("agent pools", self._api_target)) and \
+                self.agent_pools.is_valid_migration():
             self.agent_pools.delete_all_from_target()
 
 

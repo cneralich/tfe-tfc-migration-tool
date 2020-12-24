@@ -122,7 +122,7 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting workspaces...")
 
-        workspaces = self._api_target.workspaces.list()["data"]
+        workspaces = self._api_target.workspaces.list_all()
 
         if workspaces:
             for workspace in workspaces:
