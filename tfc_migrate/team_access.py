@@ -12,7 +12,7 @@ class TeamAccessWorker(TFCMigratorBaseWorker):
     """
 
     _api_module_used = "team_access"
-    _required_entitlements = []
+    _required_entitlements = ["teams"]
 
     def migrate_all(self, workspaces_map, teams_map):
         """

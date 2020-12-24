@@ -69,6 +69,19 @@ class TFCMigratorBaseWorker(ABC):
 
         return valid_platform_migration
 
+    def is_valid_migration(self):
+        is_valid = True
+
+        if not self._check_terraform_platform():
+            is_valid = False
+            self._logger.info("There is no valid migration path across TFC/TFE for this endpoint.")
+
+        if not self._check_entitlements():
+            is_valid = False
+            self._logger.info("The entitlements in the source or target org do not allow this migration.")
+
+        return is_valid
+
     """
     def migrate_all(self):
         pass

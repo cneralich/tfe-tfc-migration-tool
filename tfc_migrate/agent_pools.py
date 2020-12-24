@@ -11,7 +11,7 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
     TFC/E org to another TFC/E org.
     """
 
-    _api_module_used = "agent_pools"
+    _api_module_used = "agents"
     _required_entitlements = []
 
     def migrate_all(self):

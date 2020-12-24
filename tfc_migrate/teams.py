@@ -23,9 +23,6 @@ class TeamsWorker(TFCMigratorBaseWorker):
 
         teams_map = {}
 
-        self._check_entitlements()
-        self._check_terraform_platform()
-
         # Fetch teams from existing org
         source_teams = self._api_source.teams.list()["data"]
         target_teams = self._api_target.teams.list()["data"]

@@ -14,7 +14,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
     """
 
     _api_module_used = "registry_modules"
-    _required_entitlements = []
+    _required_entitlements = ["private-module-registry"]
 
     def migrate_all(self):
         """
