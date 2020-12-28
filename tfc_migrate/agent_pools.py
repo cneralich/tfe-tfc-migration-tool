@@ -12,7 +12,7 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
     """
 
     _api_module_used = "agents"
-    _required_entitlements = []
+    _required_entitlements = ["agents"]
 
     def migrate_all(self):
         """
