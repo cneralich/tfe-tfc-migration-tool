@@ -1,6 +1,15 @@
 # TFC/E Migration Tool
 
-This tool is designed to help automate the migration from one TFC/E Organization to another, whether that’s TFE to TFC, or vice versa. It's organization to organization. Currently it only supports 1:1 migrations, but the goal is to support 1:N. Note that the source and target organizations may be running on different versions, and because of that, some API endpoints may not exist in one or the other.
+This tool is designed to help automate the migration from one TFC/E organization to another, whether that’s TFE to TFC, or vice versa. Simply put, it transfers data from organization to organization. At present, this tool only supports 1:1 migrations, but the goal is to eventually support 1:N migrations in a future version. Note that the source and target organizations may be running on different versions, and because of that, some API endpoints may not exist in one or the other.  At present, the following compatibility testing has been completed:
+
+|                    | TFC Free | TFC Team | TFC Governance | TFC Business | TFC Trial | TFC Legacy | TFE |
+|--------------------|:--------:|:--------:|:--------------:|:------------:|:---------:|:----------:|:---:|
+| **TFC Free**       |     X    |          |                |       X      |     X     |      X     |     |
+| **TFC Team**       |          |          |                |              |           |            |     |
+| **TFC Governance** |          |          |                |              |           |            |     |
+| **TFC Business**   |     X    |          |                |       X      |     X     |      X     |     |
+| **TFC Trial**      |     X    |          |                |       X      |     X     |      X     |     |
+| **TFE**            |          |          |                |              |           |            |     |
 
 If you're trying to migrate from one TFE installation to another TFE installation, use the [backup-restore functionality](https://www.terraform.io/docs/enterprise/admin/backup-restore.html), not this tool.
 
