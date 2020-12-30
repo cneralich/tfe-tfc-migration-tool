@@ -5,6 +5,8 @@ Module for Terraform Enterprise/Cloud Migration Worker: State Versions.
 import base64
 import hashlib
 import json
+import os
+import ssl
 from urllib import request
 from terrasnek import exceptions
 
@@ -26,6 +28,13 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
         """
 
         self._logger.info("Migrating all state versions...")
+
+        TFE_VERIFY_SOURCE = os.getenv("TFE_VERIFY_SOURCE", default=False)
+        context = ssl.create_default_context()
+
+        if TFE_VERIFY_SOURCE is False:
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
 
         for workspace_id in workspaces_map:
             source_workspace_name = self._api_source.workspaces.show(workspace_id=workspace_id)\
@@ -64,7 +73,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             # NOTE: this is reversed to maintain the order present in the source
             for source_state_version in reversed(source_state_versions):
                 source_state_url = source_state_version["attributes"]["hosted-state-download-url"]
-                source_pull_state = request.urlopen(source_state_url)
+                source_pull_state = request.urlopen(source_state_url, data=None, context=context)
                 source_state_data = source_pull_state.read()
                 source_state_serial = json.loads(source_state_data)["serial"]
 
@@ -112,6 +121,13 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Migrating current state versions...")
 
+        TFE_VERIFY_SOURCE = os.getenv("TFE_VERIFY_SOURCE", default=False)
+        context = ssl.create_default_context()
+
+        if TFE_VERIFY_SOURCE is False:
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+
         for workspace_id in workspaces_map:
             source_workspace_name = self._api_source.workspaces.show(workspace_id=workspace_id)\
                 ["data"]["attributes"]["name"]
@@ -150,7 +166,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                         current_source_version_number, source_workspace_name)
 
             source_state_url = current_source_version["attributes"]["hosted-state-download-url"]
-            source_pull_state = request.urlopen(source_state_url)
+            source_pull_state = request.urlopen(source_state_url, data=None, context=context)
             source_state_data = source_pull_state.read()
             source_state_serial = json.loads(source_state_data)["serial"]
 
