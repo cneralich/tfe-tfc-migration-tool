@@ -12,25 +12,27 @@ DEFAULT_SENSITIVE_DATA_FILE = "sensitive_data.txt"
 TFE_TOKEN_SOURCE = os.getenv("TFE_TOKEN_SOURCE", None)
 TFE_URL_SOURCE = os.getenv("TFE_URL_SOURCE", None)
 TFE_ORG_SOURCE = os.getenv("TFE_ORG_SOURCE", None)
+TFE_VERIFY_SOURCE = os.getenv("TFE_VERIFY_SOURCE", default=False)
 
 # Target Org
 TFE_TOKEN_TARGET = os.getenv("TFE_TOKEN_TARGET", None)
 TFE_URL_TARGET = os.getenv("TFE_URL_TARGET", None)
 TFE_ORG_TARGET = os.getenv("TFE_ORG_TARGET", None)
+TFE_VERIFY_TARGET = os.getenv("TFE_VERIFY_TARGET", default=False)
 
 # NOTE: this is parsed in the main function
 TFE_VCS_CONNECTION_MAP = None
 SENSITIVE_DATA_MAP = None
 
 
-def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data):
+def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data, tfe_verify_source):
 
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
     elif migrate_sensitive_data:
         migrator.migrate_sensitive()
     else:
-        migrator.migrate_all(migrate_all_state)
+        migrator.migrate_all(migrate_all_state, tfe_verify_source)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Migrate from one TFE/C org to another TFE/C org')
@@ -51,11 +53,10 @@ if __name__ == "__main__":
         help="If set, run the logger in debug mode.")
     args = parser.parse_args()
 
-    api_source = TFC(TFE_TOKEN_SOURCE, url=TFE_URL_SOURCE)
+    api_source = TFC(TFE_TOKEN_SOURCE, url=TFE_URL_SOURCE, verify=TFE_VERIFY_SOURCE)
     api_source.set_org(TFE_ORG_SOURCE)
 
-    # TODO: take the verification as an env var
-    api_target = TFC(TFE_TOKEN_TARGET, url=TFE_URL_TARGET, verify=False)
+    api_target = TFC(TFE_TOKEN_TARGET, url=TFE_URL_TARGET, verify=TFE_VERIFY_TARGET)
     api_target.set_org(TFE_ORG_TARGET)
 
     with open(args.vcs_file_path, "r") as f:
@@ -73,4 +74,4 @@ if __name__ == "__main__":
 
     migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, SENSITIVE_DATA_MAP, log_level)
 
-    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state, args.migrate_sensitive_data)
+    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state, args.migrate_sensitive_data, TFE_VERIFY_SOURCE)

@@ -63,7 +63,7 @@ class TFCMigrator(ABC):
         self.workspace_ssh_keys = \
             WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
 
-    def migrate_all(self, migrate_all_state):
+    def migrate_all(self, migrate_all_state, tfe_verify_source):
         """
         NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
         The users must exist in the system ahead of time if you want to use this.
@@ -95,9 +95,9 @@ class TFCMigrator(ABC):
         sensitive_variable_data = self.workspace_vars.migrate_all(workspaces_map)
 
         if migrate_all_state:
-            self.state_versions.migrate_all(workspaces_map)
+            self.state_versions.migrate_all(workspaces_map, tfe_verify_source)
         else:
-            self.state_versions.migrate_current(workspaces_map)
+            self.state_versions.migrate_current(workspaces_map, tfe_verify_source)
 
         self.run_triggers.migrate_all(workspaces_map)
 

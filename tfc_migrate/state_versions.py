@@ -5,6 +5,7 @@ Module for Terraform Enterprise/Cloud Migration Worker: State Versions.
 import base64
 import hashlib
 import json
+import ssl
 from urllib import request
 from terrasnek import exceptions
 
@@ -20,12 +21,18 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
     _api_module_used = "state_versions"
     _required_entitlements = []
 
-    def migrate_all(self, workspaces_map):
+    def migrate_all(self, workspaces_map, tfe_verify_source):
         """
         Function to migrate all state versions from one TFC/E org to another TFC/E org.
         """
 
         self._logger.info("Migrating all state versions...")
+
+        context = ssl.create_default_context()
+
+        if tfe_verify_source is False:
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
 
         for workspace_id in workspaces_map:
             source_workspace_name = self._api_source.workspaces.show(workspace_id=workspace_id)\
@@ -64,7 +71,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             # NOTE: this is reversed to maintain the order present in the source
             for source_state_version in reversed(source_state_versions):
                 source_state_url = source_state_version["attributes"]["hosted-state-download-url"]
-                source_pull_state = request.urlopen(source_state_url)
+                source_pull_state = request.urlopen(source_state_url, data=None, context=context)
                 source_state_data = source_pull_state.read()
                 source_state_serial = json.loads(source_state_data)["serial"]
 
@@ -105,12 +112,18 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
         self._logger.info("All state versions migrated.")
 
 
-    def migrate_current(self, workspaces_map):
+    def migrate_current(self, workspaces_map, tfe_verify_source):
         """
         Function to migrate current state versions from one TFC/E org to another TFC/E org.
         """
 
         self._logger.info("Migrating current state versions...")
+
+        context = ssl.create_default_context()
+
+        if tfe_verify_source is False:
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
 
         for workspace_id in workspaces_map:
             source_workspace_name = self._api_source.workspaces.show(workspace_id=workspace_id)\
@@ -150,7 +163,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                         current_source_version_number, source_workspace_name)
 
             source_state_url = current_source_version["attributes"]["hosted-state-download-url"]
-            source_pull_state = request.urlopen(source_state_url)
+            source_pull_state = request.urlopen(source_state_url, data=None, context=context)
             source_state_data = source_pull_state.read()
             source_state_serial = json.loads(source_state_data)["serial"]
 
