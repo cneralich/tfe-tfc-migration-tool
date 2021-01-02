@@ -40,7 +40,7 @@ export TFE_VERIFY_TARGET="False" # Optional, defaults to True
 
 * The Token(s) used above must be either a team or user token and have the appropriate level of permissions
 * The URL(s) used above must follow a format of `https://app.terraform.io`
-* The TFE_VERIFY_SOURCE and TFE_VERIFY_TARGET values should be set to `False` if you want to use HTTP or insecure HTTPS 
+* The `TFE_VERIFY_SOURCE` and `TFE_VERIFY_TARGET` values should be set to `False` if you want to use HTTP or insecure HTTPS 
 
 ### 3. Build the Required TFE_VCS_CONNECTION_MAP
 
