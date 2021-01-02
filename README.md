@@ -22,22 +22,25 @@ If you're trying to migrate from one TFE installation to another TFE installatio
 pip3 install terrasnek==0.0.16
 ```
 
-### 2. Set Required Environment Variables
+### 2. Set Required (and Optional) Environment Variables
 
 ```bash
 # Source organization token, URL, and organization name
 export TFE_TOKEN_SOURCE="foo"
 export TFE_URL_SOURCE="https://app.terraform.io"
 export TFE_ORG_SOURCE="bar"
+export TFE_VERIFY_SOURCE="False" # Optional, defaults to True
 
 # Target organization token, URL, and organization name
 export TFE_TOKEN_TARGET="foo"
 export TFE_URL_TARGET="https://app.terraform.io"
 export TFE_ORG_TARGET="bar"
+export TFE_VERIFY_TARGET="False" # Optional, defaults to True
 ```
 
 * The Token(s) used above must be either a team or user token and have the appropriate level of permissions
 * The URL(s) used above must follow a format of `https://app.terraform.io`
+* The TFE_VERIFY_SOURCE and TFE_VERIFY_TARGET values should be set to `False` if you want to use HTTP or insecure HTTPS 
 
 ### 3. Build the Required TFE_VCS_CONNECTION_MAP
 
