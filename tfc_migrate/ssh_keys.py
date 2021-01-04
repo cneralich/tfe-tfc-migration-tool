@@ -42,6 +42,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
             if source_ssh_key_name in target_ssh_keys_data:
                 ssh_keys_map[source_ssh_key_id] = target_ssh_keys_data[source_ssh_key_name]
                 ssh_key_name_map[source_ssh_key_name] = target_ssh_keys_data[source_ssh_key_name]
+                ssh_key_to_file_path_map.append({"ssh_key_name":source_ssh_key_name, "path_to_ssh_key_file":""})
                 self._logger.info("SSH Key: %s, exists. Skipped.", source_ssh_key_name)
                 continue
 
