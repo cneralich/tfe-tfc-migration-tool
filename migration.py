@@ -12,13 +12,13 @@ DEFAULT_SENSITIVE_DATA_FILE = "sensitive_data.txt"
 TFE_TOKEN_SOURCE = os.getenv("TFE_TOKEN_SOURCE", None)
 TFE_URL_SOURCE = os.getenv("TFE_URL_SOURCE", None)
 TFE_ORG_SOURCE = os.getenv("TFE_ORG_SOURCE", None)
-TFE_VERIFY_SOURCE = os.getenv("TFE_VERIFY_SOURCE", default=True)
+TFE_VERIFY_SOURCE = os.getenv("TFE_VERIFY_SOURCE", default="True").lower() == "true"
 
 # Target Org
 TFE_TOKEN_TARGET = os.getenv("TFE_TOKEN_TARGET", None)
 TFE_URL_TARGET = os.getenv("TFE_URL_TARGET", None)
 TFE_ORG_TARGET = os.getenv("TFE_ORG_TARGET", None)
-TFE_VERIFY_TARGET = os.getenv("TFE_VERIFY_TARGET", default=True)
+TFE_VERIFY_TARGET = os.getenv("TFE_VERIFY_TARGET", default="True").lower() == "true"
 
 # NOTE: this is parsed in the main function
 TFE_VCS_CONNECTION_MAP = None
