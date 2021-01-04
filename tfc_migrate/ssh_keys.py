@@ -87,7 +87,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
 
             for ssh_key in ssh_key_to_file_path_map:
                 # Pull SSH key data
-                get_ssh_key = open(ssh_key_to_file_path_map["path_to_ssh_key_file"], "r")
+                get_ssh_key = open(ssh_key["path_to_ssh_key_file"], "r")
                 ssh_key_data = get_ssh_key.read()
 
                 # Build the new ssh key file payload
