@@ -4,13 +4,13 @@ This tool is designed to help automate the migration from one TFC/E organization
 
 |                    | TFC Free | TFC Team | TFC Governance | TFC Business | TFC Trial | TFC Legacy | TFE |
 |--------------------|:--------:|:--------:|:--------------:|:------------:|:---------:|:----------:|:---:|
-| **TFC Free**       |     X    |          |                |       X      |     X     |      X     |  X  |
+| **TFC Free**       |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
 | **TFC Team**       |          |          |                |              |           |            |     |
 | **TFC Governance** |          |          |                |              |           |            |     |
-| **TFC Business**   |     X    |          |                |       X      |     X     |      X     |  X  |
-| **TFC Trial**      |     X    |          |                |       X      |     X     |      X     |  X  |
-| **TFC Legacy**     |     X    |          |                |       X      |     X     |      X     |  X  |
-| **TFE**            |     X    |          |                |       x      |     X     |      X     |  X  |
+| **TFC Business**   |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
+| **TFC Trial**      |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
+| **TFC Legacy**     |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
+| **TFE**            |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
 
 If you're trying to migrate from one TFE installation to another TFE installation, use the [backup-restore functionality](https://www.terraform.io/docs/enterprise/admin/backup-restore.html), not this tool.
 
