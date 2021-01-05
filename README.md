@@ -5,8 +5,8 @@ This tool is designed to help automate the migration from one TFC/E organization
 |                    | TFC Free | TFC Team | TFC Governance | TFC Business | TFC Trial | TFC Legacy | TFE |
 |--------------------|:--------:|:--------:|:--------------:|:------------:|:---------:|:----------:|:---:|
 | **TFC Free**       |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
-| **TFC Team**       |          |          |                |              |           |            |     |
-| **TFC Governance** |          |          |                |              |           |            |     |
+| **TFC Team**       |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
+| **TFC Governance** |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
 | **TFC Business**   |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
 | **TFC Trial**      |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
 | **TFC Legacy**     |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
@@ -48,14 +48,14 @@ The TFE_VCS_CONNECTION_MAP is a list of dictionaries, each of which maps a `sour
 
 ```json
 [
-    {
-    "source": "ot-foo",
-    "target": "ot-bar"
-    },
-    {
-    "source": "ot-bar",
-    "target": "ot-baz"
-    }
+   {
+      "source":"ot-foo",
+      "target":"ot-bar"
+   },
+   {
+      "source":"ot-bar",
+      "target":"ot-baz"
+   }
 ]
 ```
 
