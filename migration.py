@@ -59,11 +59,13 @@ if __name__ == "__main__":
     api_target = TFC(TFE_TOKEN_TARGET, url=TFE_URL_TARGET, verify=TFE_VERIFY_TARGET)
     api_target.set_org(TFE_ORG_TARGET)
 
-    with open(args.vcs_file_path, "r") as f:
-        TFE_VCS_CONNECTION_MAP = json.loads(f.read())
+    if not args.delete_all and not args.migrate_sensitive_data:
+        with open(args.vcs_file_path, "r") as f:
+            TFE_VCS_CONNECTION_MAP = json.loads(f.read())
 
-    with open(args.sensitive_data_file_path) as f:
-        SENSITIVE_DATA_MAP = json.loads(f.read())
+    if args.migrate_sensitive_data:
+        with open(args.sensitive_data_file_path) as f:
+            SENSITIVE_DATA_MAP = json.loads(f.read())
 
     log_level = logging.INFO
 
