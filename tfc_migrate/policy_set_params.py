@@ -59,7 +59,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
                     new_parameter_id = new_parameter["id"]
 
                     if policy_set_parameter_sensitive and return_sensitive_variable_data:
-                        policy_set_name = self._api_target.policy_sets.show(policy_set_id)\
+                        policy_set_name = self._api_target.policy_sets.show(new_policy_set_id)\
                             ["data"]["attributes"]["name"]
 
                         # Build the sensitive policy set parameter map
