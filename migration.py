@@ -60,15 +60,15 @@ if __name__ == "__main__":
     api_target.set_org(TFE_ORG_TARGET)
 
     if not os.path.exists(args.vcs_file_path):
-        open(DEFAULT_VCS_FILE, 'w').close()
+        open(DEFAULT_VCS_FILE, "w").close()
     else:
         with open(args.vcs_file_path, "r") as f:
             TFE_VCS_CONNECTION_MAP = json.loads(f.read())
 
     if not os.path.exists(args.sensitive_data_file_path):
-        open(DEFAULT_SENSITIVE_DATA_FILE, 'w').close()
+        open(DEFAULT_SENSITIVE_DATA_FILE, "w").close()
     else:
-        with open(args.sensitive_data_file_path) as f:
+        with open(args.sensitive_data_file_path, "r") as f:
             SENSITIVE_DATA_MAP = json.loads(f.read())
 
     log_level = logging.INFO
