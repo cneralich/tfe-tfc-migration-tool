@@ -147,7 +147,7 @@ class TFCMigrator(ABC):
 
         self.ssh_keys.migrate_key_files()
 
-        self. policy_set_params.migrate_sensitive()
+        self.policy_set_params.migrate_sensitive()
 
         self.workspace_vars.migrate_sensitive()
 
