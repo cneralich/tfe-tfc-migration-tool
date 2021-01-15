@@ -98,9 +98,6 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                     }
                 }
 
-                self._logger.info("State Version: %s, for workspace %s created.", \
-                    source_state_serial, source_workspace_name)
-
                 # Migrate state to the target workspace
                 # TODO: Add try statement and logging in case a workspace is already locked and this fails
                 self._api_target.workspaces.lock(workspaces_map[workspace_id], \
@@ -108,6 +105,9 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 self._api_target.state_versions.create( \
                     workspaces_map[workspace_id], create_state_version_payload)
                 self._api_target.workspaces.unlock(workspaces_map[workspace_id])
+
+                self._logger.info("State Version: %s, for workspace %s created.", \
+                    source_state_serial, source_workspace_name)
 
         self._logger.info("All state versions migrated.")
 
@@ -184,14 +184,14 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 }
             }
 
-            self._logger.info("Current state version for workspace: %s, created.",
-                source_workspace_name)
-
             # Migrate state to the target workspace
             self._api_target.workspaces.lock(\
                 workspaces_map[workspace_id], {"reason": "migration script"})
             self._api_target.state_versions.create(\
                 workspaces_map[workspace_id], create_state_version_payload)
             self._api_target.workspaces.unlock(workspaces_map[workspace_id])
+
+            self._logger.info("Current state version for workspace: %s, created.",
+                source_workspace_name)
 
         self._logger.info("Current state versions migrated.")
