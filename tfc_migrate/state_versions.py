@@ -161,6 +161,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 self._logger.info( \
                     "State Version: %s, for workspace %s, exists or is older than the current version. Skipped.", \
                         current_source_version_number, source_workspace_name)
+                continue
 
             source_state_url = current_source_version["attributes"]["hosted-state-download-url"]
             source_pull_state = request.urlopen(source_state_url, data=None, context=context)
