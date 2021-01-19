@@ -35,7 +35,7 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
             source_policy_set_name = source_policy_set["attributes"]["name"]
 
             if source_policy_set_name in target_policy_sets_data:
-                policies_map[source_policy_set["id"]] = \
+                policy_sets_map[source_policy_set["id"]] = \
                     target_policy_sets_data[source_policy_set_name]
                 self._logger.info("Policy set: %s, exists. Skipped.", source_policy_set_name)
                 continue

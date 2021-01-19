@@ -23,19 +23,53 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
 
         sensitive_policy_set_parameter_data = []
 
-        for policy_set_id in policy_sets_map:
-            new_policy_set_id = policy_sets_map[policy_set_id]
+        for source_policy_set_id in policy_sets_map:
+            target_policy_set_id = policy_sets_map[source_policy_set_id]
 
             # Pull policy sets from the old organization
-            policy_set_parameters = self._api_source.policy_set_params.list(policy_set_id)["data"]
+            source_policy_set_parameters = self._api_source.policy_set_params.list(source_policy_set_id)["data"]
 
-            if policy_set_parameters:
+            if source_policy_set_parameters:
+                
+                target_policy_set_parameters = self._api_target.policy_set_params.list(target_policy_set_id)["data"]
+
+                target_policy_set_param_data = {}
+                for target_policy_set_param in target_policy_set_parameters:
+                    target_policy_set_param_data[target_policy_set_param["attributes"]["key"]] = \
+                        target_policy_set_param["id"]
+
                 # NOTE: this is reversed to maintain the order present in the source
-                for policy_set_parameter in reversed(policy_set_parameters):
+                for policy_set_parameter in reversed(source_policy_set_parameters):
                     policy_set_parameter_key = policy_set_parameter["attributes"]["key"]
                     policy_set_parameter_value = policy_set_parameter["attributes"]["value"]
                     policy_set_parameter_category = policy_set_parameter["attributes"]["category"]
                     policy_set_parameter_sensitive = policy_set_parameter["attributes"]["sensitive"]
+                    policy_set_name = self._api_source.policy_sets.show(source_policy_set_id)\
+                            ["data"]["attributes"]["name"]
+
+                    if policy_set_parameter_sensitive:
+                        sensitive_parameter_data = {
+                            "policy_set_name": policy_set_name,
+                            "policy_set_id": target_policy_set_id,
+                            "parameter_key": policy_set_parameter_key,
+                            "parameter_value": policy_set_parameter_value,
+                            "parameter_category": policy_set_parameter_category
+                        }
+
+                    # Make sure we haven't already created this variable in a past run
+                    if policy_set_parameter_key in target_policy_set_param_data:
+                        
+                        self._logger.info("Policy set param: %s, for policy set %s exists. Skipped.", \
+                                policy_set_parameter_key, policy_set_name)
+
+                        if policy_set_parameter_sensitive and return_sensitive_variable_data:
+                            sensitive_parameter_data["parameter_id"] = \
+                                target_policy_set_param_data[policy_set_parameter_key]
+
+                            # Build the sensitive policy param map
+                            sensitive_policy_set_parameter_data.append(sensitive_parameter_data)
+
+                        continue
 
                     # Build the new policy set parameter payload
                     new_policy_parameter_payload = {
@@ -51,28 +85,17 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
                     }
 
                     # Create the policy set parameter in the target organization
-                    new_parameter = self._api_target.policy_set_params.create(
-                        new_policy_set_id, new_policy_parameter_payload)["data"]
+                    target_parameter = self._api_target.policy_set_params.create(
+                        target_policy_set_id, new_policy_parameter_payload)["data"]
 
                     self._logger.info("Policy set param: %s, created.", policy_set_parameter_key)
 
-                    new_parameter_id = new_parameter["id"]
+                    target_parameter_id = target_parameter["id"]
 
                     if policy_set_parameter_sensitive and return_sensitive_variable_data:
-                        policy_set_name = self._api_target.policy_sets.show(new_policy_set_id)\
-                            ["data"]["attributes"]["name"]
-
-                        # Build the sensitive policy set parameter map
-                        parameter_data = {
-                            "policy_set_name": policy_set_name,
-                            "policy_set_id": new_policy_set_id,
-                            "parameter_id": new_parameter_id,
-                            "parameter_key": policy_set_parameter_key,
-                            "parameter_value": policy_set_parameter_value,
-                            "parameter_category": policy_set_parameter_category
-                        }
-
-                        sensitive_policy_set_parameter_data.append(parameter_data)
+                        sensitive_parameter_data["parameter_id"] = target_parameter_id
+ 
+                        sensitive_policy_set_parameter_data.append(sensitive_parameter_data)
 
         self._logger.info("Policy set params migrated.")
 

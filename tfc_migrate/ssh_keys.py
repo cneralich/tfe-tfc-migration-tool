@@ -88,6 +88,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
 
             for ssh_key in ssh_key_to_file_path_map:
                 # Pull SSH key data
+                ssh_key_name = ssh_key["ssh_key_name"]
                 get_ssh_key = open(ssh_key["path_to_ssh_key_file"], "r")
                 ssh_key_data = get_ssh_key.read()
 
@@ -101,7 +102,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
                     }
                 }
 
-                self._logger.info("SSH key: %s, key data uploaded.", ssh_key)
+                self._logger.info("SSH key: %s, key data uploaded.", ssh_key_name)
 
                 # Upload the SSH key file to the target organization
                 self._api_target.ssh_keys.update(ssh_key_name_map[ssh_key["ssh_key_name"]], new_ssh_key_file_payload)
