@@ -95,13 +95,11 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                         "attributes": {
                             "serial": source_state_serial,
                             "md5": source_state_md5,
+                            "lineage": source_state_lineage,
                             "state": source_state_b64
                         }
                     }
                 }
-
-                if source_state_lineage:
-                    create_state_version_payload["data"]["attributes"]["lineage"] = source_state_lineage
 
                 # Migrate state to the target workspace
                 # TODO: Add try statement and logging in case a workspace is already locked and this fails
@@ -187,13 +185,12 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                     "attributes": {
                         "serial": source_state_serial,
                         "md5": source_state_md5,
+                        "lineage": source_state_lineage,
                         "state": source_state_b64
                     }
                 }
             }
 
-            if source_state_lineage:
-                create_state_version_payload["data"]["attributes"]["lineage"] = source_state_lineage
             # Migrate state to the target workspace
             self._api_target.workspaces.lock(\
                 workspaces_map[workspace_id], {"reason": "migration script"})
