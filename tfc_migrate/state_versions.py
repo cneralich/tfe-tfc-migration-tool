@@ -73,7 +73,9 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                 source_state_url = source_state_version["attributes"]["hosted-state-download-url"]
                 source_pull_state = request.urlopen(source_state_url, data=None, context=context)
                 source_state_data = source_pull_state.read()
-                source_state_serial = json.loads(source_state_data)["serial"]
+                source_state_json = json.loads(source_state_data)
+                source_state_serial = source_state_json["serial"]
+                source_state_lineage = source_state_json["lineage"]
 
                 if target_state_version_serials and source_state_serial <= target_state_version_serials[0]:
                     self._logger.info( \
@@ -93,6 +95,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                         "attributes": {
                             "serial": source_state_serial,
                             "md5": source_state_md5,
+                            "lineage": source_state_lineage,
                             "state": source_state_b64
                         }
                     }
@@ -166,7 +169,9 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             source_state_url = current_source_version["attributes"]["hosted-state-download-url"]
             source_pull_state = request.urlopen(source_state_url, data=None, context=context)
             source_state_data = source_pull_state.read()
-            source_state_serial = json.loads(source_state_data)["serial"]
+            source_state_json = json.loads(source_state_data)
+            source_state_serial = source_state_json["serial"]
+            source_state_lineage = source_state_json["lineage"]
 
             source_state_hash = hashlib.md5()
             source_state_hash.update(source_state_data)
@@ -180,6 +185,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
                     "attributes": {
                         "serial": source_state_serial,
                         "md5": source_state_md5,
+                        "lineage": source_state_lineage,
                         "state": source_state_b64
                     }
                 }
