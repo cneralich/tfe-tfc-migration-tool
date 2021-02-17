@@ -1,6 +1,6 @@
 # TFC/E Migration Tool
 
-This tool is designed to help automate the migration from one TFC/E organization to another, whether that’s TFE to TFC, or vice versa. Simply put, it transfers data from organization to organization. At present, this tool only supports 1:1 migrations, but the goal is to eventually support 1:N migrations in a future version. Note that the source and target organizations may be running on different versions, and because of that, some API endpoints may not exist in one or the other.  At present, the following compatibility testing has been completed:
+This tool is designed to help automate the migration from one TFC/E organization to another, whether that’s TFE to TFC, or vice versa. Simply put, it transfers data from organization to organization. This tool currently only supports 1:1 migrations, but the goal is to eventually support 1:N migrations in a future version. Note that the source and target organizations may be running on different versions, and because of that, some API endpoints may not exist in one or the other.  At present, the following compatibility testing has been completed:
 
 |                    | TFC Free | TFC Team | TFC Governance | TFC Business | TFC Trial | TFC Legacy | TFE |
 |--------------------|:--------:|:--------:|:--------------:|:------------:|:---------:|:----------:|:---:|
@@ -11,6 +11,8 @@ This tool is designed to help automate the migration from one TFC/E organization
 | **TFC Trial**      |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
 | **TFC Legacy**     |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
 | **TFE**            |     X    |    X     |       X        |       X      |     X     |      X     |  X  |
+
+For additional background on this tool, as well as a complete step-by-step guide, a companion article can be found [here](https://medium.com/hashicorp-engineering/the-power-of-the-terraform-api-how-to-easily-migrate-any-data-between-enterprise-and-cloud-596e7023eb7f).
 
 If you're trying to migrate from one TFE installation to another TFE installation, use the [backup-restore functionality](https://www.terraform.io/docs/enterprise/admin/backup-restore.html), not this tool.
 
