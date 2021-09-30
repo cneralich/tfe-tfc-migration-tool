@@ -122,6 +122,9 @@ class TFCMigrator(ABC):
 
         if self.registry_module_versions.is_valid_migration():
             self.registry_module_versions.migrate_all()
+            
+        if self.registry_modules.is_valid_migration():
+            self.registry_modules.migrate_all()
 
 
         output_json = {
