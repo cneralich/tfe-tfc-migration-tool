@@ -65,7 +65,16 @@ class TeamsWorker(TFCMigratorBaseWorker):
                                         ["organization-access"]["manage-policies"],
                                 "manage-vcs-settings": \
                                     source_team["attributes"]\
-                                        ["organization-access"]["manage-vcs-settings"]
+                                        ["organization-access"]["manage-vcs-settings"],
+                                "manage-policy-overrides": \
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-policy-overrides"],
+                                "manage-providers": \
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-providers"],
+                                "manage-modules": \
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-modules"]
                             }
                         }
                     }
