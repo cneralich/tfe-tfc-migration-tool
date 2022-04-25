@@ -110,7 +110,6 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
                 # Rather than add some complicated logic, if we get the error message saying
                 # we can't delete ourselves from a group we own, just skip it. Otherwise
                 # raise the exception. You will still see an error in the logs.
-                if "remove yourself" not in str(unclassified):
+                if "remove the last owner" not in str(unclassified):
                     raise unclassified
-
         self._logger.info("Organization members deleted.")
