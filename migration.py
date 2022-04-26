@@ -27,14 +27,14 @@ SENSITIVE_DATA_MAP = None
 SELECT_ITEMS_LIST = None
 
 
-def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data, migrate_select_workspaces, tfe_verify_source):
+def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data, migrate_select_items, tfe_verify_source):
 
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
     elif migrate_sensitive_data:
         migrator.migrate_sensitive()
     else:
-        migrator.migrate_all(migrate_all_state, migrate_select_workspaces, tfe_verify_source)
+        migrator.migrate_all(migrate_all_state, migrate_select_items, tfe_verify_source)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Migrate from one TFE/C org to another TFE/C org')
