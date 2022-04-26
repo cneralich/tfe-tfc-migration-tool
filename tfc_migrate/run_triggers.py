@@ -54,7 +54,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                             workspaces_map[source_workspace_trigger_workspace_id]
                     else:
                         self._logger.info(\
-                            "Run trigger cannot be added for workspace ID: %s, because trigger workspace does not exist. Skipped.", \
+                            "Run trigger from workspace ID: %s cannot be added because trigger workspace does not exist. Skipped.", \
                                     source_workspace_trigger_workspace_id)
                         continue
                     if target_workspace_trigger_workspace_id in \
