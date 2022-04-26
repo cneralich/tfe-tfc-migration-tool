@@ -125,7 +125,7 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
 
         # Fetch workspaces from existing org
         source_workspaces = []        
-        for source_workspace in self._source_workspace_list:
+        for source_workspace in self._select_items_list["workspaces"]:
             source_workspace = self._api_source.workspaces.show(workspace_name=source_workspace)["data"]
             source_workspaces.append(source_workspace)
 

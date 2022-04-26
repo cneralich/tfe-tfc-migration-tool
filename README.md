@@ -71,8 +71,8 @@ By default, the migration tool will load these values from a file named `vcs.jso
 Before initiating the migration process, first determine which command line arguments you wish to pass (if any).  The following arguments are currently supported:
 * `--vcs-file-path`: this flag allows you to pass a custom file path for your TFE_VCS_CONNECTION_MAP JSON file. If not specified, `vcs.json` will be used by default.
 * `--migrate-all-state`: this flag allows you to set the desired behavior for migrating state versions.  If passed, all versions of state will get migrated for all workspaces.  If not specified, only the current version of state for all workspaces will be migrated by default.
-* `--workspace-list-file-path`: this flag allows you to pass a custom file path for your SOURCE_WORKSPACE_LIST TXT file. If not specified, `workspace_list.txt` will be used by default.
- * `--migrate-select-workspaces`: this flag allows you to set the desired behavior for migrating workspaces.  If passed, only the workspaces included in your SOURCE_WORKSPACE_LIST TXT file will be migrated.
+* `--select-items-list-file-path`: this flag allows you to pass a custom file path for your SELECT_ITEMS_LIST JSON file. If not specified, `select_items_list.json` will be used by default.
+ * `--migrate-select-items`: this flag allows you to set the desired behavior for migrating items.  If passed, only the specified values in your SELECT_ITEMS_LIST JSON file will be migrated for any included item.
 * `> outputs.txt`: this allows you to set the desired behavior for handling outputs.  If passed, all outputs will will be written to an `outputs.txt` file (or file name of your choice).  If not specified, all outputs will appear in the terminal by default.
 
 
@@ -81,11 +81,11 @@ Before initiating the migration process, first determine which command line argu
 To perform the migration, the following command may be executed (example includes optional arguments):
 
 ```bash
-python migration.py --vcs-file-path "/path/to/file/vcs.json" --migrate-all-state --migrate-select-workspaces \
-    --workspace-list-file-path '/path/to/file/workspaces.txt' > outputs.txt
+python migration.py --vcs-file-path "/path/to/file/vcs.json" --migrate-all-state --migrate-select-items \
+    --select-items-list-file-path '/path/to/file/select_items.json' > outputs.txt
 ```
 
-For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs to an `outputs.txt` file, the migration of only a subset of workspaces, and the migration of all state versions for all workspaces.
+For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs to an `outputs.txt` file, the migration of only a subset of any items included in your custom `SELECT_ITEMS_LIST` JSON file, and the migration of all state versions for all workspaces.
 
 
 ## Supported Operations
