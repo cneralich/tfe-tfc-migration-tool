@@ -2,6 +2,7 @@
 Module for Terraform Enterprise/Cloud Migration Worker: Run Triggers.
 """
 
+from terrasnek import exceptions
 from .base_worker import TFCMigratorBaseWorker
 
 
@@ -48,9 +49,14 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                     # Get originating workspace_id for any inbound trigger for the source workspace
                     source_workspace_trigger_workspace_id = \
                         source_workspace_run_trigger["relationships"]["sourceable"]["data"]["id"]
-                    target_workspace_trigger_workspace_id = \
-                        workspaces_map[source_workspace_trigger_workspace_id]
-
+                    if source_workspace_trigger_workspace_id in workspaces_map:
+                        target_workspace_trigger_workspace_id = \
+                            workspaces_map[source_workspace_trigger_workspace_id]
+                    else:
+                        self._logger.info(\
+                            "Run trigger cannot be added for workspace ID: %s, because trigger workspace does not exist. Skipped.", \
+                                    source_workspace_trigger_workspace_id)
+                        continue
                     if target_workspace_trigger_workspace_id in \
                         target_workspace_run_trigger_workspace_ids:
                         self._logger.info("Run Trigger: %s, in workspace ID %s exists. Skipped.", \
