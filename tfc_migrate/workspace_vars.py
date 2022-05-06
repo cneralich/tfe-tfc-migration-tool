@@ -14,7 +14,7 @@ class WorkspaceVarsWorker(TFCMigratorBaseWorker):
     _api_module_used = "workspace_vars"
     _required_entitlements = []
 
-    def migrate_all(self, workspaces_map, return_sensitive_variable_data=True):
+    def migrate(self, workspaces_map, return_sensitive_variable_data=True):
         """
         Function to migrate all workspace variables from one TFC/E org to another TFC/E org.
         """

@@ -21,7 +21,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
     _api_module_used = "state_versions"
     _required_entitlements = []
 
-    def migrate_all(self, workspaces_map, tfe_verify_source):
+    def migrate(self, workspaces_map, tfe_verify_source):
         """
         Function to migrate all state versions from one TFC/E org to another TFC/E org.
         """

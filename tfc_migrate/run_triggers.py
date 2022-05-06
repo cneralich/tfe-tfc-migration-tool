@@ -14,7 +14,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
     _api_module_used = "run_triggers"
     _required_entitlements = []
 
-    def migrate_all(self, workspaces_map):
+    def migrate(self, workspaces_map):
         """
         Function to migrate all run triggers from one TFC/E org to another TFC/E org.
         """

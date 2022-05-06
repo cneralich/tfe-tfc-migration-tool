@@ -16,7 +16,7 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
     _api_module_used = "registry_modules"
     _required_entitlements = ["private-module-registry"]
 
-    def migrate_all(self):
+    def migrate(self):
         """
         Function to migrate all registry module versions from one TFC/E org to another TFC/E org.
         """

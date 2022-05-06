@@ -14,7 +14,7 @@ class TeamsWorker(TFCMigratorBaseWorker):
     _api_module_used = "teams"
     _required_entitlements = ["teams"]
 
-    def migrate_all(self):
+    def migrate(self):
         """
         Function to migrate all teams from one TFC/E org to another TFC/E org.
         """

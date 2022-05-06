@@ -14,7 +14,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
     _api_module_used = "policy_set_params"
     _required_entitlements = ["sentinel"]
 
-    def migrate_all(self, policy_sets_map, return_sensitive_variable_data=True):
+    def migrate(self, policy_sets_map, return_sensitive_variable_data=True):
         """
         Function to migrate all policy set params from one TFC/E org to another TFC/E org.
         """
@@ -30,7 +30,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
             source_policy_set_parameters = self._api_source.policy_set_params.list(source_policy_set_id)["data"]
 
             if source_policy_set_parameters:
-                
+
                 target_policy_set_parameters = self._api_target.policy_set_params.list(target_policy_set_id)["data"]
 
                 target_policy_set_param_data = {}
@@ -58,7 +58,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
 
                     # Make sure we haven't already created this variable in a past run
                     if policy_set_parameter_key in target_policy_set_param_data:
-                        
+
                         self._logger.info("Policy set param: %s, for policy set %s exists. Skipped.", \
                                 policy_set_parameter_key, policy_set_name)
 
@@ -94,7 +94,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
 
                     if policy_set_parameter_sensitive and return_sensitive_variable_data:
                         sensitive_parameter_data["parameter_id"] = target_parameter_id
- 
+
                         sensitive_policy_set_parameter_data.append(sensitive_parameter_data)
 
         self._logger.info("Policy set params migrated.")

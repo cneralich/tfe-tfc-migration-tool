@@ -91,7 +91,7 @@ class TFCMigratorBaseWorker(ABC):
         return is_valid
 
     """
-    def migrate_all(self):
+    def migrate(self):
         pass
 
     def delete_all_from_target(self):

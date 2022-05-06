@@ -14,7 +14,7 @@ class SSHKeysWorker(TFCMigratorBaseWorker):
     _api_module_used = "ssh_keys"
     _required_entitlements = []
 
-    def migrate_all(self):
+    def migrate(self):
         """
         Function to migrate all SSH keys from one TFC/E org to another TFC/E org.
         """
