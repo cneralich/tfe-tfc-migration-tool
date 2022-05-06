@@ -32,9 +32,9 @@ def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensi
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
     elif migrate_sensitive_data:
-        migrator.migrate_sensitive()
+        migrator.do_migration_sensitive()
     else:
-        migrator.migrate_all(migrate_all_state, migrate_select_items, tfe_verify_source)
+        migrator.do_migration(migrate_all_state, migrate_select_items, tfe_verify_source)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Migrate from one TFE/C org to another TFE/C org')
@@ -78,11 +78,12 @@ if __name__ == "__main__":
         with open(args.sensitive_data_file_path, "r") as f:
             SENSITIVE_DATA_MAP = json.loads(f.read())
 
-    if not os.path.exists(args.select_items_list_file_path):
-        open(DEFAULT_SELECT_ITEMS_LIST_FILE, "w").close()
-    else:
-        with open(args.select_items_list_file_path, "r") as f:
-            SELECT_ITEMS_LIST = json.loads(f.read())
+    if args.migrate_select_items:
+        if not os.path.exists(args.select_items_list_file_path):
+            open(DEFAULT_SELECT_ITEMS_LIST_FILE, "w").close()
+        else:
+            with open(args.select_items_list_file_path, "r") as f:
+                SELECT_ITEMS_LIST = json.loads(f.read())
 
     log_level = logging.INFO
 

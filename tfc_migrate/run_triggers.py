@@ -2,7 +2,6 @@
 Module for Terraform Enterprise/Cloud Migration Worker: Run Triggers.
 """
 
-from terrasnek import exceptions
 from .base_worker import TFCMigratorBaseWorker
 
 

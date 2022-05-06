@@ -21,7 +21,7 @@ If you're trying to migrate from one TFE installation to another TFE installatio
 ### 1. Install the Python Dependencies
 
 ```bash
-pip3 install terrasnek==0.0.16
+pip3 install terrasnek==0.1.9
 ```
 
 ### 2. Set Required (and Optional) Environment Variables
@@ -42,7 +42,7 @@ export TFE_VERIFY_TARGET="False" # Optional, defaults to True
 
 * The Token(s) used above must be either a team or user token and have the appropriate level of permissions
 * The URL(s) used above must follow a format of `https://app.terraform.io`
-* The `TFE_VERIFY_SOURCE` and `TFE_VERIFY_TARGET` values should be set to `False` if you want to use HTTP or insecure HTTPS 
+* The `TFE_VERIFY_SOURCE` and `TFE_VERIFY_TARGET` values should be set to `False` if you want to use HTTP or insecure HTTPS
 
 ### 3. Build the Required TFE_VCS_CONNECTION_MAP
 
@@ -65,7 +65,6 @@ By default, the migration tool will load these values from a file named `vcs.jso
 
 > **_Note:_** GitHub App connections are not currently supported in this migration tool since those values can not currently be managed via the API.
 
-
 ### 4. Choose Desired Runtime Arguments
 
 Before initiating the migration process, first determine which command line arguments you wish to pass (if any).  The following arguments are currently supported:
@@ -74,7 +73,6 @@ Before initiating the migration process, first determine which command line argu
 * `--select-items-list-file-path`: this flag allows you to pass a custom file path for your SELECT_ITEMS_LIST JSON file. If not specified, `select_items_list.json` will be used by default.
  * `--migrate-select-items`: this flag allows you to set the desired behavior for migrating items.  If passed, only the specified values in your SELECT_ITEMS_LIST JSON file will be migrated for any included item.
 * `> outputs.txt`: this allows you to set the desired behavior for handling outputs.  If passed, all outputs will will be written to an `outputs.txt` file (or file name of your choice).  If not specified, all outputs will appear in the terminal by default.
-
 
 ### 5. Perform the Migration
 
@@ -86,7 +84,6 @@ python migration.py --vcs-file-path "/path/to/file/vcs.json" --migrate-all-state
 ```
 
 For clarity, the command above would result in the use of a custom `TFE_VCS_CONNECTION_MAP` JSON file, the writing of all outputs to an `outputs.txt` file, the migration of only a subset of any items included in your custom `SELECT_ITEMS_LIST` JSON file, and the migration of all state versions for all workspaces.
-
 
 ## Supported Operations
 

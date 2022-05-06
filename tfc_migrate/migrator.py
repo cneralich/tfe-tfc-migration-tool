@@ -64,7 +64,7 @@ class TFCMigrator(ABC):
         self.workspace_ssh_keys = \
             WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
 
-    def migrate_all(self, migrate_all_state, migrate_select_items, tfe_verify_source):
+    def do_migration(self, migrate_all_state, migrate_select_items, tfe_verify_source):
         """
         NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
         The users must exist in the system ahead of time if you want to use this.
@@ -80,7 +80,7 @@ class TFCMigrator(ABC):
         policy_sets_map = {}
         sensitive_policy_set_parameter_data = {}
 
-        # TODO: org_membership_map = org_memberships.migrate(api_source, api_target, teams_map)
+        # TODO: org_membership_map = org_memberships.migrate_all(api_source, api_target, teams_map)
         if self.teams.is_valid_migration():
             teams_map = self.teams.migrate_all()
 
@@ -88,11 +88,9 @@ class TFCMigrator(ABC):
 
         if self.agent_pools.is_valid_migration():
             agent_pools_map = self.agent_pools.migrate_all()
-        
-        if migrate_select_items:
-            workspaces_map, workspace_to_ssh_key_map = self.workspaces.migrate_select(agent_pools_map)
-        else:
-            workspaces_map, workspace_to_ssh_key_map = self.workspaces.migrate_all(agent_pools_map)
+
+        # NOTE: This will have to be reorganized in the future.
+        workspaces_map, workspace_to_ssh_key_map = self.workspaces.migrate_all(agent_pools_map, migrate_select=migrate_select_items)
 
         self.workspace_ssh_keys.migrate_all(workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
 
@@ -126,10 +124,9 @@ class TFCMigrator(ABC):
 
         if self.registry_module_versions.is_valid_migration():
             self.registry_module_versions.migrate_all()
-            
+
         if self.registry_modules.is_valid_migration():
             self.registry_modules.migrate_all()
-
 
         output_json = {
             "teams_map": teams_map,
@@ -149,7 +146,7 @@ class TFCMigrator(ABC):
         print(json.dumps(output_json))
 
 
-    def migrate_sensitive(self):
+    def do_migration_sensitive(self):
         self.config_versions.migrate_config_files()
 
         self.ssh_keys.migrate_key_files()

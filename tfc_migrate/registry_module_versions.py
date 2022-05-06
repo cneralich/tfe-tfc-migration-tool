@@ -22,9 +22,8 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
         """
 
         self._logger.info("Migrating registry module versions...")
-
-        source_modules = self._api_source.registry_modules.list()["modules"]
-        target_modules = self._api_target.registry_modules.list()["modules"]
+        source_modules = self._api_source.registry_modules.list()["data"]
+        target_modules = self._api_target.registry_modules.list()["data"]
         target_module_names = \
             [target_module["name"] for target_module in target_modules]
 
@@ -86,7 +85,8 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
     def delete_all_from_target(self):
         self._logger.info("Deleting registry modules...")
 
-        modules = self._api_target.registry_modules.list()["modules"]
+        # TODO: list all of the modules
+        modules = self._api_target.registry_modules.list()["data"]
 
         if modules:
             for module in modules:
