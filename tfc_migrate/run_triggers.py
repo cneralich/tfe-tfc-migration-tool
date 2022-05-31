@@ -32,12 +32,12 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
 
             # Pull all inbound run triggers for the source workspace
             source_workspace_run_triggers = self._api_source.run_triggers.list_all(
-                source_workspace_id, filters=workspace_run_trigger_filters)
+                source_workspace_id, filters=workspace_run_trigger_filters)["data"]
 
             if source_workspace_run_triggers:
                 # pull all inbound run triggers for the target workspace
                 target_workspace_run_triggers = self._api_target.run_triggers.list_all(\
-                    target_workspace_id, filters=workspace_run_trigger_filters)
+                    target_workspace_id, filters=workspace_run_trigger_filters)["data"]
 
                 # Compile a list of all originating workspace_ids for the target workspace
                 target_workspace_run_trigger_workspace_ids = \

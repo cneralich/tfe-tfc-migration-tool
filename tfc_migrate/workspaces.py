@@ -99,7 +99,9 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
                 else:
                     new_workspace_payload["data"]["attributes"]["execution-mode"] = "remote"
 
-            if source_workspace["attributes"]["vcs-repo"] is not None:
+            # TODO: if there is no oauth_token_id in the source, we cannot migrate it for now
+            if source_workspace["attributes"]["vcs-repo"] is not None and \
+                "oauth_token_id" in source_workspace["attributes"]["vcs-repo"]:
                 oauth_token_id = ""
                 for vcs_connection in self._vcs_connection_map:
                     if vcs_connection["source"] == \
@@ -139,7 +141,6 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
 
         if workspaces:
             for workspace in workspaces:
-                print(workspace)
                 self._api_target.workspaces.destroy(workspace["id"])
                 self._logger.info("Workspace: %s, deleted.", workspace["attributes"]["name"])
 

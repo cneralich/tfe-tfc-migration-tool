@@ -147,7 +147,7 @@ class StateVersionsWorker(TFCMigratorBaseWorker):
             ]
 
             target_state_versions = \
-                self._api_target.state_versions.list_all(filters=target_state_filters)
+                self._api_target.state_versions.list_all(filters=target_state_filters)["data"]
             target_state_version_serials = \
                 [state_version["attributes"]["serial"] for state_version in target_state_versions]
 
