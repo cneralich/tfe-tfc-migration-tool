@@ -27,43 +27,44 @@ from .workspace_vars import WorkspaceVarsWorker
 
 class TFCMigrator(ABC):
 
-    def __init__(self, api_source, api_target, vcs_connection_map, sensitive_data_map, log_level):
+    def __init__(self, api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._log_level = log_level
         self._logger.setLevel(self._log_level)
         self._api_source = api_source
         self._api_target = api_target
         self._vcs_connection_map = vcs_connection_map
+        self._select_items_list = select_items_list
         self._sensitive_data_map = sensitive_data_map
 
-        self.agent_pools = AgentPoolsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+        self.agent_pools = AgentPoolsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.config_versions = \
-            ConfigVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            ConfigVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.notification_configs = \
-            NotificationConfigsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            NotificationConfigsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.org_memberships = \
-            OrgMembershipsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
-        self.policies = PoliciesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
-        self.policy_sets = PolicySetsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            OrgMembershipsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
+        self.policies = PoliciesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
+        self.policy_sets = PolicySetsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.policy_set_params = \
-            PolicySetParamsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            PolicySetParamsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.registry_module_versions = \
-            RegistryModuleVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            RegistryModuleVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.registry_modules = \
-            RegistryModulesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
-        self.run_triggers = RunTriggersWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
-        self.ssh_keys = SSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            RegistryModulesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
+        self.run_triggers = RunTriggersWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
+        self.ssh_keys = SSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.state_versions = \
-            StateVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
-        self.team_access = TeamAccessWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
-        self.teams = TeamsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            StateVersionsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
+        self.team_access = TeamAccessWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
+        self.teams = TeamsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.workspace_vars = \
-            WorkspaceVarsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
-        self.workspaces = WorkspacesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            WorkspaceVarsWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
+        self.workspaces = WorkspacesWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
         self.workspace_ssh_keys = \
-            WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, log_level)
+            WorkspaceSSHKeysWorker(api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level)
 
-    def migrate_all(self, migrate_all_state, tfe_verify_source):
+    def do_migration(self, migrate_all_state, migrate_select_items, tfe_verify_source):
         """
         NOTE: org_memberships.migrate only sends out invites, as such, it's commented out.
         The users must exist in the system ahead of time if you want to use this.
@@ -81,51 +82,51 @@ class TFCMigrator(ABC):
 
         # TODO: org_membership_map = org_memberships.migrate(api_source, api_target, teams_map)
         if self.teams.is_valid_migration():
-            teams_map = self.teams.migrate_all()
+            teams_map = self.teams.migrate()
 
-        ssh_keys_map, ssh_key_name_map, ssh_key_to_file_path_map = self.ssh_keys.migrate_all()
+        ssh_keys_map, ssh_key_name_map, ssh_key_to_file_path_map = self.ssh_keys.migrate()
 
         if self.agent_pools.is_valid_migration():
-            agent_pools_map = self.agent_pools.migrate_all()
+            agent_pools_map = self.agent_pools.migrate()
 
-        workspaces_map, workspace_to_ssh_key_map = self.workspaces.migrate_all(agent_pools_map)
+        # NOTE: This will have to be reorganized in the future.
+        workspaces_map, workspace_to_ssh_key_map = self.workspaces.migrate(agent_pools_map, migrate_select=migrate_select_items)
 
-        self.workspace_ssh_keys.migrate_all(workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
+        self.workspace_ssh_keys.migrate(workspaces_map, workspace_to_ssh_key_map, ssh_keys_map)
 
-        sensitive_variable_data = self.workspace_vars.migrate_all(workspaces_map)
+        sensitive_variable_data = self.workspace_vars.migrate(workspaces_map)
 
         if migrate_all_state:
-            self.state_versions.migrate_all(workspaces_map, tfe_verify_source)
+            self.state_versions.migrate(workspaces_map, tfe_verify_source)
         else:
             self.state_versions.migrate_current(workspaces_map, tfe_verify_source)
 
-        self.run_triggers.migrate_all(workspaces_map)
+        self.run_triggers.migrate(workspaces_map)
 
-        self.notification_configs.migrate_all(workspaces_map)
+        self.notification_configs.migrate(workspaces_map)
 
         if self.team_access.is_valid_migration():
-            self.team_access.migrate_all(workspaces_map, teams_map)
+            self.team_access.migrate(workspaces_map, teams_map)
 
-        workspace_to_config_version_upload_url_map, workspace_to_config_version_file_path_map = self.config_versions.migrate_all(workspaces_map)
+        workspace_to_config_version_upload_url_map, workspace_to_config_version_file_path_map = self.config_versions.migrate(workspaces_map)
 
         if self.policies.is_valid_migration():
-            policies_map = self.policies.migrate_all()
+            policies_map = self.policies.migrate()
 
         if self.policy_sets.is_valid_migration():
-            policy_sets_map = self.policy_sets.migrate_all(workspaces_map, policies_map)
+            policy_sets_map = self.policy_sets.migrate(workspaces_map, policies_map)
 
         # This function returns the information that is needed to publish sensitive
         # variables, but cannot retrieve the values themselves, so those values will
         # have to be updated separately.
         if self.policy_sets.is_valid_migration():
-            sensitive_policy_set_parameter_data = self.policy_set_params.migrate_all(policy_sets_map)
+            sensitive_policy_set_parameter_data = self.policy_set_params.migrate(policy_sets_map)
 
         if self.registry_module_versions.is_valid_migration():
-            self.registry_module_versions.migrate_all()
-            
-        if self.registry_modules.is_valid_migration():
-            self.registry_modules.migrate_all()
+            self.registry_module_versions.migrate()
 
+        if self.registry_modules.is_valid_migration():
+            self.registry_modules.migrate()
 
         output_json = {
             "teams_map": teams_map,
@@ -145,7 +146,7 @@ class TFCMigrator(ABC):
         print(json.dumps(output_json))
 
 
-    def migrate_sensitive(self):
+    def do_migration_sensitive(self):
         self.config_versions.migrate_config_files()
 
         self.ssh_keys.migrate_key_files()

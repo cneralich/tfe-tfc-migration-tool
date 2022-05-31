@@ -14,7 +14,7 @@ class WorkspaceSSHKeysWorker(TFCMigratorBaseWorker):
     _api_module_used = "workspaces"
     _required_entitlements = []
 
-    def migrate_all(self, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map):
+    def migrate(self, workspaces_map, workspace_to_ssh_key_map, ssh_keys_map):
         """
         Function to migrate all SSH keys for workspaces from one TFC/E org to another TFC/E org.
         """

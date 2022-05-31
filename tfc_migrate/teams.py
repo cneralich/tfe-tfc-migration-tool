@@ -14,7 +14,7 @@ class TeamsWorker(TFCMigratorBaseWorker):
     _api_module_used = "teams"
     _required_entitlements = ["teams"]
 
-    def migrate_all(self):
+    def migrate(self):
         """
         Function to migrate all teams from one TFC/E org to another TFC/E org.
         """
@@ -65,7 +65,16 @@ class TeamsWorker(TFCMigratorBaseWorker):
                                         ["organization-access"]["manage-policies"],
                                 "manage-vcs-settings": \
                                     source_team["attributes"]\
-                                        ["organization-access"]["manage-vcs-settings"]
+                                        ["organization-access"]["manage-vcs-settings"],
+                                "manage-policy-overrides": \
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-policy-overrides"],
+                                "manage-providers": \
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-providers"],
+                                "manage-modules": \
+                                    source_team["attributes"]\
+                                        ["organization-access"]["manage-modules"]
                             }
                         }
                     }

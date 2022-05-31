@@ -7,6 +7,7 @@ from tfc_migrate.migrator import TFCMigrator
 
 DEFAULT_VCS_FILE = "vcs.json"
 DEFAULT_SENSITIVE_DATA_FILE = "sensitive_data.txt"
+DEFAULT_SELECT_ITEMS_LIST_FILE = "select_items_list.json"
 
 # Source Org
 TFE_TOKEN_SOURCE = os.getenv("TFE_TOKEN_SOURCE", None)
@@ -23,21 +24,27 @@ TFE_VERIFY_TARGET = os.getenv("TFE_VERIFY_TARGET", default="True").lower() == "t
 # NOTE: this is parsed in the main function
 TFE_VCS_CONNECTION_MAP = None
 SENSITIVE_DATA_MAP = None
+SELECT_ITEMS_LIST = None
 
 
-def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data, tfe_verify_source):
+def main(migrator, delete_all, no_confirmation, migrate_all_state, migrate_sensitive_data, migrate_select_items, tfe_verify_source):
 
     if delete_all:
         migrator.delete_all_from_target(no_confirmation)
     elif migrate_sensitive_data:
-        migrator.migrate_sensitive()
+        migrator.do_migration_sensitive()
     else:
-        migrator.migrate_all(migrate_all_state, tfe_verify_source)
+        migrator.do_migration(migrate_all_state, migrate_select_items, tfe_verify_source)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Migrate from one TFE/C org to another TFE/C org')
     parser.add_argument('--vcs-file-path', dest="vcs_file_path", default=DEFAULT_VCS_FILE, \
         help="Path to the VCS JSON file. Defaults to `vcs.json`.")
+    parser.add_argument('--select-items-list-file-path', dest="select_items_list_file_path", \
+        default=DEFAULT_SELECT_ITEMS_LIST_FILE, \
+            help="Path to the select itmems migration file. Defaults to `select_items.json`.")
+    parser.add_argument('--migrate-select-items', dest="migrate_select_items", action="store_true", \
+        help="Migrate select items to the target organization. Default behavior is to migrate all items.")
     parser.add_argument('--migrate-all-state', dest="migrate_all_state", action="store_true", \
         help="Migrate all state history workspaces. Default behavior is only current state.")
     parser.add_argument('--sensitive-data-file-path', dest="sensitive_data_file_path", \
@@ -71,6 +78,13 @@ if __name__ == "__main__":
         with open(args.sensitive_data_file_path, "r") as f:
             SENSITIVE_DATA_MAP = json.loads(f.read())
 
+    if args.migrate_select_items:
+        if not os.path.exists(args.select_items_list_file_path):
+            open(DEFAULT_SELECT_ITEMS_LIST_FILE, "w").close()
+        else:
+            with open(args.select_items_list_file_path, "r") as f:
+                SELECT_ITEMS_LIST = json.loads(f.read())
+
     log_level = logging.INFO
 
     if args.debug:
@@ -78,6 +92,6 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=log_level)
 
-    migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, SENSITIVE_DATA_MAP, log_level)
+    migrator = TFCMigrator(api_source, api_target, TFE_VCS_CONNECTION_MAP, SENSITIVE_DATA_MAP, SELECT_ITEMS_LIST, log_level)
 
-    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state, args.migrate_sensitive_data, TFE_VERIFY_SOURCE)
+    main(migrator, args.delete_all, args.no_confirmation, args.migrate_all_state, args.migrate_sensitive_data, args.migrate_select_items, TFE_VERIFY_SOURCE)

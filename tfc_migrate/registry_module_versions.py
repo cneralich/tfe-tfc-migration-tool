@@ -16,69 +16,67 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
     _api_module_used = "registry_modules"
     _required_entitlements = ["private-module-registry"]
 
-    def migrate_all(self):
+    def migrate(self):
         """
         Function to migrate all registry module versions from one TFC/E org to another TFC/E org.
         """
 
         self._logger.info("Migrating registry module versions...")
-
-        source_modules = self._api_source.registry_modules.list()["modules"]
-        target_modules = self._api_target.registry_modules.list()["modules"]
+        source_modules = self._api_source.registry_modules.list()["data"]
+        target_modules = self._api_target.registry_modules.list()["data"]
         target_module_names = \
-            [target_module["name"] for target_module in target_modules]
+            [target_module["attributes"]["name"] for target_module in target_modules]
 
         for source_module in source_modules:
-            if source_module["source"] == "":
-                source_module_name = source_module["name"]
-                source_module_provider = source_module["provider"]
-                source_module_version = source_module["version"]
+            source_module_name = source_module["attributes"]["name"]
+            source_module_provider = source_module["attributes"]["provider"]
+            source_module_version = source_module["attributes"]["version-statuses"][0]["version"]
 
-                if source_module_name in target_module_names:
-                    self._logger.info("Registry module: %s, exists. Skipped.", source_module_name)
-                    continue
+            if source_module_name in target_module_names:
+                self._logger.info("Registry module: %s, exists. Skipped.", source_module_name)
+                continue
 
-                # Build the new module payload
-                new_module_payload = {
-                    "data": {
-                        "type": "registry-modules",
-                        "attributes": {
-                            "name": source_module_name,
-                            "provider": source_module_provider
-                        }
+            # Build the new module payload
+            new_module_payload = {
+                "data": {
+                    "type": "registry-modules",
+                    "attributes": {
+                        "name": source_module_name,
+                        "provider": source_module_provider
                     }
                 }
+            }
 
-                # Create the module in the target organization
-                self._api_target.registry_modules.create(new_module_payload)
-                self._logger.info("Registry module: %s, created.", source_module_name)
+            # Create the module in the target organization
+            self._api_target.registry_modules.create(new_module_payload)
+            self._logger.info("Registry module: %s, created.", source_module_name)
 
-                # Build the new module version payload
-                new_module_version_payload = {
-                    "data": {
-                        "type": "registry-module-versions",
-                        "attributes": {
-                            "version": source_module_version
-                        }
+            # Build the new module version payload
+            new_module_version_payload = {
+                "data": {
+                    "type": "registry-module-versions",
+                    "attributes": {
+                        "version": source_module_version
                     }
                 }
+            }
 
-                # Create the module version in the target organization
-                new_module_version = self._api_target.registry_modules.create_version(\
-                    source_module_name, source_module_provider, new_module_version_payload)["data"]
-                self._logger.info("Module version: %s, for module: %s, created.", \
-                    source_module_version, source_module_name)
+            # Create the module version in the target organization
+            new_module_version = self._api_target.registry_modules.create_version(\
+                source_module_name, source_module_provider, new_module_version_payload)["data"]
+            self._logger.info("Module version: %s, for module: %s, created.", \
+                source_module_version, source_module_name)
 
-                # Pull module version file and upload to target organization
-                source_module_file_path = "/tmp/%s.tar.gz" % (source_module_name)
-                self._api_source.registry_modules.download_latest_source( \
-                    source_module_name, source_module_provider, source_module_file_path)
+            # Pull module version file and upload to target organization
+            source_module_file_path = "/tmp/%s.tar.gz" % (source_module_name)
+            self._api_source.registry_modules.download_latest_source( \
+                source_module_name, source_module_provider, source_module_file_path)
 
-                self._api_target.registry_modules.upload_version(\
-                   source_module_file_path, new_module_version["links"]["upload"])
-                self._logger.info("Module version file for version: %s, for module: %s, uploaded.", \
-                    source_module_version, source_module_name)
-                os.remove(source_module_file_path)
+            self._api_target.registry_modules.upload_version(\
+                source_module_file_path, new_module_version["links"]["upload"])
+            self._logger.info("Module version file for version: %s, for module: %s, uploaded.", \
+                source_module_version, source_module_name)
+            os.remove(source_module_file_path)
 
         self._logger.info("Registry module versions migrated.")
 
@@ -86,12 +84,12 @@ class RegistryModuleVersionsWorker(TFCMigratorBaseWorker):
     def delete_all_from_target(self):
         self._logger.info("Deleting registry modules...")
 
-        modules = self._api_target.registry_modules.list()["modules"]
+        # TODO: list all of the modules
+        modules = self._api_target.registry_modules.list()["data"]
 
         if modules:
             for module in modules:
-                if module["source"] == "":
-                    self._api_target.registry_modules.destroy(module["name"])
-                    self._logger.info("Registry module: %s, deleted.", module["name"])
+                self._api_target.registry_modules.destroy(module["attributes"]["name"])
+                self._logger.info("Registry module: %s, deleted.", module["attributes"]["name"])
 
         self._logger.info("Registry modules deleted.")

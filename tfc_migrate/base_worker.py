@@ -13,7 +13,7 @@ class TFCMigratorBaseWorker(ABC):
     _api_module_used = None
     _required_entitlements = []
 
-    def __init__(self, api_source, api_target, vcs_connection_map, sensitive_data_map, log_level):
+    def __init__(self, api_source, api_target, vcs_connection_map, sensitive_data_map, select_items_list, log_level):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(log_level)
 
@@ -21,6 +21,7 @@ class TFCMigratorBaseWorker(ABC):
         self._api_target = api_target
         self._vcs_connection_map = vcs_connection_map
         self._sensitive_data_map = sensitive_data_map
+        self._select_items_list = select_items_list
 
     def _check_entitlements(self):
         # Make sure that our test meets the entitlements required, return true if so.
@@ -90,7 +91,7 @@ class TFCMigratorBaseWorker(ABC):
         return is_valid
 
     """
-    def migrate_all(self):
+    def migrate(self):
         pass
 
     def delete_all_from_target(self):

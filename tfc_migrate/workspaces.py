@@ -3,6 +3,7 @@ Module for Terraform Enterprise/Cloud Migration Worker: Workspaces.
 """
 
 from .base_worker import TFCMigratorBaseWorker
+from terrasnek import exceptions
 
 class WorkspacesWorker(TFCMigratorBaseWorker):
     """
@@ -13,16 +14,29 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
     _api_module_used = "workspaces"
     _required_entitlements = []
 
-    def migrate_all(self, agent_pools_map):
+    def migrate(self, agent_pools_map, migrate_select=False):
         """
         Function to migrate all workspaces from one TFC/E org to another TFC/E org.
         """
 
         self._logger.info("Migrating workspaces...")
 
+        source_workspaces = []
         # Fetch workspaces from existing org
-        source_workspaces = self._api_source.workspaces.list_all()
-        target_workspaces = self._api_target.workspaces.list_all()
+        if migrate_select:
+            # If we are migrating specific workspaces, retrieve those specific workspaces
+            for source_workspace in self._select_items_list["workspaces"]:
+                try:
+                    source_workspace = self._api_source.workspaces.show(workspace_name=source_workspace)["data"]
+                    source_workspaces.append(source_workspace)
+                except exceptions.TFCHTTPNotFound as not_found:
+                    self._logger.info(f"Source workspace <{source_workspace}> does not exist in the source org.")
+                    pass
+        else:
+            # Otherwise, get all of the workspaces
+            source_workspaces = self._api_source.workspaces.list_all()["data"]
+
+        target_workspaces = self._api_target.workspaces.list_all()["data"]
 
         target_workspaces_data = {}
         for target_workspace in target_workspaces:
@@ -85,7 +99,9 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
                 else:
                     new_workspace_payload["data"]["attributes"]["execution-mode"] = "remote"
 
-            if source_workspace["attributes"]["vcs-repo"] is not None:
+            # TODO: if there is no oauth_token_id in the source, we cannot migrate it for now
+            if source_workspace["attributes"]["vcs-repo"] is not None and \
+                "oauth_token_id" in source_workspace["attributes"]["vcs-repo"]:
                 oauth_token_id = ""
                 for vcs_connection in self._vcs_connection_map:
                     if vcs_connection["source"] == \
@@ -114,7 +130,6 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
         self._logger.info("Workspaces migrated.")
         return workspaces_map, workspace_to_ssh_key_map
 
-
     def delete_all_from_target(self):
         """
         Function to delete all workspaces from the target TFC/E org.
@@ -122,7 +137,7 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting workspaces...")
 
-        workspaces = self._api_target.workspaces.list_all()
+        workspaces = self._api_target.workspaces.list_all()["data"]
 
         if workspaces:
             for workspace in workspaces:

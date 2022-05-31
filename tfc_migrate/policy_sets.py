@@ -14,14 +14,14 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
     _api_module_used = "policy_sets"
     _required_entitlements = ["sentinel"]
 
-    def migrate_all(self, workspaces_map, policies_map):
+    def migrate(self, workspaces_map, policies_map):
         """
         Function to migrate all policy sets from one TFC/E org to another TFC/E org.
         """
 
         # Pull policy sets from the source organization
-        source_policy_sets = self._api_source.policy_sets.list_all(include="policies,workspaces")
-        target_policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")
+        source_policy_sets = self._api_source.policy_sets.list_all(include=["policies","workspaces"])
+        target_policy_sets = self._api_target.policy_sets.list_all(include=["policies","workspaces"])
 
         target_policy_sets_data = {}
         for target_policy_set in target_policy_sets:
@@ -110,7 +110,7 @@ class PolicySetsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting policy sets...")
 
-        policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")
+        policy_sets = self._api_target.policy_sets.list_all(include=["policies","workspaces"])["data"]
 
         for policy_set in policy_sets:
             self._api_target.policy_sets.destroy(policy_set["id"])

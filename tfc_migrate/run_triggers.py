@@ -14,7 +14,7 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
     _api_module_used = "run_triggers"
     _required_entitlements = []
 
-    def migrate_all(self, workspaces_map):
+    def migrate(self, workspaces_map):
         """
         Function to migrate all run triggers from one TFC/E org to another TFC/E org.
         """
@@ -32,12 +32,12 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
 
             # Pull all inbound run triggers for the source workspace
             source_workspace_run_triggers = self._api_source.run_triggers.list_all(
-                source_workspace_id, filters=workspace_run_trigger_filters)
+                source_workspace_id, filters=workspace_run_trigger_filters)["data"]
 
             if source_workspace_run_triggers:
                 # pull all inbound run triggers for the target workspace
                 target_workspace_run_triggers = self._api_target.run_triggers.list_all(\
-                    target_workspace_id, filters=workspace_run_trigger_filters)
+                    target_workspace_id, filters=workspace_run_trigger_filters)["data"]
 
                 # Compile a list of all originating workspace_ids for the target workspace
                 target_workspace_run_trigger_workspace_ids = \
@@ -48,9 +48,14 @@ class RunTriggersWorker(TFCMigratorBaseWorker):
                     # Get originating workspace_id for any inbound trigger for the source workspace
                     source_workspace_trigger_workspace_id = \
                         source_workspace_run_trigger["relationships"]["sourceable"]["data"]["id"]
-                    target_workspace_trigger_workspace_id = \
-                        workspaces_map[source_workspace_trigger_workspace_id]
-
+                    if source_workspace_trigger_workspace_id in workspaces_map:
+                        target_workspace_trigger_workspace_id = \
+                            workspaces_map[source_workspace_trigger_workspace_id]
+                    else:
+                        self._logger.info(\
+                            "Run trigger from workspace ID: %s cannot be added because trigger workspace does not exist. Skipped.", \
+                                    source_workspace_trigger_workspace_id)
+                        continue
                     if target_workspace_trigger_workspace_id in \
                         target_workspace_run_trigger_workspace_ids:
                         self._logger.info("Run Trigger: %s, in workspace ID %s exists. Skipped.", \

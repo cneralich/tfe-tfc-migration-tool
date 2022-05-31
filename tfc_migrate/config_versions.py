@@ -14,7 +14,7 @@ class ConfigVersionsWorker(TFCMigratorBaseWorker):
     _api_module_used = "config_versions"
     _required_entitlements = []
 
-    def migrate_all(self, workspaces_map):
+    def migrate(self, workspaces_map):
         """
         Function to migrate all config versions from one TFC/E org to another TFC/E org.
         """
