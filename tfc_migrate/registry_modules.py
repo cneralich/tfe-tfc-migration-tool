@@ -24,48 +24,47 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
         source_modules = self._api_source.registry_modules.list()["data"]
         target_modules = self._api_target.registry_modules.list()["data"]
         target_module_names = \
-            [target_module["name"] for target_module in target_modules]
+            [target_module["attributes"]["name"] for target_module in target_modules]
 
         for source_module in source_modules:
-            if source_module["source"] != "":
-                source_module_name = source_module["name"]
+            source_module_name = source_module["attributes"]["name"]
 
-                if source_module_name in target_module_names:
-                    self._logger.info("Registry Module: %s, exists. Skipped.", source_module_name)
-                    continue
+            if source_module_name in target_module_names:
+                self._logger.info("Registry Module: %s, exists. Skipped.", source_module_name)
+                continue
 
-                source_module_data = \
-                    self._api_source.registry_modules.show(\
-                        source_module_name, source_module["provider"])["data"]
+            source_module_data = \
+                self._api_source.registry_modules.show(\
+                    source_module_name, source_module["provider"])["data"]
 
-                oauth_token_id = ""
-                for vcs_connection in self._vcs_connection_map:
-                    if vcs_connection["source"] == \
-                        source_module_data["attributes"]["vcs-repo"]["oauth-token-id"]:
-                        oauth_token_id = vcs_connection["target"]
+            oauth_token_id = ""
+            for vcs_connection in self._vcs_connection_map:
+                if vcs_connection["source"] == \
+                    source_module_data["attributes"]["vcs-repo"]["oauth-token-id"]:
+                    oauth_token_id = vcs_connection["target"]
 
-                # Build the new module payload
-                new_module_payload = {
-                    "data": {
-                        "attributes": {
-                            "vcs-repo": {
-                                "identifier": \
-                                    source_module_data["attributes"]["vcs-repo"]["identifier"],
-                                # NOTE that if the VCS the module was connected to has been
-                                # deleted, it will not return Token ID and this will error.
-                                "oauth-token-id": oauth_token_id,
-                                "display_identifier": source_module_data\
-                                    ["attributes"]["vcs-repo"]["display-identifier"]
-                            }
-                        },
-                        "type": "registry-modules"
-                    }
+            # Build the new module payload
+            new_module_payload = {
+                "data": {
+                    "attributes": {
+                        "vcs-repo": {
+                            "identifier": \
+                                source_module_data["attributes"]["vcs-repo"]["identifier"],
+                            # NOTE that if the VCS the module was connected to has been
+                            # deleted, it will not return Token ID and this will error.
+                            "oauth-token-id": oauth_token_id,
+                            "display_identifier": source_module_data\
+                                ["attributes"]["vcs-repo"]["display-identifier"]
+                        }
+                    },
+                    "type": "registry-modules"
                 }
+            }
 
-                # Create the module in the target organization
-                self._api_target.registry_modules.publish_from_vcs(new_module_payload)
+            # Create the module in the target organization
+            self._api_target.registry_modules.publish_from_vcs(new_module_payload)
 
-                # TODO: logging
+            # TODO: logging
 
             # TODO: Add support for modules uploaded via the API
 
@@ -83,8 +82,8 @@ class RegistryModulesWorker(TFCMigratorBaseWorker):
 
         if modules:
             for module in modules:
-                if module["source"] != "":
-                    self._api_target.registry_modules.destroy(module["name"])
-                    self._logger.info("Registry module: %s, deleted.", module["name"])
+                mod_name = module["attributes"]["name"]
+                self._api_target.registry_modules.destroy(mod_name)
+                self._logger.info("Registry module: %s, deleted.", mod_name)
 
         self._logger.info("Registry modules deleted.")

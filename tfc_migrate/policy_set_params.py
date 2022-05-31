@@ -143,7 +143,7 @@ class PolicySetParamsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting policy set params...")
 
-        policy_sets = self._api_target.policy_sets.list_all(include="policies,workspaces")
+        policy_sets = self._api_target.policy_sets.list_all(include=["policies", "workspaces"])["data"]
 
         for policy_set in policy_sets:
             params = self._api_target.policy_set_params.list(policy_set["id"])["data"]

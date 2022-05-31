@@ -22,8 +22,8 @@ class PoliciesWorker(TFCMigratorBaseWorker):
         self._logger.info("Migrating policies...")
 
         # Pull policies from the old organization
-        source_policies = self._api_source.policies.list_all()
-        target_policies = self._api_target.policies.list_all()
+        source_policies = self._api_source.policies.list_all()["data"]
+        target_policies = self._api_target.policies.list_all()["data"]
 
         target_policies_data = {}
         for target_policy in target_policies:
@@ -83,7 +83,7 @@ class PoliciesWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting policies...")
 
-        policies = self._api_target.policies.list_all()
+        policies = self._api_target.policies.list_all()["data"]
 
         for policy in policies:
             self._api_target.policies.destroy(policy["id"])

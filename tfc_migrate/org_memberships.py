@@ -100,16 +100,16 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting organization members...")
 
-        org_members = self._api_target.org_memberships.list_all_for_org()
+        org_members = self._api_target.org_memberships.list_all_for_org()["data"]
 
         for org_member in org_members:
             try:
                 self._api_target.org_memberships.remove(org_member["id"])
                 self._logger.info("Org member: %s, deleted.", org_member["attributes"]["email"])
-            except exceptions.TFCHTTPUnclassified as unclassified:
+            except exceptions.TFCHTTPForbidden as forbidden:
                 # Rather than add some complicated logic, if we get the error message saying
                 # we can't delete ourselves from a group we own, just skip it. Otherwise
                 # raise the exception. You will still see an error in the logs.
-                if "remove the last owner" not in str(unclassified):
-                    raise unclassified
+                if "remove the last owner" not in str(forbidden):
+                    raise forbidden
         self._logger.info("Organization members deleted.")

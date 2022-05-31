@@ -3,6 +3,7 @@ Module for Terraform Enterprise/Cloud Migration Worker: Workspaces.
 """
 
 from .base_worker import TFCMigratorBaseWorker
+from terrasnek import exceptions
 
 class WorkspacesWorker(TFCMigratorBaseWorker):
     """
@@ -25,8 +26,12 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
         if migrate_select:
             # If we are migrating specific workspaces, retrieve those specific workspaces
             for source_workspace in self._select_items_list["workspaces"]:
-                source_workspace = self._api_source.workspaces.show(workspace_name=source_workspace)["data"]
-                source_workspaces.append(source_workspace)
+                try:
+                    source_workspace = self._api_source.workspaces.show(workspace_name=source_workspace)["data"]
+                    source_workspaces.append(source_workspace)
+                except exceptions.TFCHTTPNotFound as not_found:
+                    self._logger.info(f"Source workspace <{source_workspace}> does not exist in the source org.")
+                    pass
         else:
             # Otherwise, get all of the workspaces
             source_workspaces = self._api_source.workspaces.list_all()["data"]
@@ -130,10 +135,11 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting workspaces...")
 
-        workspaces = self._api_target.workspaces.list_all()
+        workspaces = self._api_target.workspaces.list_all()["data"]
 
         if workspaces:
             for workspace in workspaces:
+                print(workspace)
                 self._api_target.workspaces.destroy(workspace["id"])
                 self._logger.info("Workspace: %s, deleted.", workspace["attributes"]["name"])
 
