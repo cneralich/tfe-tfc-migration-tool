@@ -74,6 +74,6 @@ class AgentPoolsWorker(TFCMigratorBaseWorker):
             for agent_pool in agent_pools:
                 if agent_pool["attributes"]["name"] != "Default":
                     self._logger.info("Agent pool: %s, deleted.", agent_pool["attributes"]["name"])
-                    self._api_target.agents.destroy(agent_pool["id"])
+                    self._api_target.agents.destroy_pool(agent_pool["id"])
 
         self._logger.info("Agent pools deleted.")
