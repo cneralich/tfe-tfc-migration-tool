@@ -101,7 +101,7 @@ class WorkspacesWorker(TFCMigratorBaseWorker):
 
             # TODO: if there is no oauth_token_id in the source, we cannot migrate it for now
             if source_workspace["attributes"]["vcs-repo"] is not None and \
-                "oauth_token_id" in source_workspace["attributes"]["vcs-repo"]:
+                "oauth-token-id" in source_workspace["attributes"]["vcs-repo"]:
                 oauth_token_id = ""
                 for vcs_connection in self._vcs_connection_map:
                     if vcs_connection["source"] == \
