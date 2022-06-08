@@ -65,7 +65,23 @@ By default, the migration tool will load these values from a file named `vcs.jso
 
 > **_Note:_** GitHub App connections are not currently supported in this migration tool since those values can not currently be managed via the API.
 
-### 4. Choose Desired Runtime Arguments
+### 4. Build the SELECT_ITEMS_LIST (Optional)
+
+If you wish to only migrate a subset of items to your new TFC/E Organization, you may specify them within the SELECT_ITEMS_LIST dictionary, like so:
+
+```json
+{
+    "workspaces": [
+       "workspace-1",
+       "workspace-2",
+       "workspace-3"
+    ]
+}
+```
+
+> **_Note:_** At present, only a list of specific workspaces is supported, but the goal is to eventually support more items for the select items migration option.
+
+### 5. Choose Desired Runtime Arguments
 
 Before initiating the migration process, first determine which command line arguments you wish to pass (if any).  The following arguments are currently supported:
 * `--vcs-file-path`: this flag allows you to pass a custom file path for your TFE_VCS_CONNECTION_MAP JSON file. If not specified, `vcs.json` will be used by default.
@@ -74,7 +90,7 @@ Before initiating the migration process, first determine which command line argu
  * `--migrate-select-items`: this flag allows you to set the desired behavior for migrating items.  If passed, only the specified values in your SELECT_ITEMS_LIST JSON file will be migrated for any included item.
 * `> outputs.txt`: this allows you to set the desired behavior for handling outputs.  If passed, all outputs will will be written to an `outputs.txt` file (or file name of your choice).  If not specified, all outputs will appear in the terminal by default.
 
-### 5. Perform the Migration
+### 6. Perform the Migration
 
 To perform the migration, the following command may be executed (example includes optional arguments):
 
