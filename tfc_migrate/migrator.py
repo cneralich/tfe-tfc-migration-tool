@@ -83,8 +83,9 @@ class TFCMigrator(ABC):
         if self.teams.is_valid_migration():
             teams_map = self.teams.migrate()
 
-        if self.org_memberships.is_valid_migration():
-            org_membership_map = self.org_memberships.migrate(teams_map)
+        # NOTE: Uncomment the following to enable org_memberships migration
+        # if self.org_memberships.is_valid_migration():
+        #    org_membership_map = self.org_memberships.migrate(teams_map)
 
         ssh_keys_map, ssh_key_name_map, ssh_key_to_file_path_map = self.ssh_keys.migrate()
 
