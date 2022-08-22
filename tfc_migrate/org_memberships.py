@@ -31,8 +31,8 @@ class OrgMembershipsWorker(TFCMigratorBaseWorker):
         ]
 
         source_org_members = self._api_source.org_memberships.list_all_for_org( \
-            filters=active_member_filter)
-        target_org_members = self._api_target.org_memberships.list_all_for_org()
+            filters=active_member_filter)["data"]
+        target_org_members = self._api_target.org_memberships.list_all_for_org()["data"]
 
         target_org_members_data = {}
         for target_org_member in target_org_members:
