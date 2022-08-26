@@ -24,8 +24,8 @@ class TeamsWorker(TFCMigratorBaseWorker):
         teams_map = {}
 
         # Fetch teams from existing org
-        source_teams = self._api_source.teams.list()["data"]
-        target_teams = self._api_target.teams.list()["data"]
+        source_teams = self._api_source.teams.list_all()["data"]
+        target_teams = self._api_target.teams.list_all()["data"]
 
         target_teams_data = {}
         for target_team in target_teams:
@@ -99,7 +99,7 @@ class TeamsWorker(TFCMigratorBaseWorker):
 
         self._logger.info("Deleting teams...")
 
-        teams = self._api_target.teams.list()["data"]
+        teams = self._api_target.teams.list_all()["data"]
         if teams:
             for team in teams:
                 team_name = team["attributes"]["name"]
